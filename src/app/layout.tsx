@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "@/styles/globals.css";
+import { Toaster } from 'sonner';
 
 export const metadata: Metadata = {
   title: "Adventur Hoteles",
@@ -15,6 +16,13 @@ export default function RootLayout({
     <html lang="es">
       <body className="min-h-screen flex flex-col">
         {children}
+        <Toaster
+          position="top-right"
+          richColors
+          toastOptions={{
+            style: { fontFamily: 'Montserrat, sans-serif' },
+          }}
+        />
       </body>
     </html>
   );

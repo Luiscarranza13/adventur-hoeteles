@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
       descripcion: body.descripcion,
       capacidadPersonas: body.capacidad_personas,
       precioNoche: body.precio_noche,
+      imagenesUrls: body.imagenes_urls || [],
     });
     return NextResponse.json(habitacion, { status: 201 });
   } catch (e) {
@@ -38,6 +39,8 @@ export async function PUT(request: NextRequest) {
       descripcion: body.descripcion,
       capacidadPersonas: body.capacidad_personas,
       precioNoche: body.precio_noche,
+      imagenesUrls: body.imagenes_urls,
+      estaDisponible: body.esta_disponible,
     });
     return NextResponse.json(habitacion);
   } catch (e) {

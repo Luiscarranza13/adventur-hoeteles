@@ -1,22 +1,23 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
-/**
- * Middleware de autenticación.
- * Protege todas las rutas /admin/* y /api/admin/* excepto /login.
- * Si no hay sesión activa, redirige a /login.
- */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // /login no necesita protección
-  if (pathname === '/login') {
+  // Rutas públicas — nunca proteger
+  const esPublica =
+    pathname === '/login' ||
+    pathname === '/api/admin/login' ||
+    pathname === '/api/admin/logout';
+
+  if (esPublica) {
     return NextResponse.next();
   }
 
   // Solo proteger rutas admin de página y API
   const esRutaProtegida =
-    pathname.startsWith('/admin') || pathname.startsWith('/api/admin');
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/api/admin');
 
   if (!esRutaProtegida) {
     return NextResponse.next();
@@ -46,9 +47,7 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Sin sesión → redirigir a login
   if (!user) {
-    // Las rutas API devuelven 401 en lugar de redirigir
     if (pathname.startsWith('/api/')) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }

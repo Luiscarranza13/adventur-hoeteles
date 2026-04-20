@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -16,26 +16,35 @@
   --font-montserrat: 'Montserrat', sans-serif;
 }
 
+* {
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: 'Montserrat', sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-@layer utilities {
-  .btn-primary {
-    @apply bg-[#ffd600] text-[#001f3f] font-semibold px-6 py-3 rounded-lg transition-all hover:opacity-90;
-  }
+/* Animación fade-up para secciones */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
-  .btn-secondary {
-    @apply bg-[#001f3f] text-white font-semibold px-6 py-3 rounded-lg transition-all hover:opacity-90;
-  }
+.animate-fade-up {
+  animation: fadeUp 0.5s ease forwards;
+}
 
-  .input-field {
-    @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#ffd600] focus:ring-1 focus:ring-[#ffd600];
-  }
+/* Skeleton loader */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
 
-  .card {
-    @apply bg-white rounded-xl shadow-lg p-6 transition-all hover:shadow-xl;
-  }
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }

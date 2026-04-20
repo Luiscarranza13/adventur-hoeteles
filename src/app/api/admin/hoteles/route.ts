@@ -22,8 +22,8 @@ export async function POST(request: NextRequest) {
       direccion: body.direccion,
       telefonoWhatsapp: body.telefono_whatsapp,
       estrellas: body.estrellas || 3,
-    });
-    return NextResponse.json(hotel, { status: 201 });
+      imagenesUrls: body.imagenes_urls || [],
+    });    return NextResponse.json(hotel, { status: 201 });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: 'Error al crear hotel' }, { status: 500 });
@@ -41,6 +41,8 @@ export async function PUT(request: NextRequest) {
       direccion: body.direccion,
       telefonoWhatsapp: body.telefono_whatsapp,
       estrellas: body.estrellas,
+      imagenesUrls: body.imagenes_urls,
+      activo: body.activo,
     });
     return NextResponse.json(hotel);
   } catch (e) {

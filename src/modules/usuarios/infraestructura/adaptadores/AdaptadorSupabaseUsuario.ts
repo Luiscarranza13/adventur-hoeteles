@@ -10,6 +10,7 @@ interface UsuarioDb {
   correo: string;
   telefono: string | null;
   rol: string;
+  foto_url: string | null;
   fecha_creacion: string;
 }
 
@@ -20,6 +21,7 @@ function mapDbToDomain(row: UsuarioDb): Usuario {
     correo: row.correo,
     telefono: row.telefono || undefined,
     rol: row.rol as Usuario['rol'],
+    fotoUrl: row.foto_url || undefined,
     fechaCreacion: new Date(row.fecha_creacion),
   };
 }
@@ -61,6 +63,7 @@ export class AdaptadorSupabaseUsuario implements RepositorioUsuario {
         correo: datos.correo,
         telefono: datos.telefono || null,
         rol: datos.rol || 'recepcionista',
+        foto_url: datos.fotoUrl || null,
       })
       .select()
       .single();
@@ -74,6 +77,8 @@ export class AdaptadorSupabaseUsuario implements RepositorioUsuario {
     const updateData: Record<string, unknown> = {};
     if (datos.nombreCompleto !== undefined) updateData.nombre_completo = datos.nombreCompleto;
     if (datos.telefono !== undefined) updateData.telefono = datos.telefono;
+    if (datos.rol !== undefined) updateData.rol = datos.rol;
+    if (datos.fotoUrl !== undefined) updateData.foto_url = datos.fotoUrl || null;
 
     const { data, error } = await cliente
       .from('usuarios')

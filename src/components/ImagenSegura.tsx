@@ -8,33 +8,40 @@ interface ImagenSeguraProps {
   alt: string;
   fill?: boolean;
   className?: string;
-  placeholder?: string;
+  sizes?: string;
+  priority?: boolean;
 }
 
-/**
- * Wrapper de next/image que maneja URLs inválidas o rotas.
- * Si la imagen falla al cargar, muestra un placeholder.
- */
-export function ImagenSegura({ src, alt, fill = false, className, placeholder = 'Sin imagen' }: ImagenSeguraProps) {
+function esUrlValida(src: string): boolean {
+  try {
+    const url = new URL(src);
+    const partes = url.hostname.split('.');
+    return partes.length >= 2 && partes.every(p => p.length > 0);
+  } catch {
+    return false;
+  }
+}
+
+function Placeholder() {
+  return (
+    <div className="absolute inset-0 bg-gradient-to-br from-[#001f3f] via-[#002d5a] to-[#001428] flex items-center justify-center">
+      <span className="text-[#ffd600]/20 text-8xl font-black select-none tracking-tighter">A</span>
+    </div>
+  );
+}
+
+export function ImagenSegura({
+  src,
+  alt,
+  fill = false,
+  className,
+  sizes = '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw',
+  priority = false,
+}: ImagenSeguraProps) {
   const [error, setError] = useState(false);
 
-  // Validar que la URL tenga un hostname real (no solo https://img1.jpg)
-  const esUrlValida = (() => {
-    try {
-      const url = new URL(src);
-      // El hostname debe tener al menos un punto y una extensión válida
-      return url.hostname.includes('.') && url.hostname.split('.').every(p => p.length > 0);
-    } catch {
-      return false;
-    }
-  })();
-
-  if (!esUrlValida || error) {
-    return (
-      <div className="flex items-center justify-center h-full w-full bg-gray-200 text-gray-400 text-sm">
-        {placeholder}
-      </div>
-    );
+  if (!esUrlValida(src) || error) {
+    return <Placeholder />;
   }
 
   return (
@@ -43,6 +50,9 @@ export function ImagenSegura({ src, alt, fill = false, className, placeholder = 
       alt={alt}
       fill={fill}
       className={className}
+      sizes={sizes}
+      priority={priority}
+      loading={priority ? 'eager' : 'lazy'}
       onError={() => setError(true)}
     />
   );

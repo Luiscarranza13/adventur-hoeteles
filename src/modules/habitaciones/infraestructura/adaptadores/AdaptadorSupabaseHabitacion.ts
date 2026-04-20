@@ -52,7 +52,7 @@ export class AdaptadorSupabaseHabitacion implements RepositorioHabitacion {
       .from('habitaciones')
       .select('*')
       .eq('hotel_id', hotelId)
-      .eq('esta_disponible', true);
+      .order('fecha_creacion', { ascending: false });
 
     if (error || !data) return [];
     return (data as HabitacionDb[]).map(mapDbToDomain);

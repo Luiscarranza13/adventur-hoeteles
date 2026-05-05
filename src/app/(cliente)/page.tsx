@@ -6,6 +6,7 @@ import { HeroCliente } from '@/components/cliente/HeroCliente';
 import { HeroFondoAnimado } from '@/components/cliente/HeroFondoAnimado';
 import { ServicioHoteles, AdaptadorSupabaseHotel } from '@/modules/hoteles';
 import { ServicioHabitaciones, AdaptadorSupabaseHabitacion } from '@/modules/habitaciones';
+import { obtenerDestinos } from '@/lib/destinos';
 import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -60,8 +61,9 @@ const faqs = [
 ];
 
 export default async function PaginaInicio() {
-  const hoteles = await obtenerHoteles();
+  const [hoteles, destinos] = await Promise.all([obtenerHoteles(), obtenerDestinos()]);
   const ciudades = [...new Set(hoteles.map(h => h.ciudad))];
+  const departamentos = [...new Set(destinos.map(d => d.departamento))];
 
   const hotelesConPrecio = await Promise.all(
     hoteles.slice(0, 8).map(async h => ({ ...h, precioMinimo: await obtenerPrecioMinimo(h.id) }))
@@ -74,46 +76,45 @@ export default async function PaginaInicio() {
 
         <section className="relative h-screen flex flex-col bg-black overflow-hidden" style={{ isolation: 'isolate' }}>
           <HeroFondoAnimado />
-          <HeroCliente totalHoteles={hoteles.length} totalCiudades={ciudades.length} />
+          <HeroCliente totalHoteles={hoteles.length} totalCiudades={departamentos.length || ciudades.length} />
         </section>
 
-        {ciudades.length > 0 && (
+        {destinos.length > 0 && (
           <section id="destinos" className="section-padding bg-[var(--bg-base)]">
             <div className="container-site">
               <AnimarAlEntrar className="text-center mb-16">
-                <p className="label-eyebrow mb-2">Destinos Populares</p>
+                <p className="label-eyebrow mb-2">Lugares de procedencia</p>
                 <h2 className="heading-section mb-4">
-                  Explora por ciudades
+                  Atendemos viajeros de todo el Perú
                 </h2>
-                <p className="body-text max-w-2xl mx-auto">Encuentra el alojamiento perfecto filtrando por tu destino favorito en todo el Perú.</p>
+                <p className="body-text max-w-2xl mx-auto">Selecciona tu ciudad, distrito o zona de procedencia para consultar alojamientos disponibles por WhatsApp.</p>
               </AnimarAlEntrar>
 
-              <div className="grid gap-3 sm:gap-4 mb-8 sm:mb-10 lg:mb-14 justify-center"
-                style={{ gridTemplateColumns: `repeat(auto-fit, minmax(160px, 200px))` }}
-              >
-                {ciudades.slice(0, 6).map((ciudad, i) => {
-                  const hotelCiudad = hoteles.find(h => h.ciudad === ciudad);
-                  return (
-                    <AnimarAlEntrar key={ciudad} delay={i * 0.08}>
-                      <Link href={`/hoteles?ciudad=${encodeURIComponent(ciudad)}`}>
-                        <article className="relative w-full h-44 sm:h-48 lg:h-52 rounded-xl lg:rounded-2xl overflow-hidden group cursor-pointer shadow-sm hover:shadow-lg transition-all duration-500">
-                          <ImagenSegura
-                            src={hotelCiudad?.imagenesUrls[0] ?? ''}
-                            alt={`Hoteles en ${ciudad}`}
-                            fill
-                            sizes="(max-width: 640px) 144px, (max-width: 1024px) 176px, 208px"
-                            className="object-cover group-hover:scale-110 transition-all duration-700"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-[#001f3f]/80 via-[#001f3f]/20 to-transparent" />
-                          <div className="absolute inset-0 flex flex-col justify-end p-3 lg:p-4">
-                            <p className="text-[#ffd600] text-xs font-black uppercase tracking-widest mb-0.5">{ciudad}</p>
-                            <p className="text-white text-xs font-semibold">Ver hoteles</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 mb-8 sm:mb-10 lg:mb-14">
+                {destinos.map((destino, i) => (
+                  <AnimarAlEntrar key={destino.slug} delay={(i % 10) * 0.03}>
+                    <Link href={`/hoteles?ciudad=${encodeURIComponent(destino.nombre)}`} className="block h-full">
+                      <article className="group h-full min-h-28 rounded-xl border border-[var(--border-subtle)] bg-white p-4 shadow-sm hover:-translate-y-0.5 hover:border-[var(--brand-yellow)]/50 hover:shadow-md transition-all duration-300">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-[var(--brand-yellow)] truncate">
+                              {destino.departamento}
+                            </p>
+                            <h3 className="mt-2 text-sm sm:text-base font-black text-[var(--brand-navy)] leading-tight group-hover:text-[var(--brand-yellow-light)] transition-colors">
+                              {destino.nombre}
+                            </h3>
                           </div>
-                        </article>
-                      </Link>
-                    </AnimarAlEntrar>
-                  );
-                })}
+                          <div className="w-9 h-9 rounded-lg bg-[var(--bg-subtle)] group-hover:bg-[var(--brand-navy)] flex items-center justify-center shrink-0 transition-colors">
+                            <MapPin size={16} className="text-[var(--brand-navy)] group-hover:text-[var(--brand-yellow)] transition-colors" aria-hidden="true" />
+                          </div>
+                        </div>
+                        <p className="mt-4 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                          {destino.tipo}
+                        </p>
+                      </article>
+                    </Link>
+                  </AnimarAlEntrar>
+                ))}
               </div>
 
               <div className="text-center mt-12">

@@ -5,8 +5,13 @@ export interface Hotel {
   ciudad: string;
   direccion: string;
   telefonoWhatsapp: string;
+  emailContacto?: string;
   imagenesUrls: string[];
   estrellas: number;
+  latitud?: number;
+  longitud?: number;
+  horarioApertura?: string;
+  horarioCierre?: string;
   activo: boolean;
   fechaCreacion: Date;
 }
@@ -17,8 +22,13 @@ export interface DatosNuevoHotel {
   ciudad: string;
   direccion: string;
   telefonoWhatsapp: string;
+  emailContacto?: string;
   imagenesUrls?: string[];
   estrellas?: number;
+  latitud?: number;
+  longitud?: number;
+  horarioApertura?: string;
+  horarioCierre?: string;
 }
 
 export interface DatosActualizarHotel {
@@ -27,7 +37,12 @@ export interface DatosActualizarHotel {
   ciudad?: string;
   direccion?: string;
   telefonoWhatsapp?: string;
+  emailContacto?: string;
   imagenesUrls?: string[];
   estrellas?: number;
+  latitud?: number;
+  longitud?: number;
+  horarioApertura?: string;
+  horarioCierre?: string;
   activo?: boolean;
 }

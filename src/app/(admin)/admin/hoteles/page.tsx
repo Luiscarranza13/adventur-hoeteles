@@ -1,24 +1,33 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Input } from '@/components/Input';
+import { Input } from '@/components/ui/Input';
 import { FormDrawer } from '@/components/admin/FormDrawer';
 import { SubidorImagenes } from '@/components/admin/SubidorImagenes';
+import { BarraFiltros } from '@/components/admin/BarraFiltros';
 import type { Hotel } from '@/modules/hoteles';
 import Swal from 'sweetalert2';
 import {
   Plus, Pencil, Trash2, Hotel as HotelIcon,
   MapPin, Phone, Star, Save, Loader2, Building2,
-  ImageIcon, Search, LayoutGrid, List, Filter
+  ImageIcon, LayoutGrid, List, CheckCircle2, XCircle,
+  ArrowUpDown, ChevronUp, ChevronDown
 } from 'lucide-react';
 import Image from 'next/image';
 
 type FormData = {
   nombre: string; descripcion: string; ciudad: string;
-  direccion: string; telefono_whatsapp: string; estrellas: number;
-  imagenes_urls: string[]; activo: boolean;
+  direccion: string; telefono_whatsapp: string; email_contacto?: string;
+  estrellas: number; imagenes_urls: string[]; activo: boolean;
+  horario_apertura?: string; horario_cierre?: string;
 };
-const formVacio: FormData = { nombre: '', descripcion: '', ciudad: '', direccion: '', telefono_whatsapp: '', estrellas: 3, imagenes_urls: [], activo: true };
+
+type OrdenHotel = 'nombre_asc' | 'nombre_desc' | 'estrellas_asc' | 'estrellas_desc' | '';
+
+const formVacio: FormData = {
+  nombre: '', descripcion: '', ciudad: '', direccion: '',
+  telefono_whatsapp: '', estrellas: 3, imagenes_urls: [], activo: true,
+};
 
 export default function HotelesPage() {
   const [hoteles, setHoteles] = useState<Hotel[]>([]);
@@ -30,6 +39,9 @@ export default function HotelesPage() {
   const [busqueda, setBusqueda] = useState('');
   const [vistaLista, setVistaLista] = useState(false);
   const [filtroEstrellas, setFiltroEstrellas] = useState(0);
+  const [filtroActivo, setFiltroActivo] = useState<'todos' | 'activo' | 'inactivo'>('todos');
+  const [filtroCiudad, setFiltroCiudad] = useState('');
+  const [orden, setOrden] = useState<OrdenHotel>('');
 
   useEffect(() => { cargar(); }, []);
 
@@ -41,17 +53,35 @@ export default function HotelesPage() {
     finally { setLoading(false); }
   };
 
+  const ciudades = useMemo(() => [...new Set(hoteles.map(h => h.ciudad))].sort(), [hoteles]);
+
   const hotelesFiltrados = useMemo(() => {
-    return hoteles.filter(h => {
-      const coincideBusqueda = !busqueda || h.nombre.toLowerCase().includes(busqueda.toLowerCase()) || h.ciudad.toLowerCase().includes(busqueda.toLowerCase());
+    let lista = hoteles.filter(h => {
+      const q = busqueda.toLowerCase();
+      const coincideBusqueda = !busqueda ||
+        h.nombre.toLowerCase().includes(q) ||
+        h.ciudad.toLowerCase().includes(q) ||
+        h.direccion.toLowerCase().includes(q);
       const coincideEstrellas = !filtroEstrellas || h.estrellas === filtroEstrellas;
-      return coincideBusqueda && coincideEstrellas;
+      const coincideActivo = filtroActivo === 'todos' || (filtroActivo === 'activo' ? h.activo : !h.activo);
+      const coincideCiudad = !filtroCiudad || h.ciudad === filtroCiudad;
+      return coincideBusqueda && coincideEstrellas && coincideActivo && coincideCiudad;
     });
-  }, [hoteles, busqueda, filtroEstrellas]);
+
+    if (orden === 'nombre_asc') lista = [...lista].sort((a, b) => a.nombre.localeCompare(b.nombre));
+    if (orden === 'nombre_desc') lista = [...lista].sort((a, b) => b.nombre.localeCompare(a.nombre));
+    if (orden === 'estrellas_asc') lista = [...lista].sort((a, b) => a.estrellas - b.estrellas);
+    if (orden === 'estrellas_desc') lista = [...lista].sort((a, b) => b.estrellas - a.estrellas);
+
+    return lista;
+  }, [hoteles, busqueda, filtroEstrellas, filtroActivo, filtroCiudad, orden]);
+
+  const hayFiltros = !!(busqueda || filtroEstrellas || filtroActivo !== 'todos' || filtroCiudad || orden);
+  const limpiarFiltros = () => { setBusqueda(''); setFiltroEstrellas(0); setFiltroActivo('todos'); setFiltroCiudad(''); setOrden(''); };
 
   const abrirNuevo = () => { setForm(formVacio); setEditingId(null); setDrawerOpen(true); };
   const abrirEditar = (h: Hotel) => {
-    setForm({ nombre: h.nombre, descripcion: h.descripcion, ciudad: h.ciudad, direccion: h.direccion, telefono_whatsapp: h.telefonoWhatsapp, estrellas: h.estrellas, imagenes_urls: h.imagenesUrls ?? [], activo: h.activo });
+    setForm({ nombre: h.nombre, descripcion: h.descripcion, ciudad: h.ciudad, direccion: h.direccion, telefono_whatsapp: h.telefonoWhatsapp, email_contacto: h.emailContacto, estrellas: h.estrellas, imagenes_urls: h.imagenesUrls ?? [], activo: h.activo, horario_apertura: h.horarioApertura, horario_cierre: h.horarioCierre });
     setEditingId(h.id); setDrawerOpen(true);
   };
 
@@ -106,52 +136,52 @@ export default function HotelesPage() {
             <h1 className="text-2xl font-extrabold text-[#001f3f] flex items-center gap-2">
               <HotelIcon size={22} /> Gestionar Hoteles
             </h1>
-            <p className="text-gray-500 text-sm mt-0.5">
-              {hotelesFiltrados.length} de {hoteles.length} hoteles
-            </p>
+            <p className="text-gray-500 text-sm mt-0.5">{hotelesFiltrados.length} de {hoteles.length} hoteles</p>
           </div>
-          <button onClick={abrirNuevo}
-            className="flex items-center gap-2 bg-[#001f3f] text-white font-bold px-5 py-2.5 rounded-xl hover:bg-[#002d5a] active:scale-95 transition-all text-sm shadow-sm">
-            <Plus size={16} /> Nuevo Hotel
-          </button>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center bg-white border border-gray-200 rounded-xl p-1">
+              <button onClick={() => setVistaLista(false)} className={`p-1.5 rounded-lg transition-all ${!vistaLista ? 'bg-[#001f3f] text-white' : 'text-gray-400 hover:text-gray-600'}`}><LayoutGrid size={14} /></button>
+              <button onClick={() => setVistaLista(true)} className={`p-1.5 rounded-lg transition-all ${vistaLista ? 'bg-[#001f3f] text-white' : 'text-gray-400 hover:text-gray-600'}`}><List size={14} /></button>
+            </div>
+            <button onClick={abrirNuevo} className="flex items-center gap-2 bg-[#001f3f] text-white font-bold px-5 py-2.5 rounded-xl hover:bg-[#002d5a] active:scale-95 transition-all text-sm shadow-sm">
+              <Plus size={16} /> Nuevo Hotel
+            </button>
+          </div>
         </div>
 
-        {/* Barra de herramientas */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2 flex-1 min-w-48 focus-within:border-[#ffd600] transition-colors">
-            <Search size={14} className="text-gray-400 flex-shrink-0" />
-            <input
-              type="text"
-              placeholder="Buscar por nombre o ciudad..."
-              value={busqueda}
-              onChange={e => setBusqueda(e.target.value)}
-              className="bg-transparent text-sm text-gray-600 placeholder:text-gray-400 focus:outline-none w-full"
-            />
-          </div>
+        {/* Filtros */}
+        <BarraFiltros busqueda={busqueda} onBusqueda={setBusqueda} placeholder="Buscar por nombre, ciudad o dirección..." total={hoteles.length} filtrado={hotelesFiltrados.length} hayFiltrosActivos={hayFiltros} onLimpiar={limpiarFiltros}>
+          <select value={filtroCiudad} onChange={e => setFiltroCiudad(e.target.value)} className={`text-xs px-3 py-2 rounded-xl border transition-all focus:outline-none ${filtroCiudad ? 'border-[#ffd600] bg-yellow-50 text-[#001f3f] font-bold' : 'border-gray-200 bg-gray-50 text-gray-500'}`}>
+            <option value="">Todas las ciudades</option>
+            {ciudades.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
 
-          {/* Filtro estrellas */}
-          <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-xl px-3 py-2">
-            <Filter size={13} className="text-gray-400 mr-1" />
+          <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-xl px-2 py-1.5">
             {[0,1,2,3,4,5].map(n => (
               <button key={n} onClick={() => setFiltroEstrellas(n === filtroEstrellas ? 0 : n)}
-                className={`text-xs px-2 py-0.5 rounded-lg transition-all ${filtroEstrellas === n && n > 0 ? 'bg-[#ffd600] text-[#001f3f] font-bold' : 'text-gray-400 hover:text-gray-600'}`}>
-                {n === 0 ? 'Todos' : `${n}★`}
+                className={`text-xs px-2 py-0.5 rounded-lg transition-all font-medium ${filtroEstrellas === n && n > 0 ? 'bg-[#ffd600] text-[#001f3f]' : 'text-gray-400 hover:text-gray-600'}`}>
+                {n === 0 ? 'Todas ★' : `${n}★`}
               </button>
             ))}
           </div>
 
-          {/* Toggle vista */}
-          <div className="flex items-center bg-white border border-gray-200 rounded-xl p-1">
-            <button onClick={() => setVistaLista(false)}
-              className={`p-1.5 rounded-lg transition-all ${!vistaLista ? 'bg-[#001f3f] text-white' : 'text-gray-400 hover:text-gray-600'}`}>
-              <LayoutGrid size={14} />
-            </button>
-            <button onClick={() => setVistaLista(true)}
-              className={`p-1.5 rounded-lg transition-all ${vistaLista ? 'bg-[#001f3f] text-white' : 'text-gray-400 hover:text-gray-600'}`}>
-              <List size={14} />
-            </button>
+          <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-xl px-2 py-1.5">
+            {([{ val: 'todos', label: 'Todos' }, { val: 'activo', label: 'Activos' }, { val: 'inactivo', label: 'Inactivos' }] as const).map(({ val, label }) => (
+              <button key={val} onClick={() => setFiltroActivo(val)}
+                className={`text-xs px-2.5 py-0.5 rounded-lg transition-all font-medium ${filtroActivo === val ? 'bg-[#001f3f] text-white' : 'text-gray-400 hover:text-gray-600'}`}>
+                {label}
+              </button>
+            ))}
           </div>
-        </div>
+
+          <select value={orden} onChange={e => setOrden(e.target.value as OrdenHotel)} className={`text-xs px-3 py-2 rounded-xl border transition-all focus:outline-none ${orden ? 'border-[#ffd600] bg-yellow-50 text-[#001f3f] font-bold' : 'border-gray-200 bg-gray-50 text-gray-500'}`}>
+            <option value="">Ordenar por...</option>
+            <option value="nombre_asc">Nombre A→Z</option>
+            <option value="nombre_desc">Nombre Z→A</option>
+            <option value="estrellas_desc">★ Mayor primero</option>
+            <option value="estrellas_asc">★ Menor primero</option>
+          </select>
+        </BarraFiltros>
 
         {/* Vista Grid */}
         {!vistaLista && (
@@ -162,15 +192,11 @@ export default function HotelesPage() {
                   {h.imagenesUrls?.[0] ? (
                     <Image src={h.imagenesUrls[0]} alt={h.nombre} fill className="object-cover opacity-80 group-hover:scale-105 transition-transform duration-500" sizes="400px" />
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <ImageIcon size={32} className="text-white/20" />
-                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center"><ImageIcon size={32} className="text-white/20" /></div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                   <div className="absolute bottom-3 left-3">
-                    <div className="flex items-center gap-0.5 mb-1">
-                      {Array.from({ length: h.estrellas }).map((_, i) => <Star key={i} size={10} className="text-[#ffd600] fill-[#ffd600]" />)}
-                    </div>
+                    <div className="flex items-center gap-0.5 mb-1">{Array.from({ length: h.estrellas }).map((_, i) => <Star key={i} size={10} className="text-[#ffd600] fill-[#ffd600]" />)}</div>
                     <p className="text-white font-bold text-sm">{h.nombre}</p>
                     <p className="text-gray-300 text-xs flex items-center gap-1"><MapPin size={9} />{h.ciudad}</p>
                   </div>
@@ -178,32 +204,22 @@ export default function HotelesPage() {
                     <button onClick={() => abrirEditar(h)} className="p-1.5 bg-white/90 hover:bg-white text-blue-600 rounded-lg shadow-sm"><Pencil size={13} /></button>
                     <button onClick={() => eliminar(h.id, h.nombre)} className="p-1.5 bg-white/90 hover:bg-white text-red-500 rounded-lg shadow-sm"><Trash2 size={13} /></button>
                   </div>
-                  {h.imagenesUrls?.length > 1 && (
-                    <div className="absolute bottom-3 right-3 bg-black/50 text-white text-xs px-2 py-0.5 rounded-full">
-                      +{h.imagenesUrls.length - 1}
-                    </div>
-                  )}
+                  {h.imagenesUrls?.length > 1 && <div className="absolute bottom-3 right-3 bg-black/50 text-white text-xs px-2 py-0.5 rounded-full">+{h.imagenesUrls.length - 1}</div>}
                 </div>
                 <div className="p-4">
                   <p className="text-gray-500 text-xs line-clamp-2 mb-3 leading-relaxed">{h.descripcion}</p>
                   <div className="flex items-center justify-between pt-3 border-t border-gray-50">
-                    <p className="flex items-center gap-1 text-xs text-gray-500">
-                      <Phone size={10} className="text-green-500" />
-                      <span className="font-mono text-xs">{h.telefonoWhatsapp}</span>
-                    </p>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${h.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                      {h.activo ? 'Activo' : 'Inactivo'}
-                    </span>
+                    <p className="flex items-center gap-1 text-xs text-gray-500"><Phone size={10} className="text-green-500" /><span className="font-mono text-xs">{h.telefonoWhatsapp}</span></p>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${h.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{h.activo ? 'Activo' : 'Inactivo'}</span>
                   </div>
                 </div>
               </div>
             ))}
             {hotelesFiltrados.length === 0 && (
               <div className="col-span-full text-center py-20">
-                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <HotelIcon size={28} className="text-gray-300" />
-                </div>
-                <p className="text-gray-400 font-medium">{busqueda ? 'No se encontraron hoteles' : 'No hay hoteles registrados'}</p>
+                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4"><HotelIcon size={28} className="text-gray-300" /></div>
+                <p className="text-gray-400 font-medium">No se encontraron hoteles</p>
+                {hayFiltros && <button onClick={limpiarFiltros} className="mt-3 text-sm text-[#ffd600] hover:underline">Limpiar filtros</button>}
               </div>
             )}
           </div>
@@ -215,8 +231,25 @@ export default function HotelesPage() {
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100">
-                  {['Hotel', 'Ciudad', 'Categoría', 'WhatsApp', 'Estado', 'Acciones'].map(col => (
-                    <th key={col} className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">{col}</th>
+                  {[
+                    { col: 'Hotel', sort: 'nombre' },
+                    { col: 'Ciudad', sort: null },
+                    { col: 'Categoría', sort: 'estrellas' },
+                    { col: 'WhatsApp', sort: null },
+                    { col: 'Estado', sort: null },
+                    { col: 'Acciones', sort: null },
+                  ].map(({ col, sort }) => (
+                    <th key={col} className={`px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider ${sort ? 'cursor-pointer hover:text-[#001f3f] select-none' : ''}`}
+                      onClick={() => {
+                        if (sort === 'nombre') setOrden(o => o === 'nombre_asc' ? 'nombre_desc' : 'nombre_asc');
+                        if (sort === 'estrellas') setOrden(o => o === 'estrellas_desc' ? 'estrellas_asc' : 'estrellas_desc');
+                      }}>
+                      <span className="flex items-center gap-1">
+                        {col}
+                        {sort === 'nombre' && (orden === 'nombre_asc' ? <ChevronUp size={12} /> : orden === 'nombre_desc' ? <ChevronDown size={12} /> : <ArrowUpDown size={11} className="text-gray-300" />)}
+                        {sort === 'estrellas' && (orden === 'estrellas_asc' ? <ChevronUp size={12} /> : orden === 'estrellas_desc' ? <ChevronDown size={12} /> : <ArrowUpDown size={11} className="text-gray-300" />)}
+                      </span>
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -226,9 +259,7 @@ export default function HotelesPage() {
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#001f3f] flex-shrink-0 relative">
-                          {h.imagenesUrls?.[0]
-                            ? <Image src={h.imagenesUrls[0]} alt={h.nombre} fill className="object-cover" sizes="40px" />
-                            : <Building2 size={16} className="text-[#ffd600] absolute inset-0 m-auto" />}
+                          {h.imagenesUrls?.[0] ? <Image src={h.imagenesUrls[0]} alt={h.nombre} fill className="object-cover" sizes="40px" /> : <Building2 size={16} className="text-[#ffd600] absolute inset-0 m-auto" />}
                         </div>
                         <div>
                           <p className="text-sm font-bold text-[#001f3f]">{h.nombre}</p>
@@ -237,17 +268,9 @@ export default function HotelesPage() {
                       </div>
                     </td>
                     <td className="px-5 py-3 text-sm text-gray-600">{h.ciudad}</td>
-                    <td className="px-5 py-3">
-                      <div className="flex items-center gap-0.5">
-                        {Array.from({ length: h.estrellas }).map((_, i) => <Star key={i} size={11} className="text-[#ffd600] fill-[#ffd600]" />)}
-                      </div>
-                    </td>
+                    <td className="px-5 py-3"><div className="flex items-center gap-0.5">{Array.from({ length: h.estrellas }).map((_, i) => <Star key={i} size={11} className="text-[#ffd600] fill-[#ffd600]" />)}</div></td>
                     <td className="px-5 py-3 text-xs font-mono text-gray-500">{h.telefonoWhatsapp}</td>
-                    <td className="px-5 py-3">
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${h.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                        {h.activo ? 'Activo' : 'Inactivo'}
-                      </span>
-                    </td>
+                    <td className="px-5 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${h.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{h.activo ? 'Activo' : 'Inactivo'}</span></td>
                     <td className="px-5 py-3">
                       <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button onClick={() => abrirEditar(h)} className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg"><Pencil size={13} /></button>
@@ -258,18 +281,12 @@ export default function HotelesPage() {
                 ))}
               </tbody>
             </table>
-            {hotelesFiltrados.length === 0 && (
-              <div className="text-center py-12 text-gray-400 text-sm">No se encontraron hoteles</div>
-            )}
+            {hotelesFiltrados.length === 0 && <div className="text-center py-12 text-gray-400 text-sm">No se encontraron hoteles</div>}
           </div>
         )}
       </div>
 
-      {/* Drawer */}
-      <FormDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)}
-        title={editingId ? 'Editar Hotel' : 'Nuevo Hotel'}
-        subtitle={editingId ? 'Modifica los datos del hotel' : 'Completa la información del hotel'}
-        icon={<HotelIcon size={15} className="text-[#001f3f]" />}>
+      <FormDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} title={editingId ? 'Editar Hotel' : 'Nuevo Hotel'} subtitle={editingId ? 'Modifica los datos del hotel' : 'Completa la información del hotel'} icon={<HotelIcon size={15} className="text-[#001f3f]" />}>
         <form onSubmit={guardar} className="space-y-5">
           <SubidorImagenes bucket="imagenes" carpeta="hoteles" imagenesActuales={form.imagenes_urls} onChange={urls => setForm(f => ({ ...f, imagenes_urls: urls }))} maxImagenes={5} />
           <Input label="Nombre del hotel" value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} placeholder="Ej: Hotel Costa del Sol" icon={<HotelIcon size={15} />} required />
@@ -278,6 +295,11 @@ export default function HotelesPage() {
             <Input label="Dirección" value={form.direccion} onChange={e => setForm({ ...form, direccion: e.target.value })} placeholder="Av. Principal 123" required />
           </div>
           <Input label="Teléfono WhatsApp" value={form.telefono_whatsapp} onChange={e => setForm({ ...form, telefono_whatsapp: e.target.value })} placeholder="5215512345678" icon={<Phone size={15} />} hint="Incluye el código de país sin el +" required />
+          <Input label="Email de contacto" value={form.email_contacto || ''} onChange={e => setForm({ ...form, email_contacto: e.target.value })} placeholder="contacto@hotel.com" type="email" hint="Opcional" />
+          <div className="grid grid-cols-2 gap-4">
+            <Input label="Hora de apertura" value={form.horario_apertura || ''} onChange={e => setForm({ ...form, horario_apertura: e.target.value })} type="time" hint="Opcional" />
+            <Input label="Hora de cierre" value={form.horario_cierre || ''} onChange={e => setForm({ ...form, horario_cierre: e.target.value })} type="time" hint="Opcional" />
+          </div>
           <div>
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Descripción <span className="text-red-400">*</span></label>
             <textarea className="w-full px-4 py-3 border-0 border-b-2 border-gray-200 bg-gray-50 rounded-t-lg focus:outline-none focus:border-[#ffd600] focus:bg-white transition-all text-sm text-gray-800 placeholder:text-gray-300 resize-none" rows={3} value={form.descripcion} onChange={e => setForm({ ...form, descripcion: e.target.value })} placeholder="Describe el hotel..." required />
@@ -294,29 +316,16 @@ export default function HotelesPage() {
               ))}
             </div>
           </div>
-          {/* Toggle activo */}
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
-            <div>
-              <p className="text-sm font-semibold text-[#001f3f]">Hotel activo</p>
-              <p className="text-xs text-gray-400 mt-0.5">Los hoteles inactivos no aparecen en el catálogo público</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setForm(f => ({ ...f, activo: !f.activo }))}
-              className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${form.activo ? 'bg-green-500' : 'bg-gray-300'}`}
-            >
-              <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.activo ? 'translate-x-6' : 'translate-x-0.5'}`} />
-            </button>
+          <div className="grid grid-cols-2 gap-3">
+            <button type="button" onClick={() => setForm(f => ({ ...f, activo: true }))} className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold transition-all text-sm ${form.activo ? 'bg-green-500 text-white shadow-lg shadow-green-500/30' : 'bg-gray-100 text-gray-400 border border-gray-200 hover:bg-gray-50'}`}><CheckCircle2 size={16} /> Activo</button>
+            <button type="button" onClick={() => setForm(f => ({ ...f, activo: false }))} className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold transition-all text-sm ${!form.activo ? 'bg-red-500 text-white shadow-lg shadow-red-500/30' : 'bg-gray-100 text-gray-400 border border-gray-200 hover:bg-gray-50'}`}><XCircle size={16} /> Inactivo</button>
           </div>
-
           <div className="flex gap-3 pt-4 border-t border-gray-100">
             <button type="submit" disabled={guardando} className="flex-1 flex items-center justify-center gap-2 bg-[#ffd600] text-[#001f3f] font-bold py-3 rounded-xl hover:bg-yellow-300 active:scale-[0.98] transition-all disabled:opacity-60 text-sm">
               {guardando ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
               {editingId ? 'Guardar cambios' : 'Crear Hotel'}
             </button>
-            <button type="button" onClick={() => setDrawerOpen(false)} className="px-5 border border-gray-200 text-gray-500 font-medium rounded-xl hover:bg-gray-50 transition-all text-sm">
-              Cancelar
-            </button>
+            <button type="button" onClick={() => setDrawerOpen(false)} className="px-5 border border-gray-200 text-gray-500 font-medium rounded-xl hover:bg-gray-50 transition-all text-sm">Cancelar</button>
           </div>
         </form>
       </FormDrawer>

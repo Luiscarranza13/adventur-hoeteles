@@ -23,7 +23,14 @@ export async function PATCH(request: NextRequest) {
     const id = new URL(request.url).searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
     const body = await request.json();
-    const reserva = await servicio().cambiarEstado(id, { estado: body.estado });
+    const reserva = await servicio().cambiarEstado(id, {
+      estado: body.estado,
+      notasCliente: body.notas_cliente,
+      cantidadHuespedes: body.cantidad_huespedes,
+      precioTotal: body.precio_total,
+      fechaConfirmacion: body.fecha_confirmacion ? new Date(body.fecha_confirmacion) : undefined,
+      metodoPago: body.metodo_pago,
+    });
     return NextResponse.json(reserva);
   } catch (e) {
     console.error(e);

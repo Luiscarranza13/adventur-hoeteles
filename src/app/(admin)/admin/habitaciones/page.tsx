@@ -1,28 +1,35 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Input } from '@/components/Input';
+import { useState, useEffect, useMemo } from 'react';
+import { Input } from '@/components/ui/Input';
 import { FormDrawer } from '@/components/admin/FormDrawer';
 import { SubidorImagenes } from '@/components/admin/SubidorImagenes';
+import { BarraFiltros } from '@/components/admin/BarraFiltros';
 import type { Habitacion } from '@/modules/habitaciones';
 import type { Hotel } from '@/modules/hoteles';
 import Swal from 'sweetalert2';
 import {
   Plus, Pencil, Trash2, BedDouble, Users,
-  DollarSign, Save, Loader2, CheckCircle2, XCircle,
+  Save, Loader2, CheckCircle2, XCircle, AlertCircle,
   Hotel as HotelIcon, ImageIcon
 } from 'lucide-react';
 import Image from 'next/image';
 
 type FormHabitacion = {
   hotelId: string; nombre: string; descripcion: string;
-  capacidadPersonas: number; precioNoche: number;
-  imagenes_urls: string[]; estaDisponible: boolean;
+  numeroHabitacion?: string; tipoHabitacion: string;
+  capacidadPersonas: number; cantidadCamas: number;
+  precioNoche: number; moneda: 'USD' | 'PEN'; amenidades: string[];
+  imagenes_urls: string[];
+  estadoMantenimiento: string;
 };
 
 const formVacio: FormHabitacion = {
   hotelId: '', nombre: '', descripcion: '',
-  capacidadPersonas: 1, precioNoche: 1, imagenes_urls: [], estaDisponible: true,
+  numeroHabitacion: '', tipoHabitacion: 'estandar',
+  capacidadPersonas: 1, cantidadCamas: 1,
+  precioNoche: 1, moneda: 'USD', amenidades: [], imagenes_urls: [],
+  estadoMantenimiento: 'disponible',
 };
 
 export default function PaginaHabitaciones() {
@@ -33,6 +40,11 @@ export default function PaginaHabitaciones() {
   const [editandoId, setEditandoId] = useState<string | null>(null);
   const [form, setForm] = useState<FormHabitacion>(formVacio);
   const [guardando, setGuardando] = useState(false);
+  const [busqueda, setBusqueda] = useState('');
+  const [filtroHotel, setFiltroHotel] = useState('');
+  const [filtroTipo, setFiltroTipo] = useState('');
+  const [filtroEstado, setFiltroEstado] = useState('');
+  const [filtroMoneda, setFiltroMoneda] = useState('');
 
   useEffect(() => { cargar(); }, []);
 
@@ -47,28 +59,53 @@ export default function PaginaHabitaciones() {
     finally { setLoading(false); }
   };
 
+  const habitacionesFiltradas = useMemo(() => {
+    return habitaciones.filter(h => {
+      const q = busqueda.toLowerCase();
+      const nombreHotel = hoteles.find(ho => ho.id === h.hotelId)?.nombre ?? '';
+      const coincideBusqueda = !busqueda ||
+        h.nombre.toLowerCase().includes(q) ||
+        nombreHotel.toLowerCase().includes(q) ||
+        (h.descripcion ?? '').toLowerCase().includes(q);
+      const coincideHotel = !filtroHotel || h.hotelId === filtroHotel;
+      const coincideTipo = !filtroTipo || h.tipoHabitacion === filtroTipo;
+      const coincideEstado = !filtroEstado || h.estadoMantenimiento === filtroEstado;
+      const coincideMoneda = !filtroMoneda || (h.moneda ?? 'USD') === filtroMoneda;
+      return coincideBusqueda && coincideHotel && coincideTipo && coincideEstado && coincideMoneda;
+    });
+  }, [habitaciones, hoteles, busqueda, filtroHotel, filtroTipo, filtroEstado, filtroMoneda]);
+
+  const hayFiltros = !!(busqueda || filtroHotel || filtroTipo || filtroEstado || filtroMoneda);
+  const limpiarFiltros = () => { setBusqueda(''); setFiltroHotel(''); setFiltroTipo(''); setFiltroEstado(''); setFiltroMoneda(''); };
+
   const abrirNuevo = () => {
     setForm({ ...formVacio, hotelId: hoteles[0]?.id || '' });
     setEditandoId(null); setDrawerOpen(true);
   };
-  const abrirEditar = (h: Habitacion) => {
-    setForm({
-      hotelId: h.hotelId, nombre: h.nombre, descripcion: h.descripcion ?? '',
-      capacidadPersonas: h.capacidadPersonas, precioNoche: h.precioNoche,
-      imagenes_urls: h.imagenesUrls ?? [], estaDisponible: h.estaDisponible,
-    });
-    setEditandoId(h.id); setDrawerOpen(true);
-  };
+   const abrirEditar = (h: Habitacion) => {
+     setForm({
+       hotelId: h.hotelId, nombre: h.nombre, descripcion: h.descripcion ?? '',
+       numeroHabitacion: h.numeroHabitacion,
+       tipoHabitacion: h.tipoHabitacion,
+       capacidadPersonas: h.capacidadPersonas, cantidadCamas: h.cantidadCamas,
+       precioNoche: h.precioNoche,
+       moneda: h.moneda ?? 'USD',
+       amenidades: h.amenidades,
+       imagenes_urls: h.imagenesUrls ?? [],
+       estadoMantenimiento: h.estadoMantenimiento,
+     });
+     setEditandoId(h.id); setDrawerOpen(true);
+   };
 
-  const guardar = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setGuardando(true);
-    try {
-      const method = editandoId ? 'PUT' : 'POST';
-      const body = editandoId
-        ? { id: editandoId, hotel_id: form.hotelId, nombre: form.nombre, descripcion: form.descripcion, capacidad_personas: form.capacidadPersonas, precio_noche: form.precioNoche, imagenes_urls: form.imagenes_urls, esta_disponible: form.estaDisponible }
-        : { hotel_id: form.hotelId, nombre: form.nombre, descripcion: form.descripcion, capacidad_personas: form.capacidadPersonas, precio_noche: form.precioNoche, imagenes_urls: form.imagenes_urls, esta_disponible: form.estaDisponible };
-      const res = await fetch('/api/admin/habitaciones', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+   const guardar = async (e: React.FormEvent) => {
+     e.preventDefault();
+     setGuardando(true);
+     try {
+       const method = editandoId ? 'PUT' : 'POST';
+       const body = editandoId
+         ? { id: editandoId, hotel_id: form.hotelId, nombre: form.nombre, descripcion: form.descripcion, numero_habitacion: form.numeroHabitacion, tipo_habitacion: form.tipoHabitacion, capacidad_personas: form.capacidadPersonas, cantidad_camas: form.cantidadCamas, precio_noche: form.precioNoche, moneda: form.moneda, amenidades: form.amenidades, imagenes_urls: form.imagenes_urls, estado_mantenimiento: form.estadoMantenimiento }
+         : { hotel_id: form.hotelId, nombre: form.nombre, descripcion: form.descripcion, numero_habitacion: form.numeroHabitacion, tipo_habitacion: form.tipoHabitacion, capacidad_personas: form.capacidadPersonas, cantidad_camas: form.cantidadCamas, precio_noche: form.precioNoche, moneda: form.moneda, amenidades: form.amenidades, imagenes_urls: form.imagenes_urls, estado_mantenimiento: form.estadoMantenimiento };
+       const res = await fetch('/api/admin/habitaciones', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       if (!res.ok) throw new Error();
       setDrawerOpen(false);
       await Swal.fire({ icon: 'success', title: editandoId ? '¡Habitación actualizada!' : '¡Habitación creada!', timer: 1500, showConfirmButton: false, timerProgressBar: true });
@@ -115,7 +152,7 @@ export default function PaginaHabitaciones() {
             <h1 className="text-2xl font-extrabold text-[#001f3f] flex items-center gap-2">
               <BedDouble size={22} /> Gestionar Habitaciones
             </h1>
-            <p className="text-gray-500 text-sm mt-0.5">{habitaciones.length} habitaciones registradas</p>
+            <p className="text-gray-500 text-sm mt-0.5">{habitacionesFiltradas.length} de {habitaciones.length} habitaciones</p>
           </div>
           <button onClick={abrirNuevo}
             className="flex items-center gap-2 bg-[#001f3f] text-white font-bold px-5 py-2.5 rounded-xl hover:bg-[#002d5a] active:scale-95 transition-all text-sm shadow-sm">
@@ -123,8 +160,44 @@ export default function PaginaHabitaciones() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {habitaciones.map(h => (
+        {/* Filtros */}
+        <BarraFiltros busqueda={busqueda} onBusqueda={setBusqueda} placeholder="Buscar por nombre, hotel o descripción..." total={habitaciones.length} filtrado={habitacionesFiltradas.length} hayFiltrosActivos={hayFiltros} onLimpiar={limpiarFiltros}>
+          {/* Hotel */}
+          <select value={filtroHotel} onChange={e => setFiltroHotel(e.target.value)} className={`text-xs px-3 py-2 rounded-xl border transition-all focus:outline-none ${filtroHotel ? 'border-[#ffd600] bg-yellow-50 text-[#001f3f] font-bold' : 'border-gray-200 bg-gray-50 text-gray-500'}`}>
+            <option value="">Todos los hoteles</option>
+            {hoteles.map(h => <option key={h.id} value={h.id}>{h.nombre}</option>)}
+          </select>
+
+          {/* Tipo */}
+          <select value={filtroTipo} onChange={e => setFiltroTipo(e.target.value)} className={`text-xs px-3 py-2 rounded-xl border transition-all focus:outline-none ${filtroTipo ? 'border-[#ffd600] bg-yellow-50 text-[#001f3f] font-bold' : 'border-gray-200 bg-gray-50 text-gray-500'}`}>
+            <option value="">Todos los tipos</option>
+            <option value="estandar">Estándar</option>
+            <option value="doble">Doble</option>
+            <option value="suite">Suite</option>
+            <option value="presidencial">Presidencial</option>
+          </select>
+
+          {/* Estado */}
+          <select value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)} className={`text-xs px-3 py-2 rounded-xl border transition-all focus:outline-none ${filtroEstado ? 'border-[#ffd600] bg-yellow-50 text-[#001f3f] font-bold' : 'border-gray-200 bg-gray-50 text-gray-500'}`}>
+            <option value="">Todos los estados</option>
+            <option value="disponible">Disponible</option>
+            <option value="mantenimiento">Mantenimiento</option>
+            <option value="bloqueado">Bloqueado</option>
+          </select>
+
+          {/* Moneda */}
+          <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-xl px-2 py-1.5">
+            {[{ val: '', label: 'Todas' }, { val: 'USD', label: '$ USD' }, { val: 'PEN', label: 'S/ PEN' }].map(({ val, label }) => (
+              <button key={val} onClick={() => setFiltroMoneda(val)}
+                className={`text-xs px-2.5 py-0.5 rounded-lg transition-all font-medium ${filtroMoneda === val ? 'bg-[#001f3f] text-white' : 'text-gray-400 hover:text-gray-600'}`}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </BarraFiltros>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-5">
+          {habitacionesFiltradas.map(h => (
             <div key={h.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all overflow-hidden group">
               {/* Imagen */}
               <div className="relative h-36 bg-gradient-to-br from-blue-900 to-blue-700 overflow-hidden">
@@ -159,16 +232,22 @@ export default function PaginaHabitaciones() {
                     <p className="text-xs text-gray-400 mt-0.5 truncate">{nombreHotel(h.hotelId)}</p>
                   </div>
                   <span className="flex items-center gap-1 text-xs">
-                    {h.estaDisponible
+                    {h.estadoMantenimiento === 'disponible'
                       ? <><CheckCircle2 size={12} className="text-green-500" /><span className="text-green-600">Disponible</span></>
-                      : <><XCircle size={12} className="text-red-400" /><span className="text-red-500">No disponible</span></>}
+                      : h.estadoMantenimiento === 'mantenimiento'
+                      ? <><AlertCircle size={12} className="text-yellow-500" /><span className="text-yellow-600">Mantenimiento</span></>
+                      : <><XCircle size={12} className="text-red-400" /><span className="text-red-500">Bloqueado</span></>}
                   </span>
                 </div>
                 {h.descripcion && <p className="text-gray-500 text-xs line-clamp-2 mb-3 leading-relaxed">{h.descripcion}</p>}
                 <div className="flex items-center gap-3 pt-3 border-t border-gray-50">
                   <span className="flex items-center gap-1 text-sm font-bold text-[#001f3f]">
-                    <DollarSign size={13} className="text-[#ffd600]" />{h.precioNoche}
+                    <span className="text-[#ffd600] text-xs font-bold">{h.moneda === 'PEN' ? 'S/' : '$'}</span>
+                    {h.precioNoche}
                     <span className="text-xs font-normal text-gray-400">/noche</span>
+                  </span>
+                  <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 font-medium">
+                    {h.moneda ?? 'USD'}
                   </span>
                   <span className="flex items-center gap-1 text-xs text-gray-500">
                     <Users size={12} />{h.capacidadPersonas} personas
@@ -177,12 +256,13 @@ export default function PaginaHabitaciones() {
               </div>
             </div>
           ))}
-          {habitaciones.length === 0 && (
+          {habitacionesFiltradas.length === 0 && (
             <div className="col-span-full text-center py-20">
               <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <BedDouble size={28} className="text-gray-300" />
               </div>
-              <p className="text-gray-400 font-medium">No hay habitaciones registradas</p>
+              <p className="text-gray-400 font-medium">No se encontraron habitaciones</p>
+              {hayFiltros && <button onClick={limpiarFiltros} className="mt-3 text-sm text-[#ffd600] hover:underline">Limpiar filtros</button>}
             </div>
           )}
         </div>
@@ -232,6 +312,31 @@ export default function PaginaHabitaciones() {
 
           <div className="grid grid-cols-2 gap-4">
             <Input
+              label="Número de habitación"
+              value={form.numeroHabitacion || ''}
+              onChange={e => setForm({ ...form, numeroHabitacion: e.target.value })}
+              placeholder="Ej: 101"
+              hint="Opcional"
+            />
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                Tipo de habitación
+              </label>
+              <select
+                className="w-full px-4 py-3 border-0 border-b-2 border-gray-200 bg-gray-50 rounded-t-lg focus:outline-none focus:border-[#ffd600] focus:bg-white transition-all text-sm text-gray-800 appearance-none"
+                value={form.tipoHabitacion}
+                onChange={e => setForm({ ...form, tipoHabitacion: e.target.value })}
+              >
+                <option value="estandar">Estándar</option>
+                <option value="doble">Doble</option>
+                <option value="suite">Suite</option>
+                <option value="presidencial">Presidencial</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Input
               label="Capacidad (personas)"
               type="number" min={1} max={20}
               value={form.capacidadPersonas}
@@ -240,13 +345,78 @@ export default function PaginaHabitaciones() {
               hint="Mínimo 1 persona"
             />
             <Input
-              label="Precio por noche ($)"
-              type="number" min={1} step={0.01}
-              value={form.precioNoche}
-              onChange={e => setForm({ ...form, precioNoche: Math.max(0.01, parseFloat(e.target.value) || 1) })}
-              icon={<DollarSign size={15} />}
-              hint="Debe ser mayor a 0"
+              label="Cantidad de camas"
+              type="number" min={1} max={10}
+              value={form.cantidadCamas}
+              onChange={e => setForm({ ...form, cantidadCamas: Math.max(1, parseInt(e.target.value) || 1) })}
+              hint="Mínimo 1 cama"
             />
+          </div>
+
+          {/* Precio + Moneda */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+              Precio por noche
+            </label>
+            <div className="flex gap-2">
+              {/* Selector de moneda */}
+              <div className="flex rounded-t-lg border-0 border-b-2 border-gray-200 bg-gray-50 overflow-hidden focus-within:border-[#ffd600]">
+                {(['USD', 'PEN'] as const).map(m => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, moneda: m }))}
+                    className={`px-3 py-3 text-xs font-bold transition-all ${
+                      form.moneda === m
+                        ? 'bg-[#001f3f] text-[#ffd600]'
+                        : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    {m === 'USD' ? '$ USD' : 'S/ PEN'}
+                  </button>
+                ))}
+              </div>
+              {/* Input precio */}
+              <div className="flex-1 relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-bold pointer-events-none">
+                  {form.moneda === 'USD' ? '$' : 'S/'}
+                </span>
+                <input
+                  type="number"
+                  min={1}
+                  step={0.01}
+                  value={form.precioNoche}
+                  onChange={e => setForm({ ...form, precioNoche: Math.max(0.01, parseFloat(e.target.value) || 1) })}
+                  className="w-full pl-7 pr-4 py-3 border-0 border-b-2 border-gray-200 bg-gray-50 rounded-t-lg focus:outline-none focus:border-[#ffd600] focus:bg-white transition-all text-sm text-gray-800"
+                />
+              </div>
+            </div>
+            <p className="text-xs text-gray-400 mt-1">Debe ser mayor a 0</p>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+              Amenidades
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {['WiFi', 'TV', 'Aire Acondicionado', 'Minibar', 'Jacuzzi', 'Balcón'].map(amenidad => (
+                <label key={amenidad} className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={form.amenidades.includes(amenidad)}
+                    onChange={e => {
+                      if (e.target.checked) {
+                        setForm(f => ({ ...f, amenidades: [...f.amenidades, amenidad] }));
+                      } else {
+                        setForm(f => ({ ...f, amenidades: f.amenidades.filter(a => a !== amenidad) }));
+                      }
+                    }}
+                    className="w-4 h-4 rounded border-gray-300 text-[#ffd600] focus:ring-[#ffd600]"
+                  />
+                  <span className="text-sm text-gray-600">{amenidad}</span>
+                </label>
+              ))}
+            </div>
           </div>
 
           <div>
@@ -262,19 +432,19 @@ export default function PaginaHabitaciones() {
             />
           </div>
 
-          {/* Toggle disponibilidad */}
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
-            <div>
-              <p className="text-sm font-semibold text-[#001f3f]">Habitación disponible</p>
-              <p className="text-xs text-gray-400 mt-0.5">Las habitaciones no disponibles no aparecen en el catálogo</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setForm(f => ({ ...f, estaDisponible: !f.estaDisponible }))}
-              className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${form.estaDisponible ? 'bg-green-500' : 'bg-gray-300'}`}
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+              Estado <span className="text-red-400">*</span>
+            </label>
+            <select
+              className="w-full px-4 py-3 border-0 border-b-2 border-gray-200 bg-gray-50 rounded-t-lg focus:outline-none focus:border-[#ffd600] focus:bg-white transition-all text-sm text-gray-800 appearance-none"
+              value={form.estadoMantenimiento}
+              onChange={e => setForm({ ...form, estadoMantenimiento: e.target.value })}
             >
-              <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.estaDisponible ? 'translate-x-6' : 'translate-x-0.5'}`} />
-            </button>
+              <option value="disponible">Disponible</option>
+              <option value="mantenimiento">Mantenimiento</option>
+              <option value="bloqueado">Bloqueado</option>
+            </select>
           </div>
 
           <div className="flex gap-3 pt-4 border-t border-gray-100">

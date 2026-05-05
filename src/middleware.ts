@@ -4,38 +4,28 @@ import { createServerClient } from '@supabase/ssr';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Rutas públicas — nunca proteger
   const esPublica =
     pathname === '/login' ||
     pathname === '/api/admin/login' ||
     pathname === '/api/admin/logout';
 
-  if (esPublica) {
-    return NextResponse.next();
-  }
+  if (esPublica) return NextResponse.next();
 
-  // Solo proteger rutas admin de página y API
   const esRutaProtegida =
     pathname.startsWith('/admin') ||
     pathname.startsWith('/api/admin');
 
-  if (!esRutaProtegida) {
-    return NextResponse.next();
-  }
+  if (!esRutaProtegida) return NextResponse.next();
 
-  const response = NextResponse.next({
-    request: { headers: request.headers },
-  });
+  const response = NextResponse.next({ request: { headers: request.headers } });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
+        getAll: () => request.cookies.getAll(),
+        setAll: (cookiesToSet) => {
           cookiesToSet.forEach(({ name, value, options }) => {
             request.cookies.set(name, value);
             response.cookies.set(name, value, options);
@@ -58,8 +48,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/admin/:path*',
-    '/api/admin/:path*',
-  ],
+  matcher: ['/admin/:path*', '/api/admin/:path*'],
 };

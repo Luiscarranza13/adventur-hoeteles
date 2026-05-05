@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Input } from '@/components/Input';
+import { Input } from '@/components/ui/Input';
 import { FormDrawer } from '@/components/admin/FormDrawer';
 import { createClient } from '@/lib/supabase/client';
 import type { Usuario } from '@/modules/usuarios';

@@ -3,9 +3,10 @@ import { ServicioHabitaciones, AdaptadorSupabaseHabitacion } from '@/modules/hab
 import Link from 'next/link';
 import {
   Hotel, BedDouble, Users, ArrowRight,
-  Plus, TrendingUp, MapPin, Star
+  Plus, TrendingUp, MapPin, Star, MessageCircle
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
+import { GraficasDashboard } from '@/components/admin/GraficasDashboard';
 
 async function getDatos() {
   try {
@@ -32,10 +33,13 @@ async function getNombreUsuario() {
 }
 
 export default async function DashboardPage() {
-  const [{ hoteles, habitaciones }, nombre] = await Promise.all([getDatos(), getNombreUsuario()]);
+  const [{ hoteles, habitaciones }, nombre] = await Promise.all([
+    getDatos(), getNombreUsuario()
+  ]);
 
   const hotelActivos = hoteles.filter(h => h.activo).length;
   const habDisponibles = habitaciones.filter(h => h.estaDisponible).length;
+  const ciudades = new Set(hoteles.map(h => h.ciudad)).size;
 
   const hora = new Date().getHours();
   const saludo = hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches';
@@ -44,124 +48,120 @@ export default async function DashboardPage() {
     <div className="space-y-6">
 
       {/* Bienvenida */}
-      <div className="bg-[#001f3f] rounded-2xl p-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[#ffd600]/5 rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-        <div className="relative z-10 flex items-center justify-between flex-wrap gap-4">
+      <div className="bg-[var(--brand-navy)] rounded-3xl p-8 relative overflow-hidden shadow-2xl animate-fade-in">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--brand-yellow)]/5 rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none blur-3xl" />
+        <div className="relative z-10 flex items-center justify-between flex-wrap gap-6">
           <div>
-            <p className="text-gray-400 text-sm">{saludo},</p>
-            <h1 className="text-2xl font-extrabold text-white mt-0.5">{nombre} 👋</h1>
-            <p className="text-gray-400 text-sm mt-1">
-              Tienes <span className="text-[#ffd600] font-bold">{hotelActivos} hoteles activos</span> y{' '}
-              <span className="text-[#ffd600] font-bold">{habDisponibles} habitaciones disponibles</span>
+            <p className="text-gray-400 text-sm font-bold uppercase tracking-widest mb-1">{saludo},</p>
+            <h1 className="text-3xl sm:text-4xl font-black text-white mt-0.5">{nombre} 👋</h1>
+            <p className="text-gray-400 text-base mt-2">
+              Actualmente gestionas <span className="text-[var(--brand-yellow)] font-black">{hotelActivos} hoteles</span> y{' '}
+              <span className="text-[var(--brand-yellow)] font-black">{habDisponibles} habitaciones disponibles</span>.
             </p>
           </div>
           <Link
             href="/admin/hoteles"
-            className="flex items-center gap-2 bg-[#ffd600] text-[#001f3f] font-bold px-5 py-2.5 rounded-xl hover:bg-yellow-300 active:scale-95 transition-all text-sm shadow-lg shadow-[#ffd600]/20"
+            className="btn-primary !shadow-yellow-500/10"
           >
-            <Plus size={15} /> Nuevo Hotel
+            <Plus size={18} /> Nuevo Hotel
           </Link>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Total Hoteles',      valor: hoteles.length,       sub: `${hotelActivos} activos`,       Icon: Hotel,    color: 'bg-[#001f3f]', href: '/admin/hoteles' },
-          { label: 'Habitaciones',       valor: habitaciones.length,  sub: `${habDisponibles} disponibles`, Icon: BedDouble, color: 'bg-blue-600',  href: '/admin/habitaciones' },
-          { label: 'Ciudades',           valor: new Set(hoteles.map(h => h.ciudad)).size, sub: 'destinos cubiertos', Icon: MapPin, color: 'bg-purple-600', href: '/admin/hoteles' },
-          { label: 'Promedio Estrellas', valor: hoteles.length ? (hoteles.reduce((a, h) => a + h.estrellas, 0) / hoteles.length).toFixed(1) : '—', sub: 'calidad promedio', Icon: Star, color: 'bg-amber-500', href: '/admin/hoteles' },
-        ].map(({ label, valor, sub, Icon, color, href }) => (
-          <Link key={label} href={href}>
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all group">
-              <div className="flex items-start justify-between mb-3">
-                <div className={`${color} w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                  <Icon size={18} className="text-white" />
+          { label: 'Total Hoteles',   valor: hoteles.length,      sub: `${hotelActivos} activos`,       Icon: Hotel,     color: 'bg-[var(--brand-navy)]', href: '/admin/hoteles' },
+          { label: 'Habitaciones',    valor: habitaciones.length, sub: `${habDisponibles} disponibles`, Icon: BedDouble, color: 'bg-blue-600',  href: '/admin/habitaciones' },
+          { label: 'Ciudades',        valor: ciudades,            sub: 'destinos cubiertos',            Icon: MapPin,    color: 'bg-purple-600',href: '/admin/hoteles' },
+          { label: 'Promedio ★',      valor: hoteles.length ? (hoteles.reduce((a, h) => a + h.estrellas, 0) / hoteles.length).toFixed(1) : '—', sub: 'calidad promedio', Icon: Star, color: 'bg-amber-500', href: '/admin/hoteles' },
+        ].map(({ label, valor, sub, Icon, color, href }, i) => (
+          <Link key={label} href={href} className="animate-fade-up" style={{ animationDelay: `${0.1 * i}s` }}>
+            <div className="card-premium p-6 group">
+              <div className="flex items-start justify-between mb-4">
+                <div className={`${color} w-12 h-12 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-black/5`}>
+                  <Icon size={20} className="text-white" />
                 </div>
-                <TrendingUp size={13} className="text-green-400 mt-1" />
+                <div className="bg-green-50 text-green-600 px-2 py-1 rounded-lg flex items-center gap-1">
+                  <TrendingUp size={12} />
+                  <span className="text-[10px] font-black">+12%</span>
+                </div>
               </div>
-              <p className="text-2xl font-extrabold text-[#001f3f]">{valor}</p>
-              <p className="text-xs font-semibold text-gray-600 mt-0.5">{label}</p>
-              <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
+              <p className="text-3xl font-black text-[var(--brand-navy)]">{valor}</p>
+              <p className="text-xs font-black text-gray-400 uppercase tracking-widest mt-1">{label}</p>
+              <p className="text-xs text-gray-400 font-medium mt-1">{sub}</p>
             </div>
           </Link>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Gráficas con recharts */}
+      <GraficasDashboard hoteles={hoteles} habitaciones={habitaciones} />
 
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Hoteles recientes */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
-            <h3 className="font-bold text-[#001f3f] text-sm flex items-center gap-2">
-              <Hotel size={15} className="text-[#ffd600]" /> Hoteles Recientes
+        <div className="lg:col-span-2 card-premium !p-0">
+          <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
+            <h3 className="font-black text-[var(--brand-navy)] text-base flex items-center gap-3">
+              <Hotel size={18} className="text-[var(--brand-yellow)]" /> Hoteles Recientes
             </h3>
-            <Link href="/admin/hoteles" className="text-xs text-gray-400 hover:text-[#ffd600] transition-colors flex items-center gap-1">
-              Ver todos <ArrowRight size={11} />
+            <Link href="/admin/hoteles" className="text-xs font-black text-gray-400 hover:text-[var(--brand-yellow)] transition-colors flex items-center gap-2 uppercase tracking-widest">
+              Ver todos <ArrowRight size={14} />
             </Link>
           </div>
           <div className="divide-y divide-gray-50">
             {hoteles.slice(0, 5).map(h => (
-              <div key={h.id} className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50/50 transition-colors">
-                <div className="w-9 h-9 bg-[#001f3f] rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Hotel size={14} className="text-[#ffd600]" />
+              <div key={h.id} className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50/50 transition-colors">
+                <div className="w-10 h-10 bg-[var(--brand-navy)] rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                  <Hotel size={16} className="text-[var(--brand-yellow)]" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[#001f3f] truncate">{h.nombre}</p>
-                  <p className="text-xs text-gray-400 flex items-center gap-1">
-                    <MapPin size={10} /> {h.ciudad}
+                  <p className="text-sm font-black text-[var(--brand-navy)] truncate uppercase tracking-tight">{h.nombre}</p>
+                  <p className="text-xs text-gray-400 font-bold flex items-center gap-1 mt-0.5">
+                    <MapPin size={12} className="text-[var(--brand-yellow)]" /> {h.ciudad}
                   </p>
                 </div>
-                <div className="flex items-center gap-0.5 flex-shrink-0">
+                <div className="flex items-center gap-1 flex-shrink-0">
                   {Array.from({ length: h.estrellas }).map((_, i) => (
-                    <Star key={i} size={9} className="text-[#ffd600] fill-[#ffd600]" />
+                    <Star key={i} size={10} className="text-[var(--brand-yellow)] fill-[var(--brand-yellow)]" />
                   ))}
                 </div>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${h.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                <span className={`text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-widest flex-shrink-0 ${h.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                   {h.activo ? 'Activo' : 'Inactivo'}
                 </span>
               </div>
             ))}
             {hoteles.length === 0 && (
-              <div className="px-5 py-8 text-center text-gray-400 text-sm">
-                No hay hoteles registrados aún
-              </div>
+              <div className="px-6 py-12 text-center text-gray-400 text-sm font-medium">No hay hoteles registrados aún</div>
             )}
           </div>
         </div>
 
         {/* Accesos rápidos */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-5">
-          <h3 className="font-bold text-[#001f3f] text-sm mb-4 flex items-center gap-2">
-            <ArrowRight size={15} className="text-[#ffd600]" /> Accesos Rápidos
+        <div className="card-premium p-6">
+          <h3 className="font-black text-[var(--brand-navy)] text-base mb-6 flex items-center gap-3">
+            <ArrowRight size={18} className="text-[var(--brand-yellow)]" /> Accesos Rápidos
           </h3>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {[
-              { label: 'Gestionar Hoteles',      desc: 'Configura y edita hoteles',    Icon: Hotel,    href: '/admin/hoteles',      color: 'bg-[#001f3f]' },
-              { label: 'Gestionar Habitaciones', desc: 'Administra el catálogo',       Icon: BedDouble, href: '/admin/habitaciones', color: 'bg-blue-600' },
-              { label: 'Gestionar Usuarios',     desc: 'Administradores del sistema',  Icon: Users,    href: '/admin/usuarios',     color: 'bg-purple-600' },
+              { label: 'Gestionar Hoteles',      desc: 'Configura y edita hoteles',    Icon: Hotel,         href: '/admin/hoteles',      color: 'bg-[var(--brand-navy)]' },
+              { label: 'Gestionar Habitaciones', desc: 'Administra el catálogo',       Icon: BedDouble,     href: '/admin/habitaciones', color: 'bg-blue-600' },
+              { label: 'Ver Reservas',           desc: 'Leads de WhatsApp',            Icon: MessageCircle, href: '/admin/reservas',     color: 'bg-green-600' },
+              { label: 'Gestionar Usuarios',     desc: 'Administradores del sistema',  Icon: Users,         href: '/admin/usuarios',     color: 'bg-purple-600' },
             ].map(({ label, desc, Icon, href, color }) => (
               <Link key={label} href={href}>
-                <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors group">
-                  <div className={`${color} w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform`}>
-                    <Icon size={15} className="text-white" />
+                <div className="flex items-center gap-4 p-4 rounded-2xl hover:bg-gray-50 transition-all group border border-transparent hover:border-gray-100">
+                  <div className={`${color} w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-sm`}>
+                    <Icon size={16} className="text-white" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-[#001f3f] group-hover:text-[#ffd600] transition-colors">{label}</p>
-                    <p className="text-xs text-gray-400">{desc}</p>
+                    <p className="text-sm font-black text-[var(--brand-navy)] group-hover:text-[var(--brand-yellow)] transition-colors uppercase tracking-tight">{label}</p>
+                    <p className="text-xs text-gray-400 font-medium">{desc}</p>
                   </div>
-                  <ArrowRight size={13} className="text-gray-300 group-hover:text-[#ffd600] transition-colors ml-auto flex-shrink-0" />
+                  <ArrowRight size={14} className="text-gray-300 group-hover:text-[var(--brand-yellow)] transition-all ml-auto flex-shrink-0 group-hover:translate-x-1" />
                 </div>
               </Link>
             ))}
-          </div>
-
-          {/* Tip */}
-          <div className="mt-4 bg-[#ffd600]/10 border border-[#ffd600]/20 rounded-xl p-3">
-            <p className="text-xs font-semibold text-[#001f3f] mb-0.5">💡 Tip</p>
-            <p className="text-xs text-gray-600 leading-relaxed">
-              Agrega imágenes a tus hoteles para mejorar la conversión de reservas por WhatsApp.
-            </p>
           </div>
         </div>
       </div>

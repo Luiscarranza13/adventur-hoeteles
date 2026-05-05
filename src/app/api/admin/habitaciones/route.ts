@@ -19,9 +19,16 @@ export async function POST(request: NextRequest) {
       hotelId: body.hotel_id,
       nombre: body.nombre,
       descripcion: body.descripcion,
+      numeroHabitacion: body.numero_habitacion,
+      tipoHabitacion: body.tipo_habitacion,
       capacidadPersonas: body.capacidad_personas,
+      cantidadCamas: body.cantidad_camas,
       precioNoche: body.precio_noche,
+      moneda: body.moneda || 'USD',
+      amenidades: body.amenidades || [],
       imagenesUrls: body.imagenes_urls || [],
+      estaDisponible: body.esta_disponible,
+      estadoMantenimiento: body.estado_mantenimiento,
     });
     return NextResponse.json(habitacion, { status: 201 });
   } catch (e) {
@@ -37,10 +44,16 @@ export async function PUT(request: NextRequest) {
     const habitacion = await servicio().actualizar(body.id, {
       nombre: body.nombre,
       descripcion: body.descripcion,
+      numeroHabitacion: body.numero_habitacion,
+      tipoHabitacion: body.tipo_habitacion,
       capacidadPersonas: body.capacidad_personas,
+      cantidadCamas: body.cantidad_camas,
       precioNoche: body.precio_noche,
+      moneda: body.moneda,
+      amenidades: body.amenidades,
       imagenesUrls: body.imagenes_urls,
       estaDisponible: body.esta_disponible,
+      estadoMantenimiento: body.estado_mantenimiento,
     });
     return NextResponse.json(habitacion);
   } catch (e) {

@@ -1,10 +1,6 @@
 import { Hotel, DatosNuevoHotel, DatosActualizarHotel } from '../dominio/entidades/Hotel';
 import { RepositorioHotel } from '../dominio/puertos/RepositorioHotel';
 
-/**
- * Servicio de aplicación para el módulo de hoteles.
- * Centraliza todos los casos de uso en un único objeto.
- */
 export class ServicioHoteles {
   constructor(private readonly repositorio: RepositorioHotel) {}
 

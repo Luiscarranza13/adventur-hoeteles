@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Input } from '@/components/Input';
-import { Hotel, Mail, Lock, LogIn, Loader2, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, LogIn, Loader2, ArrowLeft, Eye, EyeOff, Shield } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 export default function LoginPage() {
@@ -12,146 +11,130 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-
     try {
-      const response = await fetch('/api/admin/login', {
+      const res = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        await Swal.fire({
-          icon: 'error',
-          title: 'Acceso denegado',
-          text: data.error || 'Credenciales inválidas. Verifica tu correo y contraseña.',
-          confirmButtonColor: '#001f3f',
-          confirmButtonText: 'Intentar de nuevo',
-        });
+      const data = await res.json();
+      if (!res.ok) {
+        await Swal.fire({ icon: 'error', title: 'Acceso denegado', text: data.error || 'Credenciales inválidas.', confirmButtonColor: '#06284a' });
         return;
       }
-
-      await Swal.fire({
-        icon: 'success',
-        title: '¡Bienvenido!',
-        text: 'Acceso concedido. Redirigiendo al panel...',
-        confirmButtonColor: '#ffd600',
-        confirmButtonText: 'Continuar',
-        timer: 1500,
-        timerProgressBar: true,
-        showConfirmButton: false,
-      });
-
+      await Swal.fire({ icon: 'success', title: '¡Bienvenido!', timer: 1400, timerProgressBar: true, showConfirmButton: false });
       router.push('/admin/dashboard');
     } catch {
-      await Swal.fire({
-        icon: 'error',
-        title: 'Error de conexión',
-        text: 'No se pudo conectar al servidor. Verifica tu conexión a internet.',
-        confirmButtonColor: '#001f3f',
-      });
+      await Swal.fire({ icon: 'error', title: 'Error de conexión', confirmButtonColor: '#06284a' });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
-      {/* Panel izquierdo decorativo */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[#001f3f] flex-col items-center justify-center p-12 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#ffd600]/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#ffd600]/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-        <div className="relative z-10 text-center">
-          <div className="w-20 h-20 bg-[#ffd600] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-[#ffd600]/20">
-            <Hotel size={36} className="text-[#001f3f]" strokeWidth={2} />
-          </div>
-          <h1 className="text-4xl font-extrabold text-white mb-3">Adventur Hoteles</h1>
-          <p className="text-gray-400 text-lg">Panel de Administración</p>
-          <div className="mt-12 grid grid-cols-2 gap-4 max-w-xs mx-auto">
-            {[
-              { n: 'Hoteles', desc: 'Gestiona tu red' },
-              { n: 'WhatsApp', desc: 'Reservas directas' },
-              { n: '0%', desc: 'Sin comisiones' },
-              { n: '24/7', desc: 'Control total' },
-            ].map(({ n, desc }) => (
-              <div key={n} className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
-                <p className="text-[#ffd600] font-extrabold text-lg">{n}</p>
-                <p className="text-gray-500 text-xs mt-0.5">{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-[#eef1f8] px-4 py-10">
+      {/* Patrón de fondo */}
+      <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_1px_1px,#cbd5e1_1px,transparent_0)] [background-size:22px_22px]" />
 
-      {/* Panel derecho — formulario */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-md">
-          {/* Logo móvil */}
-          <div className="lg:hidden flex items-center gap-3 mb-8 justify-center">
-            <div className="w-10 h-10 bg-[#001f3f] rounded-xl flex items-center justify-center">
-              <Hotel size={20} className="text-[#ffd600]" />
+      {/* Tarjeta */}
+      <div className="relative w-full max-w-[480px] bg-white rounded-3xl shadow-2xl shadow-slate-300/50 p-8 sm:p-10 md:p-12 animate-enter">
+
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-4 text-[#FFD600]">
+            <Shield size={16} />
+            <span className="text-xs font-black tracking-[0.2em] uppercase">Panel de Administración</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-[#06284a] tracking-tight leading-tight">
+            Iniciar Sesión
+          </h1>
+          <p className="text-slate-500 text-base sm:text-lg mt-3">
+            Ingresa tus credenciales para continuar
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Email */}
+          <div className="space-y-2">
+            <label className="block text-xs font-black text-[#06284a] tracking-[0.18em] uppercase">
+              Correo electrónico
+            </label>
+            <div className="relative">
+              <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="correo@empresa.com"
+                required
+                className="w-full h-14 pl-12 pr-4 rounded-2xl border border-slate-200 bg-white text-slate-700 text-base outline-none transition focus:border-[#FFD600] focus:ring-4 focus:ring-[#FFD600]/20 placeholder:text-slate-400"
+              />
             </div>
-            <span className="font-extrabold text-[#001f3f] text-xl">Adventur Hoteles</span>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-            <h2 className="text-2xl font-extrabold text-[#001f3f] mb-1">Iniciar Sesión</h2>
-            <p className="text-gray-500 text-sm mb-8">Accede al panel de administración</p>
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="relative">
-                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 mt-3 pointer-events-none" />
-                <Input
-                  label="Correo electrónico"
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="admin@adventur.com"
-                  className="pl-9"
-                  required
-                />
-              </div>
-
-              <div className="relative">
-                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 mt-3 pointer-events-none" />
-                <Input
-                  label="Contraseña"
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="pl-9"
-                  required
-                />
-              </div>
-
+          {/* Contraseña */}
+          <div className="space-y-2">
+            <label className="block text-xs font-black text-[#06284a] tracking-[0.18em] uppercase">
+              Contraseña
+            </label>
+            <div className="relative">
+              <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••••"
+                required
+                className="w-full h-14 pl-12 pr-12 rounded-2xl border border-slate-200 bg-white text-slate-700 text-base outline-none transition focus:border-[#FFD600] focus:ring-4 focus:ring-[#FFD600]/20 placeholder:text-slate-400"
+              />
               <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex items-center justify-center gap-2.5 bg-[#001f3f] text-white font-bold py-3.5 rounded-xl hover:bg-[#002d5a] active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-[#001f3f]/20"
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#06284a] transition"
               >
-                {loading ? (
-                  <><Loader2 size={18} className="animate-spin" /> Verificando...</>
-                ) : (
-                  <><LogIn size={18} /> Iniciar Sesión</>
-                )}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
-            </form>
+            </div>
           </div>
 
-          <div className="text-center mt-5">
-            <Link href="/" className="inline-flex items-center gap-1.5 text-gray-400 text-sm hover:text-[#001f3f] transition-colors">
-              <ArrowLeft size={14} /> Volver al sitio público
-            </Link>
+          {/* Botón */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full h-14 rounded-2xl bg-[#06284a] text-white font-black text-base flex items-center justify-center gap-3 shadow-lg shadow-[#06284a]/30 hover:bg-[#08345f] active:scale-[0.98] transition disabled:opacity-60 mt-2"
+          >
+            {loading
+              ? <><Loader2 size={20} className="animate-spin" /> Verificando...</>
+              : <><LogIn size={20} /> Iniciar Sesión</>
+            }
+          </button>
+        </form>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-100">
+          <Link href="/" className="flex items-center gap-1.5 text-slate-500 text-sm font-bold hover:text-[#06284a] transition group">
+            <ArrowLeft size={15} className="group-hover:-translate-x-1 transition-transform" />
+            Volver al inicio
+          </Link>
+          <div className="flex items-center gap-1.5 text-slate-400 text-sm">
+            <Shield size={14} className="text-emerald-500" />
+            <span>Conexión segura</span>
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes enter {
+          from { opacity: 0; transform: translateY(20px) scale(0.98); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-enter { animation: enter 0.5s ease-out both; }
+      `}</style>
     </div>
   );
 }

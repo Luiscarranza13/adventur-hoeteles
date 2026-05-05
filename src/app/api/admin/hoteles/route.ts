@@ -21,9 +21,15 @@ export async function POST(request: NextRequest) {
       ciudad: body.ciudad,
       direccion: body.direccion,
       telefonoWhatsapp: body.telefono_whatsapp,
+      emailContacto: body.email_contacto,
       estrellas: body.estrellas || 3,
       imagenesUrls: body.imagenes_urls || [],
-    });    return NextResponse.json(hotel, { status: 201 });
+      latitud: body.latitud,
+      longitud: body.longitud,
+      horarioApertura: body.horario_apertura,
+      horarioCierre: body.horario_cierre,
+    });
+    return NextResponse.json(hotel, { status: 201 });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: 'Error al crear hotel' }, { status: 500 });
@@ -40,8 +46,13 @@ export async function PUT(request: NextRequest) {
       ciudad: body.ciudad,
       direccion: body.direccion,
       telefonoWhatsapp: body.telefono_whatsapp,
+      emailContacto: body.email_contacto,
       estrellas: body.estrellas,
       imagenesUrls: body.imagenes_urls,
+      latitud: body.latitud,
+      longitud: body.longitud,
+      horarioApertura: body.horario_apertura,
+      horarioCierre: body.horario_cierre,
       activo: body.activo,
     });
     return NextResponse.json(hotel);

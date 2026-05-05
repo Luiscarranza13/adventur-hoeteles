@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { RepositorioReserva } from '../../dominio/puertos/RepositorioReserva';
-import { Reserva, DatosNuevaReserva, DatosActualizarReserva } from '../../dominio/entidades/Reserva';
+import { Reserva, DatosNuevaReserva, DatosActualizarReserva, EstadoReserva, MetodoPago } from '../../dominio/entidades/Reserva';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 interface ReservaDb {
@@ -10,7 +10,12 @@ interface ReservaDb {
   telefono_contacto: string;
   fecha_ingreso: string;
   fecha_salida: string;
-  estado: string;
+  notas_cliente: string | null;
+  cantidad_huespedes: number | null;
+  precio_total: number | null;
+  estado: EstadoReserva;
+  fecha_confirmacion: string | null;
+  metodo_pago: MetodoPago | null;
   fecha_creacion: string;
 }
 
@@ -22,7 +27,12 @@ function mapDbToDomain(row: ReservaDb): Reserva {
     telefonoContacto: row.telefono_contacto,
     fechaIngreso: new Date(row.fecha_ingreso),
     fechaSalida: new Date(row.fecha_salida),
-    estado: row.estado as Reserva['estado'],
+    notasCliente: row.notas_cliente || undefined,
+    cantidadHuespedes: row.cantidad_huespedes || undefined,
+    precioTotal: row.precio_total ? Number(row.precio_total) : undefined,
+    estado: row.estado,
+    fechaConfirmacion: row.fecha_confirmacion ? new Date(row.fecha_confirmacion) : undefined,
+    metodoPago: row.metodo_pago || undefined,
     fechaCreacion: new Date(row.fecha_creacion),
   };
 }
@@ -65,6 +75,10 @@ export class AdaptadorSupabaseReserva implements RepositorioReserva {
         telefono_contacto: datos.telefonoContacto,
         fecha_ingreso: datos.fechaIngreso.toISOString().split('T')[0],
         fecha_salida: datos.fechaSalida.toISOString().split('T')[0],
+        notas_cliente: datos.notasCliente || null,
+        cantidad_huespedes: datos.cantidadHuespedes || null,
+        precio_total: datos.precioTotal || null,
+        metodo_pago: datos.metodoPago || null,
         estado: 'contacto_whatsapp',
       })
       .select()
@@ -76,9 +90,17 @@ export class AdaptadorSupabaseReserva implements RepositorioReserva {
 
   async actualizarEstado(id: string, datos: DatosActualizarReserva): Promise<Reserva> {
     const cliente = await this.getCliente();
+    const updateData: Record<string, unknown> = {};
+    if (datos.estado !== undefined) updateData.estado = datos.estado;
+    if (datos.notasCliente !== undefined) updateData.notas_cliente = datos.notasCliente;
+    if (datos.cantidadHuespedes !== undefined) updateData.cantidad_huespedes = datos.cantidadHuespedes;
+    if (datos.precioTotal !== undefined) updateData.precio_total = datos.precioTotal;
+    if (datos.fechaConfirmacion !== undefined) updateData.fecha_confirmacion = datos.fechaConfirmacion?.toISOString();
+    if (datos.metodoPago !== undefined) updateData.metodo_pago = datos.metodoPago;
+
     const { data, error } = await cliente
       .from('reservas')
-      .update({ estado: datos.estado })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();

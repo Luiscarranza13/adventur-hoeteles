@@ -1,0 +1,32 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffd600;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ffed4e;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Triángulo blanco principal (A) -->
+  <path d="M 100 20 L 160 160 L 40 160 Z" fill="white" filter="url(#shadow)"/>
+  
+  <!-- Triángulo blanco interior (hueco) -->
+  <path d="M 100 60 L 140 150 L 60 150 Z" fill="#001f3f"/>
+  
+  <!-- Curva amarilla suave -->
+  <path d="M 50 140 Q 70 80 150 35" stroke="url(#grad1)" stroke-width="18" stroke-linecap="round" fill="none" filter="url(#shadow)"/>
+  
+  <!-- Avión amarillo simplificado -->
+  <g transform="translate(155, 30)">
+    <!-- Fuselaje -->
+    <ellipse cx="0" cy="0" rx="7" ry="4" fill="#ffd600" filter="url(#shadow)"/>
+    <!-- Alas -->
+    <polygon points="0,-4 -12,-8 -10,-5 0,-1" fill="#ffd600"/>
+    <polygon points="0,-4 12,-8 10,-5 0,-1" fill="#ffd600"/>
+    <!-- Cola -->
+    <polygon points="-6,1 -9,5 -7,2" fill="#ffd600"/>
+    <polygon points="6,1 9,5 7,2" fill="#ffd600"/>
+  </g>
+</svg>

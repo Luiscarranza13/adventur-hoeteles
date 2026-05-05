@@ -10,8 +10,13 @@ interface HotelDb {
   ciudad: string;
   direccion: string;
   telefono_whatsapp: string;
+  email_contacto?: string;
   imagenes_urls: string[];
   estrellas: number;
+  latitud?: number;
+  longitud?: number;
+  horario_apertura?: string;
+  horario_cierre?: string;
   activo: boolean;
   fecha_creacion: string;
 }
@@ -24,8 +29,13 @@ function mapDbToDomain(row: HotelDb): Hotel {
     ciudad: row.ciudad,
     direccion: row.direccion,
     telefonoWhatsapp: row.telefono_whatsapp,
+    emailContacto: row.email_contacto,
     imagenesUrls: row.imagenes_urls || [],
     estrellas: row.estrellas,
+    latitud: row.latitud,
+    longitud: row.longitud,
+    horarioApertura: row.horario_apertura,
+    horarioCierre: row.horario_cierre,
     activo: row.activo,
     fechaCreacion: new Date(row.fecha_creacion),
   };
@@ -93,8 +103,13 @@ export class AdaptadorSupabaseHotel implements RepositorioHotel {
         ciudad: datos.ciudad,
         direccion: datos.direccion,
         telefono_whatsapp: datos.telefonoWhatsapp,
+        email_contacto: datos.emailContacto,
         imagenes_urls: datos.imagenesUrls || [],
         estrellas: datos.estrellas || 3,
+        latitud: datos.latitud,
+        longitud: datos.longitud,
+        horario_apertura: datos.horarioApertura,
+        horario_cierre: datos.horarioCierre,
       })
       .select()
       .single();
@@ -111,8 +126,13 @@ export class AdaptadorSupabaseHotel implements RepositorioHotel {
     if (datos.ciudad !== undefined) updateData.ciudad = datos.ciudad;
     if (datos.direccion !== undefined) updateData.direccion = datos.direccion;
     if (datos.telefonoWhatsapp !== undefined) updateData.telefono_whatsapp = datos.telefonoWhatsapp;
+    if (datos.emailContacto !== undefined) updateData.email_contacto = datos.emailContacto;
     if (datos.imagenesUrls !== undefined) updateData.imagenes_urls = datos.imagenesUrls;
     if (datos.estrellas !== undefined) updateData.estrellas = datos.estrellas;
+    if (datos.latitud !== undefined) updateData.latitud = datos.latitud;
+    if (datos.longitud !== undefined) updateData.longitud = datos.longitud;
+    if (datos.horarioApertura !== undefined) updateData.horario_apertura = datos.horarioApertura;
+    if (datos.horarioCierre !== undefined) updateData.horario_cierre = datos.horarioCierre;
     if (datos.activo !== undefined) updateData.activo = datos.activo;
 
     const { data, error } = await cliente

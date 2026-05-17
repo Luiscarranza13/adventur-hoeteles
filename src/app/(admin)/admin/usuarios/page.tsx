@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Input } from '@/components/ui/Input';
 import { FormDrawer } from '@/components/admin/FormDrawer';
 import { createClient } from '@/lib/supabase/client';
@@ -16,13 +16,13 @@ import {
 type FormUsuario = {
   nombreCompleto: string; correo: string;
   contrasena: string; telefono: string;
-  rol: 'admin' | 'cliente';
+  rol: 'admin' | 'colaborador';
   fotoUrl: string;
 };
 
 const formVacio: FormUsuario = {
   nombreCompleto: '', correo: '', contrasena: '',
-  telefono: '', rol: 'cliente', fotoUrl: '',
+  telefono: '', rol: 'colaborador', fotoUrl: '',
 };
 
 function AvatarUsuario({ nombre, fotoUrl, size = 'md' }: { nombre: string; fotoUrl?: string; size?: 'sm' | 'md' | 'lg' }) {
@@ -50,47 +50,95 @@ export default function PaginaUsuarios() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editandoId, setEditandoId] = useState<string | null>(null);
   const [form, setForm] = useState<FormUsuario>(formVacio);
+  const [errores, setErrores] = useState<Partial<Record<keyof FormUsuario, string>>>({});
   const [guardando, setGuardando] = useState(false);
   const [subiendoFoto, setSubiendoFoto] = useState(false);
   const fotoInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { cargar(); }, []);
-
-  const cargar = async () => {
+  const cargar = useCallback(async () => {
     try {
       const res = await fetch('/api/admin/usuarios');
       setUsuarios(await res.json());
     } catch { /* silencioso */ }
     finally { setLoading(false); }
+  }, []);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { cargar(); }, [cargar]);
+
+  const validar = (): boolean => {
+    const e: Partial<Record<keyof FormUsuario, string>> = {};
+    if (!form.nombreCompleto.trim()) e.nombreCompleto = 'El nombre es requerido';
+    else if (form.nombreCompleto.trim().length < 2) e.nombreCompleto = 'Mínimo 2 caracteres';
+    else if (form.nombreCompleto.trim().length > 160) e.nombreCompleto = 'Máximo 160 caracteres';
+
+    if (!editandoId) {
+      if (!form.correo.trim()) e.correo = 'El correo es requerido';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.correo)) e.correo = 'Correo inválido';
+
+      if (!form.contrasena) e.contrasena = 'La contraseña es requerida';
+      else if (form.contrasena.length < 6) e.contrasena = 'Mínimo 6 caracteres';
+      else if (form.contrasena.length > 120) e.contrasena = 'Máximo 120 caracteres';
+    }
+
+    if (form.telefono && !/^[\d\s+\-()]{7,20}$/.test(form.telefono)) {
+      e.telefono = 'Teléfono inválido (solo números, +, -, espacios)';
+    }
+
+    setErrores(e);
+    return Object.keys(e).length === 0;
   };
 
-  const abrirNuevo = () => { setForm(formVacio); setEditandoId(null); setDrawerOpen(true); };
+  const abrirNuevo = () => { setForm(formVacio); setErrores({}); setEditandoId(null); setDrawerOpen(true); };
   const abrirEditar = (u: Usuario & { fotoUrl?: string }) => {
     setForm({
       nombreCompleto: u.nombreCompleto, correo: u.correo,
       contrasena: '', telefono: u.telefono ?? '',
       rol: u.rol, fotoUrl: u.fotoUrl ?? '',
     });
+    setErrores({});
     setEditandoId(u.id); setDrawerOpen(true);
   };
 
   const subirFoto = async (archivo: File) => {
+    // Validar tamaño (2MB)
+    if (archivo.size > 2 * 1024 * 1024) {
+      Swal.fire({ icon: 'error', title: 'Archivo muy grande', text: 'La imagen no puede superar 2MB.', confirmButtonColor: '#001f3f' });
+      return;
+    }
     setSubiendoFoto(true);
     try {
       const supabase = createClient();
       const ext = archivo.name.split('.').pop()?.toLowerCase() ?? 'jpg';
       const path = `avatares/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error } = await supabase.storage.from('imagenes').upload(path, archivo, { cacheControl: '3600', upsert: false });
-      if (error) throw error;
+      const { error } = await supabase.storage
+        .from('imagenes')
+        .upload(path, archivo, { cacheControl: '3600', upsert: false });
+      if (error) {
+        // Intentar con bucket 'avatares' como fallback
+        const { error: error2 } = await supabase.storage
+          .from('avatares')
+          .upload(path, archivo, { cacheControl: '3600', upsert: false });
+        if (error2) throw new Error(`Error al subir: ${error.message}`);
+        const { data: urlData } = supabase.storage.from('avatares').getPublicUrl(path);
+        setForm(f => ({ ...f, fotoUrl: urlData.publicUrl }));
+        return;
+      }
       const { data } = supabase.storage.from('imagenes').getPublicUrl(path);
       setForm(f => ({ ...f, fotoUrl: data.publicUrl }));
-    } catch {
-      Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo subir la foto.', confirmButtonColor: '#001f3f' });
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al subir foto',
+        text: err instanceof Error ? err.message : 'No se pudo subir la foto. Verifica que el bucket de almacenamiento esté configurado.',
+        confirmButtonColor: '#001f3f',
+      });
     } finally { setSubiendoFoto(false); }
   };
 
   const guardar = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validar()) return;
     setGuardando(true);
     try {
       const method = editandoId ? 'PUT' : 'POST';
@@ -132,8 +180,8 @@ export default function PaginaUsuarios() {
 
   const badgeRol = (rol: string) => {
     const config: Record<string, { cls: string; Icon: typeof Shield; label: string }> = {
-      admin:   { cls: 'bg-[#ffd600] text-[#001f3f] border-yellow-300', Icon: Shield,    label: 'Admin' },
-      cliente: { cls: 'bg-blue-100 text-blue-800 border-blue-200',     Icon: UserCheck, label: 'Cliente' },
+      admin:       { cls: 'bg-[#ffd600] text-[#001f3f] border-yellow-300',   Icon: Shield,    label: 'Admin' },
+      colaborador: { cls: 'bg-emerald-100 text-emerald-800 border-emerald-200', Icon: UserCheck, label: 'Colaborador' },
     };
     const { cls, Icon, label } = config[rol] ?? { cls: 'bg-gray-100 text-gray-700 border-gray-200', Icon: Users, label: rol };
     return (
@@ -301,43 +349,55 @@ export default function PaginaUsuarios() {
           </div>
 
           <div className="border-t border-gray-100 pt-5 space-y-5">
-            <Input
-              label="Nombre completo"
-              value={form.nombreCompleto}
-              onChange={e => setForm({ ...form, nombreCompleto: e.target.value })}
-              placeholder="Ej: Juan Pérez"
-              icon={<Users size={15} />}
-              required
-            />
-            <Input
-              label="Correo electrónico"
-              type="email"
-              value={form.correo}
-              onChange={e => setForm({ ...form, correo: e.target.value })}
-              placeholder="usuario@hotel.com"
-              icon={<Mail size={15} />}
-              disabled={!!editandoId}
-              required={!editandoId}
-              hint={editandoId ? 'El correo no se puede modificar' : undefined}
-            />
-            {!editandoId && (
+            <div>
               <Input
-                label="Contraseña"
-                type="password"
-                value={form.contrasena}
-                onChange={e => setForm({ ...form, contrasena: e.target.value })}
-                placeholder="Mínimo 6 caracteres"
-                hint="El usuario podrá cambiarla después"
+                label="Nombre completo"
+                value={form.nombreCompleto}
+                onChange={e => { setForm({ ...form, nombreCompleto: e.target.value }); setErrores(er => ({ ...er, nombreCompleto: undefined })); }}
+                placeholder="Ej: Juan Pérez"
+                icon={<Users size={15} />}
                 required
               />
+              {errores.nombreCompleto && <p className="text-xs text-red-500 mt-1">{errores.nombreCompleto}</p>}
+            </div>
+            <div>
+              <Input
+                label="Correo electrónico"
+                type="email"
+                value={form.correo}
+                onChange={e => { setForm({ ...form, correo: e.target.value }); setErrores(er => ({ ...er, correo: undefined })); }}
+                placeholder="usuario@hotel.com"
+                icon={<Mail size={15} />}
+                disabled={!!editandoId}
+                required={!editandoId}
+                hint={editandoId ? 'El correo no se puede modificar' : undefined}
+              />
+              {errores.correo && <p className="text-xs text-red-500 mt-1">{errores.correo}</p>}
+            </div>
+            {!editandoId && (
+              <div>
+                <Input
+                  label="Contraseña"
+                  type="password"
+                  value={form.contrasena}
+                  onChange={e => { setForm({ ...form, contrasena: e.target.value }); setErrores(er => ({ ...er, contrasena: undefined })); }}
+                  placeholder="Mínimo 6 caracteres"
+                  hint="El usuario podrá cambiarla después"
+                  required
+                />
+                {errores.contrasena && <p className="text-xs text-red-500 mt-1">{errores.contrasena}</p>}
+              </div>
             )}
-            <Input
-              label="Teléfono (opcional)"
-              value={form.telefono}
-              onChange={e => setForm({ ...form, telefono: e.target.value })}
-              placeholder="+51 999 999 999"
-              icon={<Phone size={15} />}
-            />
+            <div>
+              <Input
+                label="Teléfono (opcional)"
+                value={form.telefono}
+                onChange={e => { setForm({ ...form, telefono: e.target.value }); setErrores(er => ({ ...er, telefono: undefined })); }}
+                placeholder="+51 999 999 999"
+                icon={<Phone size={15} />}
+              />
+              {errores.telefono && <p className="text-xs text-red-500 mt-1">{errores.telefono}</p>}
+            </div>
           </div>
 
           {/* Selector de rol */}
@@ -347,8 +407,8 @@ export default function PaginaUsuarios() {
             </label>
             <div className="grid grid-cols-2 gap-3">
               {([
-                { val: 'cliente', Icon: UserCheck, label: 'Cliente',       desc: 'Acceso básico al sistema' },
-                { val: 'admin',   Icon: Shield,    label: 'Administrador', desc: 'Acceso completo al panel' },
+                { val: 'colaborador', Icon: UserCheck, label: 'Colaborador', desc: 'Acceso al panel de gestión' },
+                { val: 'admin',       Icon: Shield,    label: 'Administrador', desc: 'Acceso completo al panel' },
               ] as const).map(({ val, Icon, label, desc }) => (
                 <button
                   key={val}

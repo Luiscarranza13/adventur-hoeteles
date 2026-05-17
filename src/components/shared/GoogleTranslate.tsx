@@ -44,11 +44,7 @@ function cambiarIdioma(codigo: string) {
 }
 
 export function SelectorIdioma() {
-  const [idiomaActual, setIdiomaActual] = useState('es');
-
-  useEffect(() => {
-    setIdiomaActual(obtenerIdiomaActual());
-  }, []);
+  const [idiomaActual] = useState(() => obtenerIdiomaActual());
 
   const actual = IDIOMAS.find(i => i.code === idiomaActual) ?? IDIOMAS[0];
 
@@ -154,7 +150,7 @@ export function SelectorIdioma() {
         </div>
         <ChevronDown size={14} className="text-gray-400 group-hover:text-[#001f3f] transition-colors" />
       </button>
-      <div id="google_translate_element" className="hidden" />
+      <div id="google_translate_element" className="hidden" suppressHydrationWarning />
     </>
   );
 }

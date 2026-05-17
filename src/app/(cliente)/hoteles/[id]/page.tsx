@@ -88,7 +88,7 @@ export default async function PaginaDetalleHotel({ params }: PageProps) {
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_1px_1px,var(--brand-yellow)_1px,transparent_0)] [background-size:32px_32px]" />
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[var(--brand-yellow)]/5 rounded-full -translate-y-1/2 translate-x-1/3 blur-[100px] pointer-events-none" />
 
-        <div className="relative z-10 container-site max-w-6xl w-full animate-fade-in">
+        <AnimarAlEntrar direction="none" className="relative z-10 container-site max-w-6xl w-full">
           <Link 
             href="/hoteles" 
             className="inline-flex items-center gap-2 text-white/60 text-[10px] sm:text-xs font-bold hover:text-[var(--brand-yellow)] transition-colors mb-5 group uppercase tracking-widest"
@@ -125,7 +125,7 @@ export default async function PaginaDetalleHotel({ params }: PageProps) {
               </div>
             </div>
             
-            <div className="shrink-0 bg-white/5 backdrop-blur-md border border-white/10 px-5 py-4 rounded-xl text-center animate-fade-up min-w-40" style={{ animationDelay: '0.2s' }}>
+            <AnimarAlEntrar delay={0.2} className="shrink-0 bg-white/5 backdrop-blur-md border border-white/10 px-5 py-4 rounded-xl text-center min-w-40">
               <p className="text-gray-400 text-[9px] font-black uppercase tracking-[0.18em] mb-2 flex items-center justify-center gap-2">
                 <BedDouble size={13} className="text-[var(--brand-yellow)]" aria-hidden="true" /> Disponibilidad
               </p>
@@ -135,9 +135,9 @@ export default async function PaginaDetalleHotel({ params }: PageProps) {
               <p className="text-[10px] font-bold text-[var(--brand-yellow)] uppercase tracking-widest">
                 {habitaciones.length === 1 ? 'Habitación' : 'Habitaciones'}
               </p>
-            </div>
+            </AnimarAlEntrar>
           </div>
-        </div>
+        </AnimarAlEntrar>
       </section>
 
       <main className="bg-white">
@@ -151,13 +151,13 @@ export default async function PaginaDetalleHotel({ params }: PageProps) {
 
         <section className="container-site max-w-6xl py-10 sm:py-14">
           <div className="grid lg:grid-cols-[1fr_420px] gap-8 lg:gap-10 items-start">
-            <div className="flex-1 animate-fade-up">
+            <AnimarAlEntrar className="flex-1">
               <p className="label-eyebrow mb-2">Descripción</p>
               <h2 className="text-2xl sm:text-3xl font-black text-[var(--brand-navy)] mb-4 leading-tight">Sobre el hotel</h2>
               <p className="body-text !text-sm sm:!text-base max-w-3xl leading-relaxed">{hotel.descripcion}</p>
-            </div>
+            </AnimarAlEntrar>
             
-            <div className="w-full grid grid-cols-2 gap-3 animate-fade-up" style={{ animationDelay: '0.1s' }}>
+            <AnimarAlEntrar delay={0.1} className="w-full grid grid-cols-2 gap-3">
               {[
                 { Icon: MapPin,        label: 'Ciudad',       valor: hotel.ciudad },
                 { Icon: Star,          label: 'Categoría',    valor: `${hotel.estrellas} Estrellas` },
@@ -172,7 +172,7 @@ export default async function PaginaDetalleHotel({ params }: PageProps) {
                   <p className="text-xs sm:text-sm font-black text-[var(--brand-navy)] uppercase leading-snug">{valor}</p>
                 </div>
               ))}
-            </div>
+            </AnimarAlEntrar>
           </div>
         </section>
 
@@ -190,99 +190,92 @@ export default async function PaginaDetalleHotel({ params }: PageProps) {
               </div>
             </AnimarAlEntrar>
 
-          <div className="flex flex-col gap-5 sm:gap-6">
+          <div className="flex flex-col gap-3">
             {habitaciones.map((hab, i) => {
               const simbolo = hab.moneda === 'PEN' ? 'S/' : '$';
               return (
-                <AnimarAlEntrar key={hab.id} delay={i * 0.08}>
-                  <article className="bg-white border border-gray-200 hover:border-[#ffd600]/50 rounded-2xl overflow-hidden group hover:shadow-[0_15px_35px_-15px_rgba(0,0,0,0.1)] transition-all duration-300 flex flex-col lg:flex-row">
-                    
-                    {/* Imagen (Izquierda en desktop) */}
-                    <div className="relative h-44 sm:h-52 lg:h-auto lg:w-64 xl:w-72 bg-gray-100 overflow-hidden shrink-0">
+                <AnimarAlEntrar key={hab.id} delay={i * 0.05}>
+                  <article className="bg-white border border-gray-100 hover:border-[#ffd600]/50 rounded-2xl overflow-hidden group hover:shadow-lg transition-all duration-200 flex flex-col sm:flex-row">
+
+                    {/* Imagen */}
+                    <div className="relative h-40 sm:h-auto sm:w-48 bg-gray-100 overflow-hidden shrink-0">
                       <ImagenSegura
                         src={hab.imagenesUrls[0] ?? ''}
                         alt={`Habitación ${hab.nombre}`}
                         fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-700"
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#001f3f]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                      
-                      {hab.imagenesUrls.length > 1 && (
-                        <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-md px-2 py-1 rounded-lg text-[#001f3f] text-[9px] font-black uppercase tracking-widest shadow-sm">
-                          +{hab.imagenesUrls.length - 1} fotos
-                        </div>
-                      )}
                       {hab.tipoHabitacion && (
-                        <div className="absolute top-3 left-3 bg-[#001f3f]/80 backdrop-blur-md px-2.5 py-1.5 rounded-lg text-[#ffd600] text-[9px] font-black uppercase tracking-widest shadow-sm">
+                        <div className="absolute top-2.5 left-2.5 bg-[#001f3f] px-2.5 py-1 rounded-full text-[#ffd600] text-[8px] font-black uppercase tracking-widest shadow">
                           {hab.tipoHabitacion}
                         </div>
                       )}
                     </div>
-                    
-                    {/* Contenido (Derecha en desktop) */}
-                    <div className="p-4 sm:p-5 flex flex-col flex-1">
-                      <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-4">
-                        <div className="flex-1">
-                          <h3 className="text-lg sm:text-xl font-black text-[#001f3f] mb-2 group-hover:text-blue-600 transition-colors uppercase leading-tight">{hab.nombre}</h3>
-                          {hab.descripcion && (
-                            <p className="text-gray-500 text-sm leading-relaxed font-medium line-clamp-2 md:line-clamp-3">{hab.descripcion}</p>
-                          )}
-                        </div>
-                        
-                        {/* Bloque Precio (Solo visible en Desktop) */}
-                        <div className="hidden md:flex flex-col items-end shrink-0 text-right bg-gray-50 p-4 rounded-xl border border-gray-100 min-w-36">
-                          <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Precio por Noche</p>
-                          <div className="flex items-baseline gap-0.5 text-[#001f3f] mb-4">
-                            <span className="text-2xl font-black">{simbolo}{hab.precioNoche}</span>
-                            <span className="text-sm font-bold text-gray-400">.00</span>
+
+                    {/* Contenido */}
+                    <div className="flex flex-col sm:flex-row flex-1 min-w-0">
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0 px-4 py-3.5">
+                        <h3 className="text-sm font-semibold text-gray-800 mb-1 leading-snug">
+                          {hab.nombre}
+                        </h3>
+                        {hab.descripcion && (
+                          <p className="text-gray-400 text-xs leading-relaxed line-clamp-2 mb-2.5">{hab.descripcion}</p>
+                        )}
+
+                        {/* Amenidades */}
+                        {hab.amenidades?.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mb-2.5">
+                            {hab.amenidades.slice(0, 4).map(a => (
+                              <span key={a} className="flex items-center gap-1 text-[10px] text-gray-500 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100">
+                                <span className="text-[#ffd600]">{iconosAmenidades[a] ?? null}</span>
+                                {a}
+                              </span>
+                            ))}
+                            {hab.amenidades.length > 4 && (
+                              <span className="text-[10px] text-gray-400 px-1">+{hab.amenidades.length - 4} más</span>
+                            )}
                           </div>
+                        )}
+
+                        {/* Capacidad */}
+                        <div className="flex items-center gap-3 text-[10px] text-gray-400">
+                          <span className="flex items-center gap-1">
+                            <Users size={11} className="text-[#ffd600]" /> {hab.capacidadPersonas} personas
+                          </span>
+                          <span className="flex items-center gap-1 text-green-500">
+                            <CheckCircle2 size={11} /> Disponible
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Precio + acciones — separador vertical */}
+                      <div className="flex sm:flex-col items-center justify-between sm:justify-center sm:border-l border-t sm:border-t-0 border-gray-100 px-4 py-3.5 gap-3 shrink-0 sm:w-40">
+                        {/* Precio */}
+                        <div className="text-right sm:text-center">
+                          <p className="text-[9px] text-gray-400 uppercase tracking-widest mb-0.5">por noche</p>
+                          <p className="text-xl font-bold text-gray-800 leading-none">
+                            {simbolo}{hab.precioNoche}
+                          </p>
+                        </div>
+
+                        {/* Botones */}
+                        <div className="flex sm:flex-col gap-2 w-full sm:w-auto">
                           <Link
                             href={`/checkout/${hab.id}`}
-                            className="bg-[#001f3f] hover:bg-[#ffd600] text-white hover:text-[#001f3f] px-5 py-2.5 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all w-full text-center shadow-sm"
+                            className="flex items-center justify-center gap-1.5 bg-[#001f3f] hover:bg-[#ffd600] text-white hover:text-[#001f3f] px-4 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap"
                           >
+                            <MessageCircle size={13} />
                             Reservar
                           </Link>
+                          <Link
+                            href={`/habitaciones/${hab.id}`}
+                            className="flex items-center justify-center gap-1.5 bg-gray-50 hover:bg-gray-100 text-gray-600 hover:text-gray-800 px-4 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap border border-gray-100"
+                          >
+                            Ver detalles
+                          </Link>
                         </div>
-                      </div>
-
-                      {/* Amenidades */}
-                      {hab.amenidades?.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mb-5">
-                          {hab.amenidades.map(a => (
-                            <span key={a} className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider bg-white border border-gray-200 text-gray-600 px-2.5 py-1.5 rounded-lg">
-                              <span className="text-[#ffd600]">{iconosAmenidades[a] ?? null}</span>
-                              {a}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Detalles inferiores */}
-                      <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.12em] text-gray-400 mt-auto pt-4 border-t border-gray-100">
-                        <span className="flex items-center gap-2">
-                          <Users size={14} className="text-[#ffd600]" aria-hidden="true" /> {hab.capacidadPersonas} Personas
-                        </span>
-                        <div className="w-1 h-1 rounded-full bg-gray-200 hidden sm:block" />
-                        <span className="flex items-center gap-2">
-                          <CheckCircle2 size={14} className="text-green-500" aria-hidden="true" /> Disponibilidad Inmediata
-                        </span>
-                      </div>
-                      
-                      {/* Bloque Precio (Solo visible en Mobile) */}
-                      <div className="md:hidden flex items-end justify-between pt-5 mt-5 border-t border-gray-100">
-                        <div>
-                          <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Precio por Noche</p>
-                          <div className="flex items-baseline gap-0.5 text-[#001f3f]">
-                            <span className="text-2xl font-black">{simbolo}{hab.precioNoche}</span>
-                            <span className="text-xs font-bold text-gray-400">.00</span>
-                          </div>
-                        </div>
-                        <Link
-                          href={`/checkout/${hab.id}`}
-                          className="bg-[#001f3f] hover:bg-[#ffd600] text-white hover:text-[#001f3f] px-5 py-2.5 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all"
-                        >
-                          Reservar
-                        </Link>
                       </div>
 
                     </div>

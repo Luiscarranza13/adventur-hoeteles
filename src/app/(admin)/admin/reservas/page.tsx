@@ -34,12 +34,17 @@ export default function PaginaReservas() {
 
   const cargar = async () => {
     try {
-      const [r, h, ho] = await Promise.all([
-        fetch('/api/admin/reservas'), fetch('/api/admin/habitaciones'), fetch('/api/admin/hoteles')
+      const [reservasRes, datosRes] = await Promise.all([
+        fetch('/api/admin/reservas'),
+        fetch('/api/admin/datos'),
       ]);
-      setReservas(await r.json());
-      setHabitaciones(await h.json());
-      setHoteles(await ho.json());
+      const [reservasData, { hoteles: hotelsData, habitaciones: habsData }] = await Promise.all([
+        reservasRes.json(),
+        datosRes.json(),
+      ]);
+      setReservas(reservasData ?? []);
+      setHabitaciones(habsData ?? []);
+      setHoteles(hotelsData ?? []);
     } catch { /* silencioso */ }
     finally { setLoading(false); }
   };
@@ -194,6 +199,7 @@ export default function PaginaReservas() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   ], [habitaciones, hoteles]);
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const tabla = useReactTable({
     data: filasFiltradas,
     columns: columnas,

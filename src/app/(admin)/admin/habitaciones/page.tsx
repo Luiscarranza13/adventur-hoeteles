@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Input } from '@/components/ui/Input';
 import { FormDrawer } from '@/components/admin/FormDrawer';
 import { SubidorImagenes } from '@/components/admin/SubidorImagenes';
 import { BarraFiltros } from '@/components/admin/BarraFiltros';
-import type { Habitacion } from '@/modules/habitaciones';
+import type { Habitacion, EstadoMantenimiento, Moneda, RegimeAlimentacion, TipoCama, TipoHabitacion } from '@/modules/habitaciones';
+import { ETIQUETAS_TIPO_HABITACION } from '@/modules/habitaciones';
 import type { Hotel } from '@/modules/hoteles';
 import Swal from 'sweetalert2';
 import {
@@ -17,21 +18,27 @@ import Image from 'next/image';
 
 type FormHabitacion = {
   hotelId: string; nombre: string; descripcion: string;
-  numeroHabitacion?: string; tipoHabitacion: string;
+  numeroHabitacion?: string; tipoHabitacion: TipoHabitacion;
+  tipoCama?: TipoCama | '';
+  regimenAlimentacion?: RegimeAlimentacion | '';
   capacidadPersonas: number; cantidadCamas: number;
-  precioNoche: number; moneda: 'USD' | 'PEN'; amenidades: string[];
+  precioNoche: number; moneda: Moneda; amenidades: string[];
   imagenes_urls: string[];
-  estadoMantenimiento: string;
+  estaDisponible: boolean;
+  estadoMantenimiento: EstadoMantenimiento;
 };
 
 const formVacio: FormHabitacion = {
   hotelId: '', nombre: '', descripcion: '',
-  numeroHabitacion: '', tipoHabitacion: 'estandar',
+  numeroHabitacion: '', tipoHabitacion: 'DBL',
+  tipoCama: '', regimenAlimentacion: '',
   capacidadPersonas: 1, cantidadCamas: 1,
   precioNoche: 1, moneda: 'USD', amenidades: [], imagenes_urls: [],
+  estaDisponible: true,
   estadoMantenimiento: 'disponible',
 };
 
+const TIPOS_HABITACION = Object.entries(ETIQUETAS_TIPO_HABITACION) as [TipoHabitacion, string][];
 export default function PaginaHabitaciones() {
   const [habitaciones, setHabitaciones] = useState<Habitacion[]>([]);
   const [hoteles, setHoteles] = useState<Hotel[]>([]);
@@ -39,6 +46,7 @@ export default function PaginaHabitaciones() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editandoId, setEditandoId] = useState<string | null>(null);
   const [form, setForm] = useState<FormHabitacion>(formVacio);
+  const [, setErrores] = useState<Partial<Record<keyof FormHabitacion, string>>>({});
   const [guardando, setGuardando] = useState(false);
   const [busqueda, setBusqueda] = useState('');
   const [filtroHotel, setFiltroHotel] = useState('');
@@ -46,18 +54,18 @@ export default function PaginaHabitaciones() {
   const [filtroEstado, setFiltroEstado] = useState('');
   const [filtroMoneda, setFiltroMoneda] = useState('');
 
-  useEffect(() => { cargar(); }, []);
-
-  const cargar = async () => {
+  const cargar = useCallback(async () => {
     try {
-      const [habRes, hotelRes] = await Promise.all([fetch('/api/admin/habitaciones'), fetch('/api/admin/hoteles')]);
-      const habs: Habitacion[] = await habRes.json();
-      const hotels: Hotel[] = await hotelRes.json();
-      setHabitaciones(habs); setHoteles(hotels);
-      if (hotels.length > 0) setForm(f => ({ ...f, hotelId: f.hotelId || hotels[0].id }));
+      const res = await fetch('/api/admin/datos');
+      const { hoteles: hotels, habitaciones: habs } = await res.json();
+      setHabitaciones(habs ?? []); setHoteles(hotels ?? []);
+      if (hotels?.length > 0) setForm(f => ({ ...f, hotelId: f.hotelId || hotels[0].id }));
     } catch { /* silencioso */ }
     finally { setLoading(false); }
-  };
+  }, []);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { cargar(); }, [cargar]);
 
   const habitacionesFiltradas = useMemo(() => {
     return habitaciones.filter(h => {
@@ -80,39 +88,61 @@ export default function PaginaHabitaciones() {
 
   const abrirNuevo = () => {
     setForm({ ...formVacio, hotelId: hoteles[0]?.id || '' });
+    setErrores({});
     setEditandoId(null); setDrawerOpen(true);
   };
-   const abrirEditar = (h: Habitacion) => {
-     setForm({
-       hotelId: h.hotelId, nombre: h.nombre, descripcion: h.descripcion ?? '',
-       numeroHabitacion: h.numeroHabitacion,
-       tipoHabitacion: h.tipoHabitacion,
-       capacidadPersonas: h.capacidadPersonas, cantidadCamas: h.cantidadCamas,
-       precioNoche: h.precioNoche,
-       moneda: h.moneda ?? 'USD',
-       amenidades: h.amenidades,
-       imagenes_urls: h.imagenesUrls ?? [],
-       estadoMantenimiento: h.estadoMantenimiento,
-     });
-     setEditandoId(h.id); setDrawerOpen(true);
-   };
+  const abrirEditar = (h: Habitacion) => {
+    setForm({
+      hotelId: h.hotelId, nombre: h.nombre, descripcion: h.descripcion ?? '',
+      numeroHabitacion: h.numeroHabitacion,
+      tipoHabitacion: h.tipoHabitacion,
+      tipoCama: h.tipoCama ?? '',
+      regimenAlimentacion: h.regimenAlimentacion ?? '',
+      capacidadPersonas: h.capacidadPersonas, cantidadCamas: h.cantidadCamas,
+      precioNoche: h.precioNoche,
+      moneda: h.moneda ?? 'USD',
+      amenidades: h.amenidades,
+      imagenes_urls: h.imagenesUrls ?? [],
+      estaDisponible: h.estaDisponible,
+      estadoMantenimiento: h.estadoMantenimiento,
+    });
+    setErrores({});
+    setEditandoId(h.id); setDrawerOpen(true);
+  };
 
-   const guardar = async (e: React.FormEvent) => {
-     e.preventDefault();
-     setGuardando(true);
+  const validarHabitacion = (): boolean => {
+    const e: Partial<Record<keyof FormHabitacion, string>> = {};
+    if (!form.hotelId) e.hotelId = 'Selecciona un hotel';
+    if (!form.nombre.trim()) e.nombre = 'El nombre es requerido';
+    else if (form.nombre.trim().length < 2) e.nombre = 'Mínimo 2 caracteres';
+    else if (form.nombre.trim().length > 140) e.nombre = 'Máximo 140 caracteres';
+    if (form.capacidadPersonas < 1 || form.capacidadPersonas > 20) e.capacidadPersonas = 'Entre 1 y 20 personas';
+    if (form.cantidadCamas < 1 || form.cantidadCamas > 10) e.cantidadCamas = 'Entre 1 y 10 camas';
+    if (!form.precioNoche || form.precioNoche <= 0) e.precioNoche = 'El precio debe ser mayor a 0';
+    else if (form.precioNoche > 999999) e.precioNoche = 'Precio demasiado alto';
+    setErrores(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const guardar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validarHabitacion()) return;
+    setGuardando(true);
      try {
        const method = editandoId ? 'PUT' : 'POST';
-       const body = editandoId
-         ? { id: editandoId, hotel_id: form.hotelId, nombre: form.nombre, descripcion: form.descripcion, numero_habitacion: form.numeroHabitacion, tipo_habitacion: form.tipoHabitacion, capacidad_personas: form.capacidadPersonas, cantidad_camas: form.cantidadCamas, precio_noche: form.precioNoche, moneda: form.moneda, amenidades: form.amenidades, imagenes_urls: form.imagenes_urls, estado_mantenimiento: form.estadoMantenimiento }
-         : { hotel_id: form.hotelId, nombre: form.nombre, descripcion: form.descripcion, numero_habitacion: form.numeroHabitacion, tipo_habitacion: form.tipoHabitacion, capacidad_personas: form.capacidadPersonas, cantidad_camas: form.cantidadCamas, precio_noche: form.precioNoche, moneda: form.moneda, amenidades: form.amenidades, imagenes_urls: form.imagenes_urls, estado_mantenimiento: form.estadoMantenimiento };
+       const datos = { hotel_id: form.hotelId, nombre: form.nombre, descripcion: form.descripcion, numero_habitacion: form.numeroHabitacion, tipo_habitacion: form.tipoHabitacion, tipo_cama: form.tipoCama, regimen_alimentacion: form.regimenAlimentacion, capacidad_personas: form.capacidadPersonas, cantidad_camas: form.cantidadCamas, precio_noche: form.precioNoche, moneda: form.moneda, amenidades: form.amenidades, imagenes_urls: form.imagenes_urls, esta_disponible: form.estaDisponible, estado_mantenimiento: form.estadoMantenimiento };
+       const body = editandoId ? { id: editandoId, ...datos } : datos;
        const res = await fetch('/api/admin/habitaciones', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.detalles?.[0]?.mensaje ?? data?.error ?? 'No se pudo guardar la habitacion.');
+      }
       setDrawerOpen(false);
       await Swal.fire({ icon: 'success', title: editandoId ? '¡Habitación actualizada!' : '¡Habitación creada!', timer: 1500, showConfirmButton: false, timerProgressBar: true });
       setForm({ ...formVacio, hotelId: hoteles[0]?.id || '' }); setEditandoId(null);
       cargar();
-    } catch {
-      Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo guardar la habitación.', confirmButtonColor: '#001f3f' });
+    } catch (error) {
+      Swal.fire({ icon: 'error', title: 'Error', text: error instanceof Error ? error.message : 'No se pudo guardar la habitacion.', confirmButtonColor: '#001f3f' });
     } finally { setGuardando(false); }
   };
 
@@ -125,11 +155,15 @@ export default function PaginaHabitaciones() {
     });
     if (!result.isConfirmed) return;
     try {
-      await fetch(`/api/admin/habitaciones?id=${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/admin/habitaciones?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error ?? 'No se pudo eliminar.');
+      }
       Swal.fire({ icon: 'success', title: 'Habitación eliminada', timer: 1200, showConfirmButton: false });
       cargar();
-    } catch {
-      Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo eliminar.', confirmButtonColor: '#001f3f' });
+    } catch (error) {
+      Swal.fire({ icon: 'error', title: 'Error', text: error instanceof Error ? error.message : 'No se pudo eliminar.', confirmButtonColor: '#001f3f' });
     }
   };
 
@@ -171,10 +205,7 @@ export default function PaginaHabitaciones() {
           {/* Tipo */}
           <select value={filtroTipo} onChange={e => setFiltroTipo(e.target.value)} className={`text-xs px-3 py-2 rounded-xl border transition-all focus:outline-none ${filtroTipo ? 'border-[#ffd600] bg-yellow-50 text-[#001f3f] font-bold' : 'border-gray-200 bg-gray-50 text-gray-500'}`}>
             <option value="">Todos los tipos</option>
-            <option value="estandar">Estándar</option>
-            <option value="doble">Doble</option>
-            <option value="suite">Suite</option>
-            <option value="presidencial">Presidencial</option>
+            {TIPOS_HABITACION.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
 
           {/* Estado */}
@@ -277,6 +308,7 @@ export default function PaginaHabitaciones() {
       >
         <form onSubmit={guardar} className="space-y-5">
           <SubidorImagenes
+            key={`habitacion-${editandoId ?? 'nuevo'}-${form.imagenes_urls.join('|')}`}
             bucket="imagenes"
             carpeta="habitaciones"
             imagenesActuales={form.imagenes_urls}
@@ -325,12 +357,9 @@ export default function PaginaHabitaciones() {
               <select
                 className="w-full px-4 py-3 border-0 border-b-2 border-gray-200 bg-gray-50 rounded-t-lg focus:outline-none focus:border-[#ffd600] focus:bg-white transition-all text-sm text-gray-800 appearance-none"
                 value={form.tipoHabitacion}
-                onChange={e => setForm({ ...form, tipoHabitacion: e.target.value })}
+                onChange={e => setForm({ ...form, tipoHabitacion: e.target.value as TipoHabitacion })}
               >
-                <option value="estandar">Estándar</option>
-                <option value="doble">Doble</option>
-                <option value="suite">Suite</option>
-                <option value="presidencial">Presidencial</option>
+                {TIPOS_HABITACION.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
               </select>
             </div>
           </div>
@@ -439,7 +468,7 @@ export default function PaginaHabitaciones() {
             <select
               className="w-full px-4 py-3 border-0 border-b-2 border-gray-200 bg-gray-50 rounded-t-lg focus:outline-none focus:border-[#ffd600] focus:bg-white transition-all text-sm text-gray-800 appearance-none"
               value={form.estadoMantenimiento}
-              onChange={e => setForm({ ...form, estadoMantenimiento: e.target.value })}
+              onChange={e => setForm({ ...form, estadoMantenimiento: e.target.value as EstadoMantenimiento })}
             >
               <option value="disponible">Disponible</option>
               <option value="mantenimiento">Mantenimiento</option>

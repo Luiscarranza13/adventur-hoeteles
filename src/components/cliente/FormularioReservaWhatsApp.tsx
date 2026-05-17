@@ -107,6 +107,7 @@ export function FormularioReservaWhatsApp({ habitacion }: { habitacion: Habitaci
     resolver: zodResolver(esquemaReserva),
   });
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const fechaIngreso = watch('fechaIngreso');
   const fechaSalida = watch('fechaSalida');
 

@@ -78,7 +78,9 @@ export function Header() {
   const pathname = usePathname();
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [hashActivo, setHashActivo] = useState('');
+  const [hashActivo, setHashActivo] = useState(() =>
+    typeof window === 'undefined' ? '' : window.location.hash.replace('#', '')
+  );
   const config = useConfiguracionWeb();
 
   const whatsappConsulta = crearUrlWhatsApp(
@@ -99,15 +101,6 @@ export function Header() {
     onScroll();
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-
-  useEffect(() => { 
-    setMenuAbierto(false);
-    if (pathname !== '/') {
-      setHashActivo('');
-    } else {
-      setHashActivo(window.location.hash.replace('#', ''));
-    }
-  }, [pathname]);
 
   // Escuchar cambios de hash manuales para actualizar el estado
   useEffect(() => {
@@ -350,35 +343,9 @@ export function Header() {
 export function Footer() {
   const year = new Date().getFullYear();
   const config = useConfiguracionWeb();
-  const whatsappConsulta = crearUrlWhatsApp(
-    config.whatsapp_numero,
-    config.whatsapp_mensaje_reserva || 'Hola, quiero consultar por un hotel.'
-  );
 
   return (
     <footer className="bg-[#001f3f] text-white" role="contentinfo">
-
-      <div className="bg-[var(--brand-yellow)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="text-center sm:text-left">
-            <h2 className="text-lg sm:text-2xl font-black text-[var(--brand-navy)] mb-1.5">
-              ¿No encuentras el hotel que necesitas?
-            </h2>
-            <p className="text-[var(--brand-navy)]/60 text-sm font-medium">
-              Tenemos múltiples opciones para cada necesidad. Consulta disponibilidad inmediata.
-            </p>
-          </div>
-          <a
-            href={whatsappConsulta}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="shrink-0 flex items-center gap-2.5 bg-[var(--brand-navy)] hover:bg-[#002d5a] active:scale-95 text-white font-semibold text-sm px-6 py-3 rounded-full transition-all shadow-md whitespace-nowrap"
-          >
-            <MessageCircle size={16} aria-hidden="true" />
-            Escribir al WhatsApp
-          </a>
-        </div>
-      </div>
 
       <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16">

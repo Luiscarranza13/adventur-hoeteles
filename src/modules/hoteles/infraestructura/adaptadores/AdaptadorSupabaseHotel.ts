@@ -1,7 +1,7 @@
-import { createClient } from '@/lib/supabase/server';
+import { createReadonlyClient } from '@/lib/supabase/readonly';
+import { createClient as createBrowserClient } from '@/lib/supabase/client';
 import { RepositorioHotel } from '../../dominio/puertos/RepositorioHotel';
-import { Hotel, DatosNuevoHotel, DatosActualizarHotel } from '../../dominio/entidades/Hotel';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import { Hotel, DatosNuevoHotel, DatosActualizarHotel, TipoAlojamiento } from '../../dominio/entidades/Hotel';
 
 interface HotelDb {
   id: string;
@@ -13,6 +13,7 @@ interface HotelDb {
   email_contacto?: string;
   imagenes_urls: string[];
   estrellas: number;
+  tipo_alojamiento?: string;
   latitud?: number;
   longitud?: number;
   horario_apertura?: string;
@@ -32,6 +33,7 @@ function mapDbToDomain(row: HotelDb): Hotel {
     emailContacto: row.email_contacto,
     imagenesUrls: row.imagenes_urls || [],
     estrellas: row.estrellas,
+    tipoAlojamiento: row.tipo_alojamiento as TipoAlojamiento | undefined,
     latitud: row.latitud,
     longitud: row.longitud,
     horarioApertura: row.horario_apertura,
@@ -41,13 +43,16 @@ function mapDbToDomain(row: HotelDb): Hotel {
   };
 }
 
-export class AdaptadorSupabaseHotel implements RepositorioHotel {
-  private async getCliente(): Promise<SupabaseClient> {
-    return createClient();
+function getCliente() {
+  if (typeof window === 'undefined') {
+    return createReadonlyClient();
   }
+  return createBrowserClient();
+}
 
+export class AdaptadorSupabaseHotel implements RepositorioHotel {
   async buscarPorId(id: string): Promise<Hotel | null> {
-    const cliente = await this.getCliente();
+    const cliente = getCliente();
     const { data, error } = await cliente
       .from('hoteles')
       .select('*')
@@ -58,8 +63,20 @@ export class AdaptadorSupabaseHotel implements RepositorioHotel {
     return mapDbToDomain(data as HotelDb);
   }
 
+  async buscarPorTipo(tipo: TipoAlojamiento): Promise<Hotel[]> {
+    const cliente = getCliente();
+    const { data, error } = await cliente
+      .from('hoteles')
+      .select('*')
+      .eq('tipo_alojamiento', tipo)
+      .eq('activo', true)
+      .order('fecha_creacion', { ascending: false });
+    if (error || !data) return [];
+    return (data as HotelDb[]).map(mapDbToDomain);
+  }
+
   async buscarPorCiudad(ciudad: string): Promise<Hotel[]> {
-    const cliente = await this.getCliente();
+    const cliente = getCliente();
     const { data, error } = await cliente
       .from('hoteles')
       .select('*')
@@ -71,7 +88,7 @@ export class AdaptadorSupabaseHotel implements RepositorioHotel {
   }
 
   async listarActivos(): Promise<Hotel[]> {
-    const cliente = await this.getCliente();
+    const cliente = getCliente();
     const { data, error } = await cliente
       .from('hoteles')
       .select('*')
@@ -83,7 +100,7 @@ export class AdaptadorSupabaseHotel implements RepositorioHotel {
   }
 
   async listarTodos(): Promise<Hotel[]> {
-    const cliente = await this.getCliente();
+    const cliente = getCliente();
     const { data, error } = await cliente
       .from('hoteles')
       .select('*')
@@ -94,7 +111,7 @@ export class AdaptadorSupabaseHotel implements RepositorioHotel {
   }
 
   async crear(datos: DatosNuevoHotel): Promise<Hotel> {
-    const cliente = await this.getCliente();
+    const cliente = getCliente();
     const { data, error } = await cliente
       .from('hoteles')
       .insert({
@@ -106,6 +123,7 @@ export class AdaptadorSupabaseHotel implements RepositorioHotel {
         email_contacto: datos.emailContacto,
         imagenes_urls: datos.imagenesUrls || [],
         estrellas: datos.estrellas || 3,
+        tipo_alojamiento: datos.tipoAlojamiento,
         latitud: datos.latitud,
         longitud: datos.longitud,
         horario_apertura: datos.horarioApertura,
@@ -119,7 +137,7 @@ export class AdaptadorSupabaseHotel implements RepositorioHotel {
   }
 
   async actualizar(id: string, datos: DatosActualizarHotel): Promise<Hotel> {
-    const cliente = await this.getCliente();
+    const cliente = getCliente();
     const updateData: Record<string, unknown> = {};
     if (datos.nombre !== undefined) updateData.nombre = datos.nombre;
     if (datos.descripcion !== undefined) updateData.descripcion = datos.descripcion;
@@ -129,6 +147,7 @@ export class AdaptadorSupabaseHotel implements RepositorioHotel {
     if (datos.emailContacto !== undefined) updateData.email_contacto = datos.emailContacto;
     if (datos.imagenesUrls !== undefined) updateData.imagenes_urls = datos.imagenesUrls;
     if (datos.estrellas !== undefined) updateData.estrellas = datos.estrellas;
+    if (datos.tipoAlojamiento !== undefined) updateData.tipo_alojamiento = datos.tipoAlojamiento;
     if (datos.latitud !== undefined) updateData.latitud = datos.latitud;
     if (datos.longitud !== undefined) updateData.longitud = datos.longitud;
     if (datos.horarioApertura !== undefined) updateData.horario_apertura = datos.horarioApertura;
@@ -147,7 +166,7 @@ export class AdaptadorSupabaseHotel implements RepositorioHotel {
   }
 
   async eliminar(id: string): Promise<void> {
-    const cliente = await this.getCliente();
+    const cliente = getCliente();
     const { error } = await cliente.from('hoteles').delete().eq('id', id);
     if (error) throw new Error(error.message);
   }

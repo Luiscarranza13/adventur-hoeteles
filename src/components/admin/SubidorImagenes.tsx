@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { createClient } from '@/lib/supabase/client';
 import { Upload, X, ImageIcon, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
@@ -32,12 +32,6 @@ export function SubidorImagenes({
   );
 
   // Sincronizar cuando cambian las imágenes actuales (al abrir edición de otro registro)
-  const imagenesRef = JSON.stringify(imagenesActuales);
-  useEffect(() => {
-    setImagenes(imagenesActuales.map(url => ({ url, subiendo: false })));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [imagenesRef]);
-
   useEffect(() => {
     const validas = imagenes.filter(i => i.url && !i.error && !i.subiendo).map(i => i.url);
     onChange(validas);
@@ -48,10 +42,20 @@ export function SubidorImagenes({
     const supabase = createClient();
     const extension = archivo.name.split('.').pop()?.toLowerCase() ?? 'jpg';
     const nombreArchivo = `${carpeta}/${Date.now()}-${Math.random().toString(36).slice(2)}.${extension}`;
-    const { error } = await supabase.storage.from(bucket).upload(nombreArchivo, archivo, { cacheControl: '3600', upsert: false });
-    if (error) return null;
-    const { data } = supabase.storage.from(bucket).getPublicUrl(nombreArchivo);
-    return data.publicUrl;
+
+    // Intentar primero con el bucket configurado, luego con 'avatares' como fallback
+    const buckets = [bucket, bucket === 'imagenes' ? 'hoteles' : 'imagenes'];
+    for (const b of buckets) {
+      const { error } = await supabase.storage.from(b).upload(nombreArchivo, archivo, {
+        cacheControl: '3600',
+        upsert: false,
+      });
+      if (!error) {
+        const { data } = supabase.storage.from(b).getPublicUrl(nombreArchivo);
+        return data.publicUrl;
+      }
+    }
+    return null;
   };
 
   const procesarArchivos = useCallback(async (archivos: File[]) => {

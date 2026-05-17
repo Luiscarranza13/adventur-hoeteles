@@ -1,7 +1,6 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/client';
 import { RepositorioHabitacion } from '../../dominio/puertos/RepositorioHabitacion';
-import { Habitacion, DatosNuevaHabitacion, DatosActualizarHabitacion, TipoHabitacion, EstadoMantenimiento, Moneda } from '../../dominio/entidades/Habitacion';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import { Habitacion, DatosNuevaHabitacion, DatosActualizarHabitacion, TipoHabitacion, TipoCama, RegimeAlimentacion, EstadoMantenimiento, Moneda } from '../../dominio/entidades/Habitacion';
 
 interface HabitacionDb {
   id: string;
@@ -9,15 +8,17 @@ interface HabitacionDb {
   nombre: string;
   descripcion: string | null;
   numero_habitacion: string | null;
-  tipo_habitacion: TipoHabitacion;
+  tipo_habitacion: string;
+  tipo_cama: string | null;
+  regimen_alimentacion: string | null;
   capacidad_personas: number;
   cantidad_camas: number;
   precio_noche: number;
-  moneda: Moneda | null;
+  moneda: string | null;
   amenidades: string[];
   imagenes_urls: string[];
   esta_disponible: boolean;
-  estado_mantenimiento: EstadoMantenimiento;
+  estado_mantenimiento: string;
   fecha_creacion: string;
 }
 
@@ -28,26 +29,28 @@ function mapDbToDomain(row: HabitacionDb): Habitacion {
     nombre: row.nombre,
     descripcion: row.descripcion || undefined,
     numeroHabitacion: row.numero_habitacion || undefined,
-    tipoHabitacion: row.tipo_habitacion || 'estandar',
+    tipoHabitacion: (row.tipo_habitacion as TipoHabitacion) || 'DBL',
+    tipoCama: row.tipo_cama ? (row.tipo_cama as TipoCama) : undefined,
+    regimenAlimentacion: row.regimen_alimentacion ? (row.regimen_alimentacion as RegimeAlimentacion) : undefined,
     capacidadPersonas: row.capacidad_personas,
     cantidadCamas: row.cantidad_camas || 1,
     precioNoche: Number(row.precio_noche),
-    moneda: row.moneda || 'USD',
+    moneda: (row.moneda as Moneda) || 'PEN',
     amenidades: row.amenidades || [],
     imagenesUrls: row.imagenes_urls || [],
     estaDisponible: row.esta_disponible,
-    estadoMantenimiento: row.estado_mantenimiento || 'disponible',
+    estadoMantenimiento: (row.estado_mantenimiento as EstadoMantenimiento) || 'disponible',
     fechaCreacion: new Date(row.fecha_creacion),
   };
 }
 
 export class AdaptadorSupabaseHabitacion implements RepositorioHabitacion {
-  private async getCliente(): Promise<SupabaseClient> {
+  private getCliente() {
     return createClient();
   }
 
   async buscarPorId(id: string): Promise<Habitacion | null> {
-    const cliente = await this.getCliente();
+    const cliente = this.getCliente();
     const { data, error } = await cliente
       .from('habitaciones')
       .select('*')
@@ -59,7 +62,7 @@ export class AdaptadorSupabaseHabitacion implements RepositorioHabitacion {
   }
 
   async buscarPorHotelId(hotelId: string): Promise<Habitacion[]> {
-    const cliente = await this.getCliente();
+    const cliente = this.getCliente();
     const { data, error } = await cliente
       .from('habitaciones')
       .select('*')
@@ -71,7 +74,7 @@ export class AdaptadorSupabaseHabitacion implements RepositorioHabitacion {
   }
 
   async listarTodas(): Promise<Habitacion[]> {
-    const cliente = await this.getCliente();
+    const cliente = this.getCliente();
     const { data, error } = await cliente
       .from('habitaciones')
       .select('*')
@@ -82,7 +85,7 @@ export class AdaptadorSupabaseHabitacion implements RepositorioHabitacion {
   }
 
   async listarDisponibles(): Promise<Habitacion[]> {
-    const cliente = await this.getCliente();
+    const cliente = this.getCliente();
     const { data, error } = await cliente
       .from('habitaciones')
       .select('*')
@@ -95,7 +98,7 @@ export class AdaptadorSupabaseHabitacion implements RepositorioHabitacion {
   }
 
   async crear(datos: DatosNuevaHabitacion): Promise<Habitacion> {
-    const cliente = await this.getCliente();
+    const cliente = this.getCliente();
     const { data, error } = await cliente
       .from('habitaciones')
       .insert({
@@ -103,7 +106,9 @@ export class AdaptadorSupabaseHabitacion implements RepositorioHabitacion {
         nombre: datos.nombre,
         descripcion: datos.descripcion || null,
         numero_habitacion: datos.numeroHabitacion || null,
-        tipo_habitacion: datos.tipoHabitacion || 'estandar',
+        tipo_habitacion: datos.tipoHabitacion || 'DBL',
+        tipo_cama: datos.tipoCama || null,
+        regimen_alimentacion: datos.regimenAlimentacion || null,
         capacidad_personas: datos.capacidadPersonas,
         cantidad_camas: datos.cantidadCamas || 1,
         precio_noche: datos.precioNoche,
@@ -121,12 +126,14 @@ export class AdaptadorSupabaseHabitacion implements RepositorioHabitacion {
   }
 
   async actualizar(id: string, datos: DatosActualizarHabitacion): Promise<Habitacion> {
-    const cliente = await this.getCliente();
+    const cliente = this.getCliente();
     const updateData: Record<string, unknown> = {};
     if (datos.nombre !== undefined) updateData.nombre = datos.nombre;
     if (datos.descripcion !== undefined) updateData.descripcion = datos.descripcion;
     if (datos.numeroHabitacion !== undefined) updateData.numero_habitacion = datos.numeroHabitacion;
     if (datos.tipoHabitacion !== undefined) updateData.tipo_habitacion = datos.tipoHabitacion;
+    if (datos.tipoCama !== undefined) updateData.tipo_cama = datos.tipoCama;
+    if (datos.regimenAlimentacion !== undefined) updateData.regimen_alimentacion = datos.regimenAlimentacion;
     if (datos.capacidadPersonas !== undefined) updateData.capacidad_personas = datos.capacidadPersonas;
     if (datos.cantidadCamas !== undefined) updateData.cantidad_camas = datos.cantidadCamas;
     if (datos.precioNoche !== undefined) updateData.precio_noche = datos.precioNoche;
@@ -148,7 +155,7 @@ export class AdaptadorSupabaseHabitacion implements RepositorioHabitacion {
   }
 
   async eliminar(id: string): Promise<void> {
-    const cliente = await this.getCliente();
+    const cliente = this.getCliente();
     const { error } = await cliente.from('habitaciones').delete().eq('id', id);
     if (error) throw new Error(error.message);
   }

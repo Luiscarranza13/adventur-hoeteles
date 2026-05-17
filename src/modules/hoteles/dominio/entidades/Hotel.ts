@@ -1,3 +1,11 @@
+export type TipoAlojamiento =
+  | 'Hotel'
+  | 'Hostal'
+  | 'Apart-hotel'
+  | 'Resort'
+  | 'Ecolodge'
+  | 'Albergue';
+
 export interface Hotel {
   id: string;
   nombre: string;
@@ -8,6 +16,7 @@ export interface Hotel {
   emailContacto?: string;
   imagenesUrls: string[];
   estrellas: number;
+  tipoAlojamiento?: TipoAlojamiento;
   latitud?: number;
   longitud?: number;
   horarioApertura?: string;
@@ -25,6 +34,7 @@ export interface DatosNuevoHotel {
   emailContacto?: string;
   imagenesUrls?: string[];
   estrellas?: number;
+  tipoAlojamiento?: TipoAlojamiento;
   latitud?: number;
   longitud?: number;
   horarioApertura?: string;
@@ -40,6 +50,7 @@ export interface DatosActualizarHotel {
   emailContacto?: string;
   imagenesUrls?: string[];
   estrellas?: number;
+  tipoAlojamiento?: TipoAlojamiento;
   latitud?: number;
   longitud?: number;
   horarioApertura?: string;

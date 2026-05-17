@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import {
   Settings, Save, Loader2, Globe, MessageCircle,
@@ -78,18 +78,40 @@ export default function PaginaConfiguracion() {
   const [guardando, setGuardando] = useState(false);
   const [seccion, setSeccion] = useState<Seccion>('negocio');
 
-  useEffect(() => { cargar(); }, []);
-
-  const cargar = async () => {
+  const cargar = useCallback(async () => {
     try {
       const res = await fetch('/api/admin/configuracion');
       const data = await res.json();
       setConfig({ ...configVacia, ...data });
     } catch { /* silencioso */ }
     finally { setLoading(false); }
-  };
+  }, []);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { cargar(); }, [cargar]);
 
   const guardar = async () => {
+    // Validaciones básicas
+    const erroresConfig: string[] = [];
+    if (!config.nombre_negocio.trim()) erroresConfig.push('El nombre del negocio es requerido');
+    if (!config.whatsapp_numero.trim()) erroresConfig.push('El número de WhatsApp es requerido');
+    else if (!/^\+?\d[\d\s-]{7,20}$/.test(config.whatsapp_numero.trim())) erroresConfig.push('Formato de WhatsApp inválido (ej: 5215512345678)');
+    if (config.email_contacto && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(config.email_contacto)) erroresConfig.push('Email de contacto inválido');
+    if (config.facebook_url && !config.facebook_url.startsWith('http')) erroresConfig.push('URL de Facebook inválida (debe empezar con http)');
+    if (config.instagram_url && !config.instagram_url.startsWith('http')) erroresConfig.push('URL de Instagram inválida');
+    if (config.tiktok_url && !config.tiktok_url.startsWith('http')) erroresConfig.push('URL de TikTok inválida');
+    if (config.twitter_url && !config.twitter_url.startsWith('http')) erroresConfig.push('URL de Twitter inválida');
+
+    if (erroresConfig.length > 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Revisa los datos',
+        html: erroresConfig.map(e => `<li style="text-align:left">${e}</li>`).join(''),
+        confirmButtonColor: '#001f3f',
+      });
+      return;
+    }
+
     setGuardando(true);
     try {
       const res = await fetch('/api/admin/configuracion', {

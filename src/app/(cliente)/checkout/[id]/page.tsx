@@ -2,6 +2,7 @@ import { Header, Footer } from '@/components/layout/Header';
 import { ServicioHabitaciones, AdaptadorSupabaseHabitacion } from '@/modules/habitaciones';
 import { ServicioHoteles, AdaptadorSupabaseHotel } from '@/modules/hoteles';
 import { FormularioReservaWhatsApp } from '@/components/cliente/FormularioReservaWhatsApp';
+import { AnimarAlEntrar } from '@/components/ui/AnimarAlEntrar';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Shield, Zap, BadgeDollarSign, ChevronRight } from 'lucide-react';
@@ -46,7 +47,7 @@ export default async function PaginaCheckout({ params }: PageProps) {
           </nav>
 
           {/* Formulario */}
-          <div className="card-premium !p-8 sm:!p-12 animate-fade-up">
+          <AnimarAlEntrar className="card-premium !p-8 sm:!p-12">
             <div className="mb-10 text-center lg:text-left">
               <h2 className="heading-card !text-2xl mb-2">{habitacion.nombre}</h2>
               <p className="body-text !text-sm">Hotel {hotel.nombre} · {hotel.ciudad}</p>
@@ -60,10 +61,10 @@ export default async function PaginaCheckout({ params }: PageProps) {
                 hotelNombre: hotel.nombre,
               }}
             />
-          </div>
+          </AnimarAlEntrar>
 
           {/* Garantías */}
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 animate-fade-up" style={{ animationDelay: '0.1s' }}>
+          <AnimarAlEntrar delay={0.1} className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
               { Icon: Shield,          label: 'Reserva 100% Segura', desc: 'Sin intermediarios' },
               { Icon: Zap,             label: 'Respuesta Inmediata', desc: 'Atención directa' },
@@ -77,7 +78,7 @@ export default async function PaginaCheckout({ params }: PageProps) {
                 <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">{desc}</p>
               </div>
             ))}
-          </div>
+          </AnimarAlEntrar>
         </div>
       </main>
       <Footer />

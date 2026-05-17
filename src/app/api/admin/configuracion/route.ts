@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import {
   CONFIGURACION_DEFAULT,
-  limpiarConfiguracionInput,
   normalizarConfiguracion,
 } from '@/lib/configuracion';
+import { requerirAdmin } from '@/lib/admin-auth';
+import { esquemaConfiguracionAdmin, respuestaErrorValidacion } from '@/lib/admin-validaciones';
+import { z } from 'zod';
 
 export async function GET() {
   try {
+    const auth = await requerirAdmin();
+    if (!auth.autorizado) return auth.respuesta;
     const supabase = await createClient();
     const { data, error } = await supabase
       .from('configuracion')
@@ -29,9 +33,10 @@ export async function GET() {
 
 export async function PUT(request: NextRequest) {
   try {
+    const auth = await requerirAdmin();
+    if (!auth.autorizado) return auth.respuesta;
     const supabase = await createClient();
-    const body = await request.json();
-    const configuracion = limpiarConfiguracionInput(body);
+    const configuracion = esquemaConfiguracionAdmin.parse(await request.json());
 
     const { data, error } = await supabase
       .from('configuracion')
@@ -56,6 +61,9 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json(normalizarConfiguracion(data));
   } catch (e) {
+    if (e instanceof z.ZodError) {
+      return NextResponse.json(respuestaErrorValidacion(e), { status: 400 });
+    }
     console.error(e);
     return NextResponse.json(
       { error: e instanceof Error ? e.message : 'Error al guardar configuracion' },

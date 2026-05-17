@@ -1,8 +1,10 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 interface Props {
   children: React.ReactNode;
@@ -12,32 +14,51 @@ interface Props {
 }
 
 export function AnimarAlEntrar({ children, className, delay = 0, direction = 'up' }: Props) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-80px' });
+  const ref = useRef<HTMLDivElement | null>(null);
 
-  const variants = {
-    hidden: {
-      opacity: 0,
-      y: direction === 'up' ? 30 : 0,
-      x: direction === 'left' ? -30 : direction === 'right' ? 30 : 0,
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      x: 0,
-      transition: { duration: 0.5, delay, ease: 'easeOut' as const },
-    },
-  };
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) {
+      gsap.set(element, { autoAlpha: 1, x: 0, y: 0, clearProps: 'transform' });
+      return;
+    }
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        element,
+        {
+          autoAlpha: 0,
+          y: direction === 'up' ? 36 : 0,
+          x: direction === 'left' ? -36 : direction === 'right' ? 36 : 0,
+          filter: 'blur(10px)',
+        },
+        {
+          autoAlpha: 1,
+          x: 0,
+          y: 0,
+          filter: 'blur(0px)',
+          duration: 0.85,
+          delay,
+          ease: 'power3.out',
+          clearProps: 'filter,transform,opacity,visibility',
+          scrollTrigger: {
+            trigger: element,
+            start: 'top 88%',
+            once: true,
+          },
+        },
+      );
+    }, element);
+
+    return () => ctx.revert();
+  }, [delay, direction]);
 
   return (
-    <motion.div
-      ref={ref}
-      variants={variants}
-      initial="hidden"
-      animate={inView ? 'visible' : 'hidden'}
-      className={className}
-    >
+    <div ref={ref} className={className}>
       {children}
-    </motion.div>
+    </div>
   );
 }

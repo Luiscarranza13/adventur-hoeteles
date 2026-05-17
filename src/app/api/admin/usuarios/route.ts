@@ -1,12 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AdaptadorSupabaseUsuario } from '@/modules/usuarios';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { requerirAdmin } from '@/lib/admin-auth';
+import {
+  esquemaUsuarioActualizarAdmin,
+  esquemaUsuarioCrearAdmin,
+  respuestaErrorValidacion,
+} from '@/lib/admin-validaciones';
+import { z } from 'zod';
 
 const repo = () => new AdaptadorSupabaseUsuario();
 
 export async function GET() {
   try {
-    return NextResponse.json(await repo().listar());
+    const auth = await requerirAdmin();
+    if (!auth.autorizado) return auth.respuesta;
+    const data = await repo().listar();
+    const res = NextResponse.json(data);
+    res.headers.set('Cache-Control', 'private, max-age=30, stale-while-revalidate=60');
+    return res;
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: 'Error al obtener usuarios' }, { status: 500 });
@@ -15,71 +27,134 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { nombreCompleto, correo, contrasena, telefono, rol } = body;
+    const auth = await requerirAdmin();
+    if (!auth.autorizado) return auth.respuesta;
 
-    if (!nombreCompleto || !correo || !contrasena) {
-      return NextResponse.json({ error: 'Nombre, correo y contraseña son requeridos' }, { status: 400 });
+    const body = esquemaUsuarioCrearAdmin.parse(await request.json());
+
+    // Verificar si el correo ya existe
+    const { data: existente } = await auth.supabase
+      .from('usuarios')
+      .select('id')
+      .eq('correo', body.correo)
+      .maybeSingle();
+
+    if (existente) {
+      return NextResponse.json({ error: 'Ya existe un usuario con ese correo electrónico' }, { status: 400 });
     }
 
-    // Crear usuario en Supabase Auth
-    const supabase = await createClient();
-    const { data: authData, error: authError } = await supabase.auth.admin
-      ? await (await import('@/lib/supabase/admin')).createAdminClient().auth.admin.createUser({
-          email: correo,
-          password: contrasena,
-          email_confirm: true,
-        })
-      : { data: null, error: new Error('Admin client no disponible') };
+    let userId: string;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (authError || !authData?.user) {
-      return NextResponse.json({ error: authError?.message ?? 'Error al crear usuario en Auth' }, { status: 500 });
+    if (serviceKey) {
+      // Ruta preferida: service role — crea usuario confirmado directamente
+      const supabaseAdmin = createAdminClient();
+      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+        email: body.correo,
+        password: body.contrasena,
+        email_confirm: true,
+        user_metadata: { nombre_completo: body.nombreCompleto },
+      });
+      if (authError || !authData.user) {
+        return NextResponse.json(
+          { error: authError?.message ?? 'Error al crear usuario en Auth' },
+          { status: 500 },
+        );
+      }
+      userId = authData.user.id;
+    } else {
+      // Fallback: signUp — funciona si "Confirm email" está desactivado en Supabase Auth settings
+      const { data: signUpData, error: signUpError } = await auth.supabase.auth.signUp({
+        email: body.correo,
+        password: body.contrasena,
+      });
+
+      if (signUpError) {
+        return NextResponse.json({ error: signUpError.message }, { status: 500 });
+      }
+      if (!signUpData.user) {
+        return NextResponse.json(
+          { error: 'No se pudo crear el usuario. Verifica que la confirmación de email esté desactivada en Supabase Auth.' },
+          { status: 500 },
+        );
+      }
+      userId = signUpData.user.id;
     }
 
-    // Insertar en tabla usuarios
-    const { data, error } = await supabase
+    // Insertar perfil en tabla usuarios
+    const { data, error } = await auth.supabase
       .from('usuarios')
       .insert({
-        id: authData.user.id,
-        nombre_completo: nombreCompleto,
-        correo,
-        telefono: telefono || null,
-        rol: rol || 'recepcionista',
-        foto_url: body.fotoUrl || null,
+        id: userId,
+        nombre_completo: body.nombreCompleto,
+        correo: body.correo,
+        telefono: body.telefono ?? null,
+        rol: body.rol,
+        foto_url: body.fotoUrl ?? null,
       })
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      // Limpiar usuario de Auth si falla el perfil
+      if (serviceKey) {
+        try { await createAdminClient().auth.admin.deleteUser(userId); } catch { /* ignorar */ }
+      }
+      return NextResponse.json({ error: `Error al crear perfil: ${error.message}` }, { status: 500 });
+    }
+
     return NextResponse.json(data, { status: 201 });
   } catch (e) {
-    console.error(e);
-    return NextResponse.json({ error: 'Error al crear usuario' }, { status: 500 });
+    if (e instanceof z.ZodError) {
+      return NextResponse.json(respuestaErrorValidacion(e), { status: 400 });
+    }
+    console.error('[POST /api/admin/usuarios]', e);
+    return NextResponse.json({ error: e instanceof Error ? e.message : 'Error al crear usuario' }, { status: 500 });
   }
 }
 
 export async function PUT(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { id, nombreCompleto, telefono, rol } = body;
-    if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
+    const auth = await requerirAdmin();
+    if (!auth.autorizado) return auth.respuesta;
 
-    const supabase = await createClient();
-    const { data, error } = await supabase
+    const body = esquemaUsuarioActualizarAdmin.parse(await request.json());
+    if (body.id === auth.user.id && body.rol !== 'admin') {
+      return NextResponse.json({ error: 'No puedes quitarte tu propio rol admin' }, { status: 400 });
+    }
+
+    const { count } = await auth.supabase
+      .from('usuarios')
+      .select('id', { count: 'exact', head: true })
+      .eq('rol', 'admin');
+    const { data: usuarioActual } = await auth.supabase
+      .from('usuarios')
+      .select('rol')
+      .eq('id', body.id)
+      .single();
+
+    if (usuarioActual?.rol === 'admin' && body.rol !== 'admin' && (count ?? 0) <= 1) {
+      return NextResponse.json({ error: 'Debe existir al menos un administrador' }, { status: 400 });
+    }
+
+    const { data, error } = await auth.supabase
       .from('usuarios')
       .update({
-        nombre_completo: nombreCompleto,
-        telefono: telefono || null,
-        rol,
-        foto_url: body.fotoUrl || null,
+        nombre_completo: body.nombreCompleto,
+        telefono: body.telefono ?? null,
+        rol: body.rol,
+        foto_url: body.fotoUrl ?? null,
       })
-      .eq('id', id)
+      .eq('id', body.id)
       .select()
       .single();
 
     if (error) throw error;
     return NextResponse.json(data);
   } catch (e) {
+    if (e instanceof z.ZodError) {
+      return NextResponse.json(respuestaErrorValidacion(e), { status: 400 });
+    }
     console.error(e);
     return NextResponse.json({ error: 'Error al actualizar usuario' }, { status: 500 });
   }
@@ -87,13 +162,39 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
+    const auth = await requerirAdmin();
+    if (!auth.autorizado) return auth.respuesta;
 
-    const supabase = await createClient();
-    const { error } = await supabase.from('usuarios').delete().eq('id', id);
+    const id = new URL(request.url).searchParams.get('id');
+    if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
+    if (id === auth.user.id) {
+      return NextResponse.json({ error: 'No puedes eliminar tu propio usuario' }, { status: 400 });
+    }
+
+    const { count } = await auth.supabase
+      .from('usuarios')
+      .select('id', { count: 'exact', head: true })
+      .eq('rol', 'admin');
+    const { data: usuario } = await auth.supabase
+      .from('usuarios')
+      .select('rol')
+      .eq('id', id)
+      .single();
+
+    if (usuario?.rol === 'admin' && (count ?? 0) <= 1) {
+      return NextResponse.json({ error: 'Debe existir al menos un administrador' }, { status: 400 });
+    }
+
+    const { error } = await auth.supabase.from('usuarios').delete().eq('id', id);
     if (error) throw error;
+
+    // Intentar eliminar de Auth si hay service role key
+    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        await createAdminClient().auth.admin.deleteUser(id);
+      } catch { /* ignorar si falla — el perfil ya fue eliminado */ }
+    }
+
     return NextResponse.json({ message: 'Usuario eliminado' });
   } catch (e) {
     console.error(e);

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, Hotel, BedDouble, Users, LogOut, Settings } from 'lucide-react';
 import Swal from 'sweetalert2';
@@ -61,9 +62,11 @@ export function SidebarAdmin({ email }: SidebarAdminProps) {
   return (
     <aside className="w-60 bg-[#001f3f] flex flex-col flex-shrink-0 h-full shadow-xl">
       <div className="h-16 flex items-center px-5 border-b border-white/10 flex-shrink-0 gap-3">
-        <img 
-          src="/logoadventur2.png" 
-          alt="Adventur Logo" 
+        <Image
+          src="/logoadventur2.png"
+          alt="Adventur Logo"
+          width={32}
+          height={32}
           className="w-8 h-8 flex-shrink-0 object-contain"
         />
         <div>

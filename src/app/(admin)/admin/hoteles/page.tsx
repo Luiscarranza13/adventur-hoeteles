@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Input } from '@/components/ui/Input';
 import { FormDrawer } from '@/components/admin/FormDrawer';
 import { SubidorImagenes } from '@/components/admin/SubidorImagenes';
 import { BarraFiltros } from '@/components/admin/BarraFiltros';
-import type { Hotel } from '@/modules/hoteles';
+import type { Hotel, TipoAlojamiento } from '@/modules/hoteles';
 import Swal from 'sweetalert2';
 import {
   Plus, Pencil, Trash2, Hotel as HotelIcon,
@@ -19,6 +19,9 @@ type FormData = {
   nombre: string; descripcion: string; ciudad: string;
   direccion: string; telefono_whatsapp: string; email_contacto?: string;
   estrellas: number; imagenes_urls: string[]; activo: boolean;
+  tipo_alojamiento: TipoAlojamiento;
+  latitud?: number | '';
+  longitud?: number | '';
   horario_apertura?: string; horario_cierre?: string;
 };
 
@@ -27,7 +30,10 @@ type OrdenHotel = 'nombre_asc' | 'nombre_desc' | 'estrellas_asc' | 'estrellas_de
 const formVacio: FormData = {
   nombre: '', descripcion: '', ciudad: '', direccion: '',
   telefono_whatsapp: '', estrellas: 3, imagenes_urls: [], activo: true,
+  tipo_alojamiento: 'Hotel', latitud: '', longitud: '',
 };
+
+const TIPOS_ALOJAMIENTO: TipoAlojamiento[] = ['Hotel', 'Hostal', 'Apart-hotel', 'Resort', 'Ecolodge', 'Albergue'];
 
 export default function HotelesPage() {
   const [hoteles, setHoteles] = useState<Hotel[]>([]);
@@ -35,6 +41,7 @@ export default function HotelesPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormData>(formVacio);
+  const [errores, setErrores] = useState<Partial<Record<keyof FormData, string>>>({});
   const [guardando, setGuardando] = useState(false);
   const [busqueda, setBusqueda] = useState('');
   const [vistaLista, setVistaLista] = useState(false);
@@ -43,17 +50,78 @@ export default function HotelesPage() {
   const [filtroCiudad, setFiltroCiudad] = useState('');
   const [orden, setOrden] = useState<OrdenHotel>('');
 
-  useEffect(() => { cargar(); }, []);
-
-  const cargar = async () => {
+  const cargar = useCallback(async () => {
     try {
       const res = await fetch('/api/admin/hoteles');
       setHoteles(await res.json());
     } catch { /* silencioso */ }
     finally { setLoading(false); }
+  }, []);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { cargar(); }, [cargar]);
+
+  const validar = (): boolean => {
+    const e: Partial<Record<keyof FormData, string>> = {};
+    if (!form.nombre.trim()) e.nombre = 'El nombre es requerido';
+    else if (form.nombre.trim().length < 2) e.nombre = 'Mínimo 2 caracteres';
+    else if (form.nombre.trim().length > 140) e.nombre = 'Máximo 140 caracteres';
+
+    if (!form.ciudad.trim()) e.ciudad = 'La ciudad es requerida';
+    else if (form.ciudad.trim().length > 100) e.ciudad = 'Máximo 100 caracteres';
+
+    if (!form.direccion.trim()) e.direccion = 'La dirección es requerida';
+    else if (form.direccion.trim().length > 220) e.direccion = 'Máximo 220 caracteres';
+
+    if (!form.telefono_whatsapp.trim()) e.telefono_whatsapp = 'El WhatsApp es requerido';
+    else if (!/^\+?\d[\d\s-]{7,20}$/.test(form.telefono_whatsapp.trim())) e.telefono_whatsapp = 'Formato inválido (ej: 5215512345678)';
+
+    if (form.email_contacto && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email_contacto)) {
+      e.email_contacto = 'Email inválido';
+    }
+
+    if (!form.descripcion.trim()) e.descripcion = 'La descripción es requerida';
+    else if (form.descripcion.trim().length < 10) e.descripcion = 'Mínimo 10 caracteres';
+
+    if (form.latitud !== '' && form.latitud !== undefined) {
+      const lat = Number(form.latitud);
+      if (isNaN(lat) || lat < -90 || lat > 90) e.latitud = 'Latitud entre -90 y 90';
+    }
+    if (form.longitud !== '' && form.longitud !== undefined) {
+      const lng = Number(form.longitud);
+      if (isNaN(lng) || lng < -180 || lng > 180) e.longitud = 'Longitud entre -180 y 180';
+    }
+
+    setErrores(e);
+    return Object.keys(e).length === 0;
   };
 
-  const ciudades = useMemo(() => [...new Set(hoteles.map(h => h.ciudad))].sort(), [hoteles]);
+  const abrirNuevo = () => { setForm(formVacio); setErrores({}); setEditingId(null); setDrawerOpen(true); };
+  const abrirEditar = (h: Hotel) => {
+    setForm({ nombre: h.nombre, descripcion: h.descripcion, ciudad: h.ciudad, direccion: h.direccion, telefono_whatsapp: h.telefonoWhatsapp, email_contacto: h.emailContacto, estrellas: h.estrellas, imagenes_urls: h.imagenesUrls ?? [], activo: h.activo, tipo_alojamiento: h.tipoAlojamiento ?? 'Hotel', latitud: h.latitud ?? '', longitud: h.longitud ?? '', horario_apertura: h.horarioApertura, horario_cierre: h.horarioCierre });
+    setErrores({});
+    setEditingId(h.id); setDrawerOpen(true);
+  };
+
+  const guardar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validar()) return;
+    setGuardando(true);
+    try {
+      const method = editingId ? 'PUT' : 'POST';
+      const body = editingId ? { ...form, id: editingId } : form;
+      const res = await fetch('/api/admin/hoteles', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.detalles?.[0]?.mensaje ?? data?.error ?? 'No se pudo guardar el hotel.');
+      }
+      setDrawerOpen(false);
+      await Swal.fire({ icon: 'success', title: editingId ? '¡Hotel actualizado!' : '¡Hotel creado!', timer: 1500, showConfirmButton: false, timerProgressBar: true });
+      setForm(formVacio); setEditingId(null); cargar();
+    } catch (error) {
+      Swal.fire({ icon: 'error', title: 'Error', text: error instanceof Error ? error.message : 'No se pudo guardar el hotel.', confirmButtonColor: '#001f3f' });
+    } finally { setGuardando(false); }
+  };
 
   const hotelesFiltrados = useMemo(() => {
     let lista = hoteles.filter(h => {
@@ -67,39 +135,16 @@ export default function HotelesPage() {
       const coincideCiudad = !filtroCiudad || h.ciudad === filtroCiudad;
       return coincideBusqueda && coincideEstrellas && coincideActivo && coincideCiudad;
     });
-
     if (orden === 'nombre_asc') lista = [...lista].sort((a, b) => a.nombre.localeCompare(b.nombre));
     if (orden === 'nombre_desc') lista = [...lista].sort((a, b) => b.nombre.localeCompare(a.nombre));
     if (orden === 'estrellas_asc') lista = [...lista].sort((a, b) => a.estrellas - b.estrellas);
     if (orden === 'estrellas_desc') lista = [...lista].sort((a, b) => b.estrellas - a.estrellas);
-
     return lista;
   }, [hoteles, busqueda, filtroEstrellas, filtroActivo, filtroCiudad, orden]);
 
+  const ciudades = useMemo(() => [...new Set(hoteles.map(h => h.ciudad))].sort(), [hoteles]);
   const hayFiltros = !!(busqueda || filtroEstrellas || filtroActivo !== 'todos' || filtroCiudad || orden);
   const limpiarFiltros = () => { setBusqueda(''); setFiltroEstrellas(0); setFiltroActivo('todos'); setFiltroCiudad(''); setOrden(''); };
-
-  const abrirNuevo = () => { setForm(formVacio); setEditingId(null); setDrawerOpen(true); };
-  const abrirEditar = (h: Hotel) => {
-    setForm({ nombre: h.nombre, descripcion: h.descripcion, ciudad: h.ciudad, direccion: h.direccion, telefono_whatsapp: h.telefonoWhatsapp, email_contacto: h.emailContacto, estrellas: h.estrellas, imagenes_urls: h.imagenesUrls ?? [], activo: h.activo, horario_apertura: h.horarioApertura, horario_cierre: h.horarioCierre });
-    setEditingId(h.id); setDrawerOpen(true);
-  };
-
-  const guardar = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setGuardando(true);
-    try {
-      const method = editingId ? 'PUT' : 'POST';
-      const body = editingId ? { ...form, id: editingId } : form;
-      const res = await fetch('/api/admin/hoteles', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      if (!res.ok) throw new Error();
-      setDrawerOpen(false);
-      await Swal.fire({ icon: 'success', title: editingId ? '¡Hotel actualizado!' : '¡Hotel creado!', timer: 1500, showConfirmButton: false, timerProgressBar: true });
-      setForm(formVacio); setEditingId(null); cargar();
-    } catch {
-      Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo guardar el hotel.', confirmButtonColor: '#001f3f' });
-    } finally { setGuardando(false); }
-  };
 
   const eliminar = async (id: string, nombre: string) => {
     const result = await Swal.fire({
@@ -110,11 +155,15 @@ export default function HotelesPage() {
     });
     if (!result.isConfirmed) return;
     try {
-      await fetch(`/api/admin/hoteles?id=${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/admin/hoteles?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error ?? 'No se pudo eliminar el hotel.');
+      }
       Swal.fire({ icon: 'success', title: 'Hotel eliminado', timer: 1200, showConfirmButton: false });
       cargar();
-    } catch {
-      Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo eliminar el hotel.', confirmButtonColor: '#001f3f' });
+    } catch (error) {
+      Swal.fire({ icon: 'error', title: 'Error', text: error instanceof Error ? error.message : 'No se pudo eliminar el hotel.', confirmButtonColor: '#001f3f' });
     }
   };
 
@@ -288,28 +337,59 @@ export default function HotelesPage() {
 
       <FormDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} title={editingId ? 'Editar Hotel' : 'Nuevo Hotel'} subtitle={editingId ? 'Modifica los datos del hotel' : 'Completa la información del hotel'} icon={<HotelIcon size={15} className="text-[#001f3f]" />}>
         <form onSubmit={guardar} className="space-y-5">
-          <SubidorImagenes bucket="imagenes" carpeta="hoteles" imagenesActuales={form.imagenes_urls} onChange={urls => setForm(f => ({ ...f, imagenes_urls: urls }))} maxImagenes={5} />
-          <Input label="Nombre del hotel" value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} placeholder="Ej: Hotel Costa del Sol" icon={<HotelIcon size={15} />} required />
-          <div className="grid grid-cols-2 gap-4">
-            <Input label="Ciudad" value={form.ciudad} onChange={e => setForm({ ...form, ciudad: e.target.value })} placeholder="Ej: Lima" icon={<MapPin size={15} />} required />
-            <Input label="Dirección" value={form.direccion} onChange={e => setForm({ ...form, direccion: e.target.value })} placeholder="Av. Principal 123" required />
+          <SubidorImagenes key={`hotel-${editingId ?? 'nuevo'}-${form.imagenes_urls.join('|')}`} bucket="imagenes" carpeta="hoteles" imagenesActuales={form.imagenes_urls} onChange={urls => setForm(f => ({ ...f, imagenes_urls: urls }))} maxImagenes={5} />
+          <div>
+            <Input label="Nombre del hotel" value={form.nombre} onChange={e => { setForm({ ...form, nombre: e.target.value }); setErrores(er => ({ ...er, nombre: undefined })); }} placeholder="Ej: Hotel Costa del Sol" icon={<HotelIcon size={15} />} required />
+            {errores.nombre && <p className="text-xs text-red-500 mt-1">{errores.nombre}</p>}
           </div>
-          <Input label="Teléfono WhatsApp" value={form.telefono_whatsapp} onChange={e => setForm({ ...form, telefono_whatsapp: e.target.value })} placeholder="5215512345678" icon={<Phone size={15} />} hint="Incluye el código de país sin el +" required />
-          <Input label="Email de contacto" value={form.email_contacto || ''} onChange={e => setForm({ ...form, email_contacto: e.target.value })} placeholder="contacto@hotel.com" type="email" hint="Opcional" />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Input label="Ciudad" value={form.ciudad} onChange={e => { setForm({ ...form, ciudad: e.target.value }); setErrores(er => ({ ...er, ciudad: undefined })); }} placeholder="Ej: Lima" icon={<MapPin size={15} />} required />
+              {errores.ciudad && <p className="text-xs text-red-500 mt-1">{errores.ciudad}</p>}
+            </div>
+            <div>
+              <Input label="Dirección" value={form.direccion} onChange={e => { setForm({ ...form, direccion: e.target.value }); setErrores(er => ({ ...er, direccion: undefined })); }} placeholder="Av. Principal 123" required />
+              {errores.direccion && <p className="text-xs text-red-500 mt-1">{errores.direccion}</p>}
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Tipo de alojamiento</label>
+            <select className="w-full px-4 py-3 border-0 border-b-2 border-gray-200 bg-gray-50 rounded-t-lg focus:outline-none focus:border-[#ffd600] focus:bg-white transition-all text-sm text-gray-800 appearance-none" value={form.tipo_alojamiento} onChange={e => setForm({ ...form, tipo_alojamiento: e.target.value as TipoAlojamiento })}>
+              {TIPOS_ALOJAMIENTO.map(tipo => <option key={tipo} value={tipo}>{tipo}</option>)}
+            </select>
+          </div>
+          <div>
+            <Input label="Teléfono WhatsApp" value={form.telefono_whatsapp} onChange={e => { setForm({ ...form, telefono_whatsapp: e.target.value }); setErrores(er => ({ ...er, telefono_whatsapp: undefined })); }} placeholder="5215512345678" icon={<Phone size={15} />} hint="Incluye el código de país sin el +" required />
+            {errores.telefono_whatsapp && <p className="text-xs text-red-500 mt-1">{errores.telefono_whatsapp}</p>}
+          </div>
+          <div>
+            <Input label="Email de contacto" value={form.email_contacto || ''} onChange={e => { setForm({ ...form, email_contacto: e.target.value }); setErrores(er => ({ ...er, email_contacto: undefined })); }} placeholder="contacto@hotel.com" type="email" hint="Opcional" />
+            {errores.email_contacto && <p className="text-xs text-red-500 mt-1">{errores.email_contacto}</p>}
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <Input label="Hora de apertura" value={form.horario_apertura || ''} onChange={e => setForm({ ...form, horario_apertura: e.target.value })} type="time" hint="Opcional" />
             <Input label="Hora de cierre" value={form.horario_cierre || ''} onChange={e => setForm({ ...form, horario_cierre: e.target.value })} type="time" hint="Opcional" />
           </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Input label="Latitud" type="number" step="0.000001" min={-90} max={90} value={form.latitud} onChange={e => { setForm({ ...form, latitud: e.target.value === '' ? '' : Number(e.target.value) }); setErrores(er => ({ ...er, latitud: undefined })); }} placeholder="-7.1617" hint="Opcional" />
+              {errores.latitud && <p className="text-xs text-red-500 mt-1">{errores.latitud}</p>}
+            </div>
+            <div>
+              <Input label="Longitud" type="number" step="0.000001" min={-180} max={180} value={form.longitud} onChange={e => { setForm({ ...form, longitud: e.target.value === '' ? '' : Number(e.target.value) }); setErrores(er => ({ ...er, longitud: undefined })); }} placeholder="-78.5128" hint="Opcional" />
+              {errores.longitud && <p className="text-xs text-red-500 mt-1">{errores.longitud}</p>}
+            </div>
+          </div>
           <div>
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Descripción <span className="text-red-400">*</span></label>
-            <textarea className="w-full px-4 py-3 border-0 border-b-2 border-gray-200 bg-gray-50 rounded-t-lg focus:outline-none focus:border-[#ffd600] focus:bg-white transition-all text-sm text-gray-800 placeholder:text-gray-300 resize-none" rows={3} value={form.descripcion} onChange={e => setForm({ ...form, descripcion: e.target.value })} placeholder="Describe el hotel..." required />
+            <textarea className={`w-full px-4 py-3 border-0 border-b-2 bg-gray-50 rounded-t-lg focus:outline-none focus:bg-white transition-all text-sm text-gray-800 placeholder:text-gray-300 resize-none ${errores.descripcion ? 'border-red-400' : 'border-gray-200 focus:border-[#ffd600]'}`} rows={3} value={form.descripcion} onChange={e => { setForm({ ...form, descripcion: e.target.value }); setErrores(er => ({ ...er, descripcion: undefined })); }} placeholder="Describe el hotel..." />
+            {errores.descripcion && <p className="text-xs text-red-500 mt-1">{errores.descripcion}</p>}
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Categoría de estrellas</label>
             <div className="flex items-center gap-2">
               {[1,2,3,4,5].map(n => (
-                <button key={n} type="button" onClick={() => setForm({ ...form, estrellas: n })}
-                  className={`flex-1 flex flex-col items-center gap-1 py-3 rounded-xl border-2 transition-all ${form.estrellas >= n ? 'border-[#ffd600] bg-[#ffd600]/10' : 'border-gray-100 bg-gray-50 hover:border-gray-200'}`}>
+                <button key={n} type="button" onClick={() => setForm({ ...form, estrellas: n })} className={`flex-1 flex flex-col items-center gap-1 py-3 rounded-xl border-2 transition-all ${form.estrellas >= n ? 'border-[#ffd600] bg-[#ffd600]/10' : 'border-gray-100 bg-gray-50 hover:border-gray-200'}`}>
                   <Star size={16} className={form.estrellas >= n ? 'fill-[#ffd600] text-[#ffd600]' : 'text-gray-300'} />
                   <span className={`text-xs font-bold ${form.estrellas >= n ? 'text-[#001f3f]' : 'text-gray-300'}`}>{n}</span>
                 </button>
@@ -320,6 +400,16 @@ export default function HotelesPage() {
             <button type="button" onClick={() => setForm(f => ({ ...f, activo: true }))} className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold transition-all text-sm ${form.activo ? 'bg-green-500 text-white shadow-lg shadow-green-500/30' : 'bg-gray-100 text-gray-400 border border-gray-200 hover:bg-gray-50'}`}><CheckCircle2 size={16} /> Activo</button>
             <button type="button" onClick={() => setForm(f => ({ ...f, activo: false }))} className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold transition-all text-sm ${!form.activo ? 'bg-red-500 text-white shadow-lg shadow-red-500/30' : 'bg-gray-100 text-gray-400 border border-gray-200 hover:bg-gray-50'}`}><XCircle size={16} /> Inactivo</button>
           </div>
+          {Object.keys(errores).length > 0 && (
+            <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+              <p className="text-xs font-bold text-red-600 mb-1">Corrige los siguientes errores:</p>
+              <ul className="list-disc list-inside space-y-0.5">
+                {Object.values(errores).filter(Boolean).map((e, i) => (
+                  <li key={i} className="text-xs text-red-500">{e}</li>
+                ))}
+              </ul>
+            </div>
+          )}
           <div className="flex gap-3 pt-4 border-t border-gray-100">
             <button type="submit" disabled={guardando} className="flex-1 flex items-center justify-center gap-2 bg-[#ffd600] text-[#001f3f] font-bold py-3 rounded-xl hover:bg-yellow-300 active:scale-[0.98] transition-all disabled:opacity-60 text-sm">
               {guardando ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}

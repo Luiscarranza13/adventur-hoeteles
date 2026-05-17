@@ -1,10 +1,15 @@
-import { createClient } from '@/lib/supabase/server';
+import { createReadonlyClient } from '@/lib/supabase/readonly';
+import { unstable_cache } from 'next/cache';
 
 export interface Destino {
   slug: string;
   nombre: string;
   departamento: string;
   tipo: string;
+}
+
+export interface DestinoProcedencia extends Destino {
+  hayOfertaDirecta: boolean;
 }
 
 const destinosBase: Destino[] = [
@@ -70,19 +75,53 @@ const destinosBase: Destino[] = [
   { slug: 'ucayali', nombre: 'Ucayali', departamento: 'Ucayali', tipo: 'departamento' },
 ];
 
-export async function obtenerDestinos(): Promise<Destino[]> {
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from('destinos')
-      .select('slug,nombre,departamento,tipo')
-      .eq('activo', true)
-      .order('departamento', { ascending: true })
-      .order('nombre', { ascending: true });
+export const obtenerDestinos = unstable_cache(
+  async (): Promise<Destino[]> => {
+    try {
+      const supabase = createReadonlyClient();
+      const { data, error } = await supabase
+        .from('destinos')
+        .select('slug,nombre,departamento,tipo')
+        .eq('activo', true)
+        .order('departamento', { ascending: true })
+        .order('nombre', { ascending: true });
 
-    if (error || !data?.length) return destinosBase;
-    return data as Destino[];
-  } catch {
-    return destinosBase;
-  }
+      if (error || !data?.length) return destinosBase;
+      return data as Destino[];
+    } catch {
+      return destinosBase;
+    }
+  },
+  ['destinos'],
+  { revalidate: 3600, tags: ['destinos'] }
+);
+
+function normalizarProcedencia(valor: string) {
+  return valor.trim().toLowerCase();
+}
+
+export function prepararProcedencias(
+  destinos: Destino[],
+  ciudadesConHoteles: string[],
+  limitePrincipales = 15,
+) {
+  const ciudadesNormalizadas = new Set(ciudadesConHoteles.map(normalizarProcedencia));
+
+  const ordenados: DestinoProcedencia[] = [...destinos]
+    .map((destino) => ({
+      ...destino,
+      hayOfertaDirecta: ciudadesNormalizadas.has(normalizarProcedencia(destino.nombre)),
+    }))
+    .sort((a, b) => {
+      if (a.hayOfertaDirecta !== b.hayOfertaDirecta) return a.hayOfertaDirecta ? -1 : 1;
+      if (a.tipo === 'departamento' && b.tipo !== 'departamento') return -1;
+      if (a.tipo !== 'departamento' && b.tipo === 'departamento') return 1;
+      return a.nombre.localeCompare(b.nombre, 'es');
+    });
+
+  return {
+    departamentos: [...new Set(destinos.map((destino) => destino.departamento))],
+    principales: ordenados.slice(0, limitePrincipales),
+    restantes: ordenados.slice(limitePrincipales),
+  };
 }

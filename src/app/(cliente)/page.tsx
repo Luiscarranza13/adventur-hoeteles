@@ -4,16 +4,18 @@ import { ImagenSegura } from '@/components/ui/ImagenSegura';
 import { AnimarAlEntrar } from '@/components/ui/AnimarAlEntrar';
 import { HeroCliente } from '@/components/cliente/HeroCliente';
 import { HeroFondoAnimado } from '@/components/cliente/HeroFondoAnimado';
-import { ServicioHoteles, AdaptadorSupabaseHotel } from '@/modules/hoteles';
-import { ServicioHabitaciones, AdaptadorSupabaseHabitacion } from '@/modules/habitaciones';
-import { obtenerDestinos } from '@/lib/destinos';
+import { SeccionProcedencias } from '@/components/cliente/SeccionProcedencias';
+import { CarruselHotelesDestacados, ContadorAnimado } from '@/components/cliente/CarruselHotelesDestacados';
+import { SeccionPorQueElegirnos } from '@/components/cliente/SeccionPorQueElegirnos';
+import { obtenerDestinos, prepararProcedencias } from '@/lib/destinos';
+import { obtenerCiudadesConHoteles, listarHotelesActivos, anexarPreciosMinimos } from '@/lib/hoteles-consultas';
+import { obtenerConfiguracionPublica } from '@/lib/configuracion-consultas';
 import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
-  MapPin, MessageCircle, Star,
-  Shield, Zap, BadgeDollarSign, ArrowRight,
-  CheckCircle2, ChevronDown
+  MessageCircle, Shield, ArrowRight,
+  CheckCircle2, ChevronDown,
 } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -27,23 +29,8 @@ export const metadata: Metadata = {
   },
 };
 
-async function obtenerHoteles() {
-  try {
-    return await new ServicioHoteles(new AdaptadorSupabaseHotel()).listarActivos();
-  } catch {
-    return [];
-  }
-}
-
-async function obtenerPrecioMinimo(hotelId: string): Promise<number | null> {
-  try {
-    const habs = await new ServicioHabitaciones(new AdaptadorSupabaseHabitacion()).buscarPorHotel(hotelId);
-    if (!habs.length) return null;
-    return Math.min(...habs.map(h => h.precioNoche));
-  } catch {
-    return null;
-  }
-}
+// Revalidar la página cada 5 minutos
+export const revalidate = 300;
 
 const faqs = [
   {
@@ -61,73 +48,33 @@ const faqs = [
 ];
 
 export default async function PaginaInicio() {
-  const [hoteles, destinos] = await Promise.all([obtenerHoteles(), obtenerDestinos()]);
-  const ciudades = [...new Set(hoteles.map(h => h.ciudad))];
-  const departamentos = [...new Set(destinos.map(d => d.departamento))];
+  const [hoteles, destinos, configuracion] = await Promise.all([
+    listarHotelesActivos(),
+    obtenerDestinos(),
+    obtenerConfiguracionPublica(),
+  ]);
+  const ciudades = obtenerCiudadesConHoteles(hoteles);
+  const { departamentos, principales: destinosPrincipales, restantes: destinosRestantes } =
+    prepararProcedencias(destinos, ciudades);
 
-  const hotelesConPrecio = await Promise.all(
-    hoteles.slice(0, 8).map(async h => ({ ...h, precioMinimo: await obtenerPrecioMinimo(h.id) }))
-  );
+  // Paralelizar la query de precios con el resto del procesamiento
+  const hotelesConPrecio = await anexarPreciosMinimos(hoteles.slice(0, 8));
 
   return (
     <>
       <Header />
       <main>
 
-        <section className="relative h-screen flex flex-col bg-black overflow-hidden" style={{ isolation: 'isolate' }}>
+        <section className="relative min-h-[calc(100svh-64px)] sm:min-h-[calc(100svh-112px)] flex flex-col bg-black overflow-hidden" style={{ isolation: 'isolate' }}>
           <HeroFondoAnimado />
-          <HeroCliente totalHoteles={hoteles.length} totalCiudades={departamentos.length || ciudades.length} />
+          <HeroCliente totalHoteles={hoteles.length} totalCiudades={departamentos.length || ciudades.length} ciudadesDisponibles={ciudades} />
         </section>
 
-        {destinos.length > 0 && (
-          <section id="destinos" className="section-padding bg-[var(--bg-base)]">
-            <div className="container-site">
-              <AnimarAlEntrar className="text-center mb-16">
-                <p className="label-eyebrow mb-2">Lugares de procedencia</p>
-                <h2 className="heading-section mb-4">
-                  Atendemos viajeros de todo el Perú
-                </h2>
-                <p className="body-text max-w-2xl mx-auto">Selecciona tu ciudad, distrito o zona de procedencia para consultar alojamientos disponibles por WhatsApp.</p>
-              </AnimarAlEntrar>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 mb-8 sm:mb-10 lg:mb-14">
-                {destinos.map((destino, i) => (
-                  <AnimarAlEntrar key={destino.slug} delay={(i % 10) * 0.03}>
-                    <Link href={`/hoteles?ciudad=${encodeURIComponent(destino.nombre)}`} className="block h-full">
-                      <article className="group h-full min-h-28 rounded-xl border border-[var(--border-subtle)] bg-white p-4 shadow-sm hover:-translate-y-0.5 hover:border-[var(--brand-yellow)]/50 hover:shadow-md transition-all duration-300">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-[var(--brand-yellow)] truncate">
-                              {destino.departamento}
-                            </p>
-                            <h3 className="mt-2 text-sm sm:text-base font-black text-[var(--brand-navy)] leading-tight group-hover:text-[var(--brand-yellow-light)] transition-colors">
-                              {destino.nombre}
-                            </h3>
-                          </div>
-                          <div className="w-9 h-9 rounded-lg bg-[var(--bg-subtle)] group-hover:bg-[var(--brand-navy)] flex items-center justify-center shrink-0 transition-colors">
-                            <MapPin size={16} className="text-[var(--brand-navy)] group-hover:text-[var(--brand-yellow)] transition-colors" aria-hidden="true" />
-                          </div>
-                        </div>
-                        <p className="mt-4 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
-                          {destino.tipo}
-                        </p>
-                      </article>
-                    </Link>
-                  </AnimarAlEntrar>
-                ))}
-              </div>
-
-              <div className="text-center mt-12">
-                <Link
-                  href="/hoteles"
-                  className="btn-outline"
-                >
-                  Ver todos los destinos <ArrowRight size={18} aria-hidden="true" />
-                </Link>
-              </div>
-            </div>
-          </section>
-        )}
+        <SeccionProcedencias
+          principales={destinosPrincipales}
+          restantes={destinosRestantes}
+          whatsappNumero={configuracion.whatsapp_numero}
+        />
 
         <section className="section-padding bg-[var(--bg-subtle)]">
           <div className="container-site">
@@ -141,63 +88,10 @@ export default async function PaginaInicio() {
               </p>
             </AnimarAlEntrar>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-              {hotelesConPrecio.map((hotel, i) => (
-                <AnimarAlEntrar key={hotel.id} delay={i * 0.07}>
-                  <Link href={`/hoteles/${hotel.id}`}>
-                    <article className="card-premium h-full flex flex-col group">
+            <CarruselHotelesDestacados hoteles={hotelesConPrecio} />
 
-                      <div className="relative h-56 bg-[var(--brand-navy)] overflow-hidden shrink-0">
-                        <ImagenSegura
-                          src={hotel.imagenesUrls[0] ?? ''}
-                          alt={`Hotel ${hotel.nombre} en ${hotel.ciudad}`}
-                          fill
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                          className="object-cover group-hover:scale-110 transition-transform duration-700"
-                        />
-                        {hotel.precioMinimo && (
-                          <div className="absolute top-4 left-4 glass px-3 py-2 rounded-xl shadow-lg z-10">
-                            <p className="text-[9px] font-black text-[var(--brand-navy)]/60 uppercase tracking-widest leading-none mb-1">DESDE</p>
-                            <p className="text-[var(--brand-navy)] font-black text-sm leading-none">S/{hotel.precioMinimo}</p>
-                          </div>
-                        )}
-                        <div className="absolute top-4 right-4 w-8 h-8 bg-white/90 backdrop-blur-md rounded-xl flex items-center justify-center shadow-lg z-10">
-                          <Star size={14} className="text-[var(--brand-yellow)] fill-[var(--brand-yellow)]" aria-hidden="true" />
-                        </div>
-                      </div>
-
-                      <div className="p-6 flex flex-col flex-1">
-                        <div className="flex items-center gap-0.5 mb-3">
-                          {Array.from({ length: hotel.estrellas }).map((_, j) => (
-                            <Star key={j} size={11} className="text-[var(--brand-yellow)] fill-[var(--brand-yellow)]" aria-hidden="true" />
-                          ))}
-                        </div>
-                        <h3 className="heading-card mb-2 group-hover:text-[var(--brand-yellow-light)] transition-colors line-clamp-2">
-                          {hotel.nombre}
-                        </h3>
-                        <div className="flex items-center gap-2 mb-6">
-                          <MapPin size={14} className="text-[var(--text-muted)] shrink-0" aria-hidden="true" />
-                          <span className="text-[var(--text-secondary)] text-xs font-semibold truncate">{hotel.ciudad}</span>
-                        </div>
-                        <div className="mt-auto">
-                          <div className="btn-primary !w-full !py-3 !text-xs group-hover:bg-[var(--brand-yellow-light)]">
-                            <MessageCircle size={16} aria-hidden="true" />
-                            <span>Reservar ahora</span>
-                          </div>
-                        </div>
-                      </div>
-
-                    </article>
-                  </Link>
-                </AnimarAlEntrar>
-              ))}
-            </div>
-
-            <div className="text-center mt-12">
-              <Link
-                href="/hoteles"
-                className="btn-secondary"
-              >
+            <div className="text-center mt-4">
+              <Link href="/hoteles" className="btn-secondary">
                 Ver toda la oferta <ArrowRight size={18} aria-hidden="true" />
               </Link>
             </div>
@@ -274,12 +168,14 @@ export default async function PaginaInicio() {
                   <div className="absolute bottom-6 sm:bottom-8 left-6 right-6 sm:left-8 sm:right-8 z-20">
                     <div className="grid grid-cols-3 gap-3 sm:gap-4">
                       {[
-                        { n: hoteles.length || '50+', label: 'Hoteles' },
-                        { n: ciudades.length || '10+', label: 'Ciudades' },
-                        { n: '0%', label: 'Comisión' },
-                      ].map(({ n, label }) => (
+                        { n: hoteles.length, sufijo: '+', label: 'Hoteles' },
+                        { n: departamentos.length || ciudades.length, sufijo: '', label: 'Cobertura' },
+                        { n: 0, sufijo: '%', label: 'Comisión' },
+                      ].map(({ n, sufijo, label }) => (
                         <div key={label} className="bg-white/90 backdrop-blur-md rounded-2xl p-3 sm:p-4 text-center border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.08)] group-hover:-translate-y-1 transition-transform duration-500">
-                          <p className="text-[var(--brand-navy)] font-black text-xl sm:text-2xl leading-none mb-1 sm:mb-2">{n}</p>
+                          <p className="text-[var(--brand-navy)] font-black text-xl sm:text-2xl leading-none mb-1 sm:mb-2">
+                            <ContadorAnimado valor={n || 10} sufijo={sufijo} />
+                          </p>
                           <p className="text-[var(--brand-yellow)] text-[8px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.15em]">{label}</p>
                         </div>
                       ))}
@@ -302,6 +198,7 @@ export default async function PaginaInicio() {
                     src="/imagen1.jpg"
                     alt="Paisaje majestuoso del Perú"
                     fill
+                    loading="eager"
                     className="object-cover group-hover:scale-105 transition-transform duration-1000 opacity-60"
                   />
                   {/* Overlays elegantes */}
@@ -356,33 +253,7 @@ export default async function PaginaInicio() {
           </div>
         </section>
 
-        <section className="section-padding bg-[var(--bg-base)]">
-          <div className="container-site">
-            <AnimarAlEntrar className="text-center mb-16">
-              <p className="label-eyebrow mb-2">La Diferencia Adventur</p>
-              <h2 className="heading-section">
-                ¿Por qué elegirnos?
-              </h2>
-            </AnimarAlEntrar>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-              {[
-                { Icon: Shield, titulo: 'Reserva 100% segura', desc: 'Tus datos son gestionados directamente con el hotel, garantizando privacidad total y seguridad en tu reserva.' },
-                { Icon: Zap, titulo: 'Respuesta inmediata', desc: 'Olvídate de esperas. Nuestra integración con WhatsApp te asegura una respuesta del hotel en tiempo récord.' },
-                { Icon: BadgeDollarSign, titulo: 'Precio directo sin extras', desc: 'Sin comisiones ocultas ni cargos de gestión. El precio que ves es el que pagas directamente al establecimiento.' },
-              ].map(({ Icon, titulo, desc }, i) => (
-                <AnimarAlEntrar key={titulo} delay={i * 0.1}>
-                  <article className="group p-8 rounded-3xl bg-[var(--bg-subtle)] border border-transparent hover:border-[var(--brand-yellow)]/30 hover:bg-white hover:shadow-xl transition-all duration-500">
-                    <div className="w-16 h-16 bg-[var(--brand-navy)] group-hover:bg-[var(--brand-yellow)] rounded-2xl flex items-center justify-center mb-6 transition-colors duration-500 shadow-lg">
-                      <Icon size={28} className="text-[var(--brand-yellow)] group-hover:text-[var(--brand-navy)] transition-colors" aria-hidden="true" />
-                    </div>
-                    <h3 className="heading-card mb-4">{titulo}</h3>
-                    <p className="body-text text-base">{desc}</p>
-                  </article>
-                </AnimarAlEntrar>
-              ))}
-            </div>
-          </div>
-        </section>
+        <SeccionPorQueElegirnos />
 
         <section id="preguntas-frecuentes" className="section-padding bg-[var(--bg-subtle)]">
           <div className="container-site max-w-4xl">

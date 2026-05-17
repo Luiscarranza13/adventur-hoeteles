@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import {
   BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  Legend
 } from 'recharts';
 import { Hotel, BedDouble, MapPin, Star, DollarSign, Users } from 'lucide-react';
 
@@ -18,7 +17,7 @@ interface HabitacionData {
   estaDisponible: boolean;
   precioNoche: number;
   capacidadPersonas: number;
-  estadoMantenimiento?: string;
+  estadoMantenimiento: string;
 }
 
 interface Props {

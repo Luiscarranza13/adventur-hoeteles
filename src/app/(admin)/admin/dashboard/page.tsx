@@ -1,5 +1,3 @@
-import { ServicioHoteles, AdaptadorSupabaseHotel } from '@/modules/hoteles';
-import { ServicioHabitaciones, AdaptadorSupabaseHabitacion } from '@/modules/habitaciones';
 import Link from 'next/link';
 import {
   Hotel, BedDouble, Users, ArrowRight,
@@ -7,35 +5,43 @@ import {
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { GraficasDashboard } from '@/components/admin/GraficasDashboard';
+import { AnimarAlEntrar } from '@/components/ui/AnimarAlEntrar';
+import type { Hotel as HotelType } from '@/modules/hoteles';
+import type { Habitacion } from '@/modules/habitaciones';
 
-async function getDatos() {
-  try {
-    const [hoteles, habitaciones] = await Promise.all([
-      new ServicioHoteles(new AdaptadorSupabaseHotel()).listarTodos(),
-      new ServicioHabitaciones(new AdaptadorSupabaseHabitacion()).listarTodas(),
-    ]);
-    return { hoteles, habitaciones };
-  } catch {
-    return { hoteles: [], habitaciones: [] };
-  }
-}
-
-async function getNombreUsuario() {
+async function getDatosDashboard() {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return 'Admin';
-    const { data } = await supabase.from('usuarios').select('nombre_completo').eq('id', user.id).single();
-    return data?.nombre_completo?.split(' ')[0] ?? user.email?.split('@')[0] ?? 'Admin';
+
+    const [hotelesRes, habitacionesRes, perfilRes] = await Promise.all([
+      supabase.from('hoteles').select('*').order('fecha_creacion', { ascending: false }),
+      supabase.from('habitaciones').select('id, hotel_id, esta_disponible, precio_noche, moneda, estado_mantenimiento, capacidad_personas').order('fecha_creacion', { ascending: false }),
+      user ? supabase.from('usuarios').select('nombre_completo').eq('id', user.id).single() : Promise.resolve({ data: null }),
+    ]);
+
+    const hoteles = (hotelesRes.data ?? []) as HotelType[];
+    const habitaciones = (habitacionesRes.data ?? []).map((h) => ({
+      id: h.id,
+      hotelId: h.hotel_id,
+      precioNoche: Number(h.precio_noche ?? 0),
+      moneda: h.moneda ?? 'USD',
+      estaDisponible: Boolean(h.esta_disponible),
+      estadoMantenimiento: h.estado_mantenimiento ?? 'disponible',
+      capacidadPersonas: Number(h.capacidad_personas ?? 0),
+    })) as Pick<Habitacion, 'id' | 'hotelId' | 'precioNoche' | 'moneda' | 'estaDisponible' | 'estadoMantenimiento' | 'capacidadPersonas'>[];
+    const nombre = perfilRes.data?.nombre_completo?.split(' ')[0]
+      ?? user?.email?.split('@')[0]
+      ?? 'Admin';
+
+    return { hoteles, habitaciones, nombre };
   } catch {
-    return 'Admin';
+    return { hoteles: [], habitaciones: [], nombre: 'Admin' };
   }
 }
 
 export default async function DashboardPage() {
-  const [{ hoteles, habitaciones }, nombre] = await Promise.all([
-    getDatos(), getNombreUsuario()
-  ]);
+  const { hoteles, habitaciones, nombre } = await getDatosDashboard();
 
   const hotelActivos = hoteles.filter(h => h.activo).length;
   const habDisponibles = habitaciones.filter(h => h.estaDisponible).length;
@@ -48,7 +54,7 @@ export default async function DashboardPage() {
     <div className="space-y-6">
 
       {/* Bienvenida */}
-      <div className="bg-[var(--brand-navy)] rounded-3xl p-8 relative overflow-hidden shadow-2xl animate-fade-in">
+      <AnimarAlEntrar direction="none" className="bg-[var(--brand-navy)] rounded-3xl p-8 relative overflow-hidden shadow-2xl">
         <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--brand-yellow)]/5 rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none blur-3xl" />
         <div className="relative z-10 flex items-center justify-between flex-wrap gap-6">
           <div>
@@ -66,7 +72,7 @@ export default async function DashboardPage() {
             <Plus size={18} /> Nuevo Hotel
           </Link>
         </div>
-      </div>
+      </AnimarAlEntrar>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -76,7 +82,8 @@ export default async function DashboardPage() {
           { label: 'Ciudades',        valor: ciudades,            sub: 'destinos cubiertos',            Icon: MapPin,    color: 'bg-purple-600',href: '/admin/hoteles' },
           { label: 'Promedio ★',      valor: hoteles.length ? (hoteles.reduce((a, h) => a + h.estrellas, 0) / hoteles.length).toFixed(1) : '—', sub: 'calidad promedio', Icon: Star, color: 'bg-amber-500', href: '/admin/hoteles' },
         ].map(({ label, valor, sub, Icon, color, href }, i) => (
-          <Link key={label} href={href} className="animate-fade-up" style={{ animationDelay: `${0.1 * i}s` }}>
+          <AnimarAlEntrar key={label} delay={0.1 * i}>
+          <Link href={href}>
             <div className="card-premium p-6 group">
               <div className="flex items-start justify-between mb-4">
                 <div className={`${color} w-12 h-12 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-black/5`}>
@@ -92,6 +99,7 @@ export default async function DashboardPage() {
               <p className="text-xs text-gray-400 font-medium mt-1">{sub}</p>
             </div>
           </Link>
+          </AnimarAlEntrar>
         ))}
       </div>
 

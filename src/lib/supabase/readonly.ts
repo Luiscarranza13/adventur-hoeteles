@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { getPublicEnv } from '@/lib/env';
+import { getSupabaseEnv } from '@/lib/env';
 
 const SUPABASE_TIMEOUT_MS = 1500;
 
@@ -18,7 +18,7 @@ function fetchConTimeout(input: RequestInfo | URL, init?: RequestInit) {
  * cookies() de Next.js no está disponible.
  */
 export function createReadonlyClient() {
-  const env = getPublicEnv();
+  const env = getSupabaseEnv();
   return createClient(
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.NEXT_PUBLIC_SUPABASE_ANON_KEY,

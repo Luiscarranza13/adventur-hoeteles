@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
-import { getPublicEnv } from '@/lib/env';
+import { getSupabaseEnv } from '@/lib/env';
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -19,7 +19,7 @@ export async function proxy(request: NextRequest) {
   if (!esRutaProtegida) return NextResponse.next();
 
   const response = NextResponse.next({ request: { headers: request.headers } });
-  const env = getPublicEnv();
+  const env = getSupabaseEnv();
 
   const supabase = createServerClient(
     env.NEXT_PUBLIC_SUPABASE_URL,

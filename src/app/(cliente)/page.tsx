@@ -71,47 +71,6 @@ export default async function PaginaInicio() {
         <section id="inicio" className="relative min-h-[calc(100svh-57px)] flex flex-col bg-black overflow-hidden scroll-mt-40 sm:scroll-mt-48" style={{ isolation: 'isolate' }}>
           <HeroFondoAnimado />
           <HeroCliente totalHoteles={hoteles.length} totalCiudades={departamentos.length || ciudades.length} ciudadesDisponibles={ciudades} />
-          <div
-            id="contacto"
-            className="absolute inset-x-4 bottom-14 z-20 scroll-mt-40 sm:inset-x-auto sm:right-6 sm:bottom-20 lg:right-10 lg:bottom-10 sm:scroll-mt-48"
-          >
-            <a
-              href={crearUrlWhatsApp(
-                configuracion.whatsapp_numero,
-                configuracion.whatsapp_mensaje_reserva || 'Hola, quiero reservar un hotel.'
-              )}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mx-auto flex w-fit items-center justify-center gap-2 rounded-full border border-white/15 bg-black/45 px-4 py-2.5 text-xs font-black text-white shadow-2xl backdrop-blur-md md:hidden"
-            >
-              <MessageCircle size={14} className="text-[var(--brand-yellow)]" aria-hidden="true" />
-              Contacto directo
-            </a>
-            <div className="hidden w-72 rounded-2xl border border-white/15 bg-black/35 p-4 text-left text-white shadow-2xl backdrop-blur-md md:block">
-              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--brand-yellow)] mb-2">
-                Contacto directo
-              </p>
-              <p className="text-sm font-semibold text-white/85 mb-3">
-                Reserva o consulta disponibilidad con Adventur.
-              </p>
-              <div className="flex items-center gap-2 text-sm font-black mb-4">
-                <Phone size={15} className="text-[var(--brand-yellow)]" aria-hidden="true" />
-                <span>{configuracion.telefono_principal}</span>
-              </div>
-              <a
-                href={crearUrlWhatsApp(
-                  configuracion.whatsapp_numero,
-                  configuracion.whatsapp_mensaje_reserva || 'Hola, quiero reservar un hotel.'
-                )}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--brand-yellow)] px-4 py-3 text-xs font-black uppercase tracking-widest text-[var(--brand-navy)] transition-all hover:bg-[var(--brand-yellow-light)]"
-              >
-                <MessageCircle size={15} aria-hidden="true" />
-                Escribir por WhatsApp
-              </a>
-            </div>
-          </div>
         </section>
 
         <section id="hoteles" className="section-padding bg-[var(--bg-subtle)] scroll-mt-40 sm:scroll-mt-48">

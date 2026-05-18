@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { Globe, ChevronDown } from 'lucide-react';
-import Swal from 'sweetalert2';
 
 declare global {
   interface Window {
@@ -44,11 +43,20 @@ function cambiarIdioma(codigo: string) {
 }
 
 export function SelectorIdioma() {
-  const [idiomaActual] = useState(() => obtenerIdiomaActual());
+  const [idiomaActual, setIdiomaActual] = useState('es');
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setIdiomaActual(obtenerIdiomaActual());
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const actual = IDIOMAS.find(i => i.code === idiomaActual) ?? IDIOMAS[0];
 
-  const abrirSelector = () => {
+  const abrirSelector = async () => {
+    const { default: Swal } = await import('sweetalert2');
     const botonesHtml = IDIOMAS.map(({ code, label, flag }) => {
       const esActivo = code === idiomaActual;
       return `
@@ -69,7 +77,7 @@ export function SelectorIdioma() {
             border: none;
             cursor: pointer;
             font-size: 14px;
-            font-family: Montserrat, sans-serif;
+            font-family: Poppins, sans-serif;
             font-weight: 500;
             background: ${esActivo ? '#001f3f' : '#f9fafb'};
             color: ${esActivo ? '#ffffff' : '#374151'};
@@ -146,7 +154,7 @@ export function SelectorIdioma() {
       >
         <div className="flex items-center gap-2">
           <Globe size={14} className="text-gray-400 group-hover:text-[#001f3f] transition-colors" />
-          <span className="uppercase tracking-widest">{actual.code}</span>
+          <span className="uppercase tracking-widest" suppressHydrationWarning>{actual.code}</span>
         </div>
         <ChevronDown size={14} className="text-gray-400 group-hover:text-[#001f3f] transition-colors" />
       </button>

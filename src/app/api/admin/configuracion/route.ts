@@ -7,10 +7,11 @@ import {
 import { requerirAdmin } from '@/lib/admin-auth';
 import { esquemaConfiguracionAdmin, respuestaErrorValidacion } from '@/lib/admin-validaciones';
 import { z } from 'zod';
+import { revalidateTag } from 'next/cache';
 
 export async function GET() {
   try {
-    const auth = await requerirAdmin();
+    const auth = await requerirAdmin('gestionarConfiguracion');
     if (!auth.autorizado) return auth.respuesta;
     const supabase = await createClient();
     const { data, error } = await supabase
@@ -24,6 +25,7 @@ export async function GET() {
       return NextResponse.json(CONFIGURACION_DEFAULT);
     }
 
+    revalidateTag('configuracion', { expire: 0 });
     return NextResponse.json(normalizarConfiguracion(data));
   } catch (e) {
     console.error(e);
@@ -33,7 +35,7 @@ export async function GET() {
 
 export async function PUT(request: NextRequest) {
   try {
-    const auth = await requerirAdmin();
+    const auth = await requerirAdmin('gestionarConfiguracion');
     if (!auth.autorizado) return auth.respuesta;
     const supabase = await createClient();
     const configuracion = esquemaConfiguracionAdmin.parse(await request.json());

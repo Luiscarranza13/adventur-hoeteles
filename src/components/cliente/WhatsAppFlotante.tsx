@@ -1,19 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { CONFIGURACION_DEFAULT, crearUrlWhatsApp, normalizarConfiguracion, type ConfiguracionWeb } from '@/lib/configuracion';
+import { crearUrlWhatsApp } from '@/lib/configuracion';
+import { useConfiguracionWeb } from '@/hooks/useConfiguracionWeb';
 
 export function WhatsAppFlotante() {
-  const [config, setConfig] = useState<ConfiguracionWeb>(CONFIGURACION_DEFAULT);
+  const config = useConfiguracionWeb();
   const pathname = usePathname();
-
-  useEffect(() => {
-    fetch('/api/configuracion')
-      .then(res => res.ok ? res.json() : null)
-      .then(data => setConfig(normalizarConfiguracion(data)))
-      .catch(() => setConfig(CONFIGURACION_DEFAULT));
-  }, []);
 
   if (pathname?.startsWith('/admin')) return null;
 
@@ -22,24 +15,25 @@ export function WhatsAppFlotante() {
       href={crearUrlWhatsApp(config.whatsapp_numero, config.whatsapp_mensaje_reserva)}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-6 right-6 z-[100] group"
+      className="fixed bottom-6 right-6 z-[100] group flex items-center gap-0 hover:gap-3 overflow-hidden transition-all duration-300"
       aria-label="Contactar por WhatsApp"
+      style={{ maxWidth: '3.5rem', transition: 'max-width 0.35s cubic-bezier(0.16,1,0.3,1)' }}
+      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.maxWidth = '220px'; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.maxWidth = '3.5rem'; }}
     >
-      <div className="absolute bottom-full right-0 mb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-        <div className="bg-[#001f3f] text-white text-xs font-bold px-4 py-2 rounded-xl whitespace-nowrap">
-          ¿Necesitas ayuda? <span className="text-[#ffd600]">¡Escríbenos!</span>
-        </div>
-        <div className="w-2.5 h-2.5 bg-[#001f3f] rotate-45 absolute -bottom-1 right-5" />
-      </div>
+      {/* Tooltip de texto — visible en hover */}
+      <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap bg-[#001f3f] text-white text-xs font-bold px-4 py-2.5 rounded-l-full pl-5 pr-2 pointer-events-none">
+        ¿Necesitas ayuda?
+      </span>
 
-      <div className="relative w-14 h-14">
+      {/* Botón circular */}
+      <div className="relative w-14 h-14 shrink-0">
         <span
-          className="absolute inset-0 rounded-full bg-green-400 opacity-40 animate-ping"
+          className="absolute inset-0 rounded-full bg-green-400 opacity-35 animate-ping"
           aria-hidden="true"
         />
         <div
-          className="absolute inset-0 rounded-full bg-[#25D366] flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-active:scale-95"
-          style={{ boxShadow: 'none', filter: 'none' }}
+          className="absolute inset-0 rounded-full bg-[#25D366] flex items-center justify-center transition-transform duration-300 group-hover:scale-105 group-active:scale-95 shadow-[0_4px_16px_rgba(37,211,102,0.4)]"
         >
           <svg
             viewBox="0 0 32 32"

@@ -2,34 +2,22 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type MouseEvent } from 'react';
 import { MapPin, Menu, X, MessageCircle, Hotel, BedDouble, Info, ArrowRight, Phone } from 'lucide-react';
 import { ScrollToTop } from '@/components/ui/ScrollToTop';
 import { SelectorIdioma } from '@/components/shared/GoogleTranslate';
 import Image from 'next/image';
-import { CONFIGURACION_DEFAULT, crearUrlWhatsApp, normalizarConfiguracion, type ConfiguracionWeb } from '@/lib/configuracion';
+import { crearUrlWhatsApp, type ConfiguracionWeb } from '@/lib/configuracion';
+import { useConfiguracionWeb } from '@/hooks/useConfiguracionWeb';
 
 const navItems = [
-  { href: '/',                      label: 'Inicio',    Icon: Hotel,        hash: null },
-  { href: '/hoteles',               label: 'Hoteles',   Icon: BedDouble,    hash: null },
+  { href: '/#inicio',               label: 'Inicio',    Icon: Hotel,        hash: 'inicio' },
+  { href: '/#hoteles',              label: 'Hoteles',   Icon: BedDouble,    hash: 'hoteles' },
   { href: '/#destinos',             label: 'Destinos',  Icon: MapPin,       hash: 'destinos' },
   { href: '/#servicios',            label: 'Servicios', Icon: Info,         hash: 'servicios' },
   { href: '/#preguntas-frecuentes', label: 'FAQ',       Icon: MessageCircle,hash: 'preguntas-frecuentes' },
   { href: '/contacto',              label: 'Contacto',  Icon: Phone,        hash: null },
 ];
-
-function useConfiguracionWeb() {
-  const [config, setConfig] = useState<ConfiguracionWeb>(CONFIGURACION_DEFAULT);
-
-  useEffect(() => {
-    fetch('/api/configuracion')
-      .then(res => res.ok ? res.json() : null)
-      .then(data => setConfig(normalizarConfiguracion(data)))
-      .catch(() => setConfig(CONFIGURACION_DEFAULT));
-  }, []);
-
-  return config;
-}
 
 function redesConfiguradas(config: ConfiguracionWeb) {
   return [
@@ -78,9 +66,7 @@ export function Header() {
   const pathname = usePathname();
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [hashActivo, setHashActivo] = useState(() =>
-    typeof window === 'undefined' ? '' : window.location.hash.replace('#', '')
-  );
+  const [hashActivo, setHashActivo] = useState('');
   const config = useConfiguracionWeb();
 
   const whatsappConsulta = crearUrlWhatsApp(
@@ -93,38 +79,111 @@ export function Header() {
   );
   const redes = redesConfiguradas(config);
 
+  // ── Scroll detector ──────────────────────────────────────────────────────
   useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > 40);
-    };
+    const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Escuchar cambios de hash manuales para actualizar el estado
+  // ── Scroll spy simple y estable ──────────────────────────────────────────
+  // Solo activo en la homepage
   useEffect(() => {
-    const onHashChange = () => {
-      if (window.location.pathname === '/') {
-        setHashActivo(window.location.hash.replace('#', ''));
-      }
-    };
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
-  }, []);
-
-  const esActivo = (href: string, hash: string | null) => {
-    if (hash) {
-      return pathname === '/' && hashActivo === hash;
+    if (pathname !== '/') {
+      return;
     }
-    if (href === '/') return pathname === '/' && !hashActivo;
-    return pathname === href || pathname.startsWith(href + '/');
+
+    const SECCIONES = ['inicio', 'contacto', 'hoteles', 'destinos', 'servicios', 'preguntas-frecuentes'];
+    const calcularActivo = () => {
+      const scrollY = window.scrollY;
+      const alturaVentana = window.innerHeight;
+      const alturaDoc = document.documentElement.scrollHeight;
+      const lineaActiva = scrollY + Math.min(alturaVentana * 0.45, 360);
+
+      // Si estamos al fondo de la página, activar la última sección
+      if (scrollY + alturaVentana >= alturaDoc - 50) {
+        setHashActivo('preguntas-frecuentes');
+        return;
+      }
+
+      // Recorrer secciones de abajo hacia arriba
+      // La primera cuyo top ya pasó el offset es la activa
+      let activa = '';
+      for (let i = SECCIONES.length - 1; i >= 0; i--) {
+        const el = document.getElementById(SECCIONES[i]);
+        if (!el) continue;
+        const top = el.getBoundingClientRect().top + scrollY;
+        if (lineaActiva >= top) {
+          activa = SECCIONES[i];
+          break;
+        }
+      }
+
+      setHashActivo(activa);
+    };
+
+    // Calcular al montar y en cada scroll
+    calcularActivo();
+    window.addEventListener('scroll', calcularActivo, { passive: true });
+    return () => window.removeEventListener('scroll', calcularActivo);
+  }, [pathname]);
+
+  const handleMobileNavClick = () => {
+    setMenuAbierto(false);
+  };
+
+  const scrollASeccion = (hash: string | null) => {
+    if (!hash) return;
+    const el = document.getElementById(hash);
+    if (!el) return;
+
+    const header = document.querySelector('header[role="banner"]');
+    const altoHeader = header instanceof HTMLElement ? header.offsetHeight : 80;
+    const ajustes: Record<string, number> = {
+      inicio: 0,
+      contacto: 0,
+      destinos: 0,
+      hoteles: 0,
+      servicios: 0,
+      'preguntas-frecuentes': 0,
+    };
+    const top = el.getBoundingClientRect().top + window.scrollY - altoHeader + (ajustes[hash] ?? 70);
+
+    window.history.pushState(null, '', `/#${hash}`);
+    setHashActivo(hash);
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+  };
+
+  const handleNavClick = (event: MouseEvent<HTMLAnchorElement>, hash: string | null) => {
+    if (!hash) {
+      handleMobileNavClick();
+      return;
+    }
+
+    if (pathname === '/') {
+      event.preventDefault();
+      scrollASeccion(hash);
+    }
+
+    handleMobileNavClick();
+  };
+
+  // ── Estado activo ─────────────────────────────────────────────────────────
+  const esActivo = (href: string, hash: string | null) => {
+    // Links de páginas separadas (Hoteles, Contacto)
+    if (!hash) {
+      if (href === '/') return pathname === '/' && hashActivo === '';
+      return pathname === href || pathname.startsWith(href + '/');
+    }
+    // Links de secciones (solo en homepage)
+    return pathname === '/' && hashActivo === hash;
   };
 
   return (
     <>
       <div className="bg-[var(--brand-navy)] hidden md:block border-b border-[var(--border-white-10)]">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between gap-3">
           <a
             href={whatsappConsulta}
             target="_blank"
@@ -200,12 +259,12 @@ export function Header() {
       </div>
 
       <header
-        className={`sticky top-0 z-50 transition-all duration-500 ${
-          scrolled ? 'bg-white shadow-md py-2.5 border-b border-gray-100' : 'bg-white py-4 border-b border-transparent'
+        className={`sticky top-0 z-50 transition-all duration-300 ${
+          scrolled ? 'bg-white shadow-sm py-2.5 border-b border-gray-100' : 'bg-white py-3.5 border-b border-gray-100/50'
         }`}
         role="banner"
       >
-        <div className="max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-8 xl:px-12 flex items-center justify-between gap-2 sm:gap-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-3">
 
           <Link href="/" className="flex items-center gap-1.5 sm:gap-2 md:gap-2.5 group shrink-0" aria-label="Adventur Hoteles — Inicio">
             <div className="w-7 xs:w-8 sm:w-9 md:w-10 h-7 xs:h-8 sm:h-9 md:h-10 shrink-0">
@@ -235,23 +294,39 @@ export function Header() {
           <nav className="hidden lg:flex items-center gap-1 xl:gap-2" aria-label="Navegación principal">
             {navItems.map(({ href, label, Icon, hash }) => {
               const activo = esActivo(href, hash);
+              const esContacto = href === '/contacto';
               return (
                 <Link
                   key={href}
                   href={href}
-                  onClick={() => setHashActivo(hash || '')}
-                  className={`flex items-center gap-1.5 px-3 py-2 text-xs xl:text-sm tracking-wide transition-all rounded-full group ${
-                    activo
-                      ? 'text-[#001f3f] font-semibold bg-[#ffd600]/20'
-                      : 'text-slate-600 font-medium hover:text-[#001f3f] hover:bg-gray-50'
+                  onClick={(event) => handleNavClick(event, hash)}
+                  className={`relative flex items-center gap-1.5 px-3 py-2 text-xs xl:text-sm tracking-wide transition-all group ${
+                    esContacto
+                      ? `rounded-full border ${
+                          activo
+                            ? 'border-[#001f3f] bg-[#001f3f] text-white font-black shadow-sm'
+                            : 'border-[#001f3f]/15 bg-[#001f3f]/5 text-[#001f3f] font-bold hover:bg-[#001f3f] hover:text-white'
+                        }`
+                      : `rounded-lg ${
+                          activo
+                            ? 'text-[#001f3f] font-bold'
+                            : 'text-slate-500 font-medium hover:text-[#001f3f] hover:bg-gray-50'
+                        }`
                   }`}
                 >
                   <Icon
-                    size={16}
-                    className={activo ? 'text-[#001f3f]' : 'text-slate-500 group-hover:text-[#001f3f] transition-colors'}
+                    size={15}
+                    className={
+                      esContacto
+                        ? (activo ? 'text-[#ffd600]' : 'text-[#001f3f] group-hover:text-[#ffd600] transition-colors')
+                        : (activo ? 'text-[#001f3f]' : 'text-slate-400 group-hover:text-[#001f3f] transition-colors')
+                    }
                     aria-hidden="true"
                   />
                   {label}
+                  {activo && !esContacto && (
+                    <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-[#ffd600] rounded-full" />
+                  )}
                 </Link>
               );
             })}
@@ -265,7 +340,7 @@ export function Header() {
               href={whatsappReserva}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden md:flex items-center gap-1.5 bg-[#ffd600] hover:bg-[#ffdf33] text-[#001f3f] font-bold text-xs px-4 py-2 rounded-full transition-all active:scale-95 shadow-sm"
+              className="hidden md:flex items-center gap-1.5 bg-[#ffd600] hover:bg-[#ffdf33] text-[#001f3f] font-black text-xs px-5 py-2.5 rounded-full transition-all active:scale-95 shadow-[0_4px_12px_rgba(255,214,0,0.35)] hover:shadow-[0_6px_18px_rgba(255,214,0,0.45)] hover:-translate-y-0.5"
             >
               <MessageCircle size={14} aria-hidden="true" />
               <span>Reservar ahora</span>
@@ -285,33 +360,39 @@ export function Header() {
         {menuAbierto && (
           <div
             id="mobile-menu"
-            className="lg:hidden fixed inset-x-0 top-[48px] xs:top-[52px] sm:top-[57px] bottom-0 bg-white z-50 overflow-y-auto"
+            className="lg:hidden fixed inset-x-0 top-[57px] bottom-0 bg-white z-50 overflow-y-auto shadow-2xl"
             role="dialog"
             aria-modal="true"
             aria-label="Menú de navegación"
           >
             <nav className="px-3 xs:px-4 sm:px-5 pt-3 xs:pt-3.5 sm:pt-4 pb-6 flex flex-col gap-2" aria-label="Navegación móvil">
-              {navItems.map(({ href, label, Icon, hash }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className={`flex items-center justify-between py-2.5 xs:py-3 sm:py-3.5 px-3 xs:px-4 sm:px-5 rounded-lg xs:rounded-xl sm:rounded-2xl text-sm font-bold text-[#001f3f] transition-all border ${
-                    esActivo(href, hash)
-                      ? 'bg-[#ffd600]/10 border-[#ffd600]/30'
-                      : 'bg-gray-50 hover:bg-[#ffd600]/10 border-gray-100'
-                  }`}
-                  onClick={() => {
-                    setMenuAbierto(false);
-                    setHashActivo(hash || '');
-                  }}
-                >
-                  <span className="flex items-center gap-2 xs:gap-2.5 sm:gap-3">
-                    <Icon size={17} className="text-[#ffd600]" aria-hidden="true" />
-                    {label}
-                  </span>
-                  <ArrowRight size={14} className="text-gray-300" aria-hidden="true" />
-                </Link>
-              ))}
+              {navItems.map(({ href, label, Icon, hash }) => {
+                const activo = esActivo(href, hash);
+                const esContacto = href === '/contacto';
+
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={(event) => handleNavClick(event, hash)}
+                    className={`flex items-center justify-between py-2.5 xs:py-3 sm:py-3.5 px-3 xs:px-4 sm:px-5 rounded-lg xs:rounded-xl sm:rounded-2xl text-sm font-bold transition-all border ${
+                      esContacto
+                        ? activo
+                          ? 'bg-[#001f3f] border-[#001f3f] text-white'
+                          : 'bg-[#001f3f]/5 border-[#001f3f]/15 text-[#001f3f]'
+                        : activo
+                          ? 'bg-[#ffd600]/10 border-[#ffd600]/30 text-[#001f3f]'
+                          : 'bg-gray-50 hover:bg-[#ffd600]/10 border-gray-100 text-[#001f3f]'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2 xs:gap-2.5 sm:gap-3">
+                      <Icon size={17} className={esContacto ? (activo ? 'text-[#ffd600]' : 'text-[#001f3f]') : 'text-[#ffd600]'} aria-hidden="true" />
+                      {label}
+                    </span>
+                    <ArrowRight size={14} className={esContacto && activo ? 'text-white/50' : 'text-gray-300'} aria-hidden="true" />
+                  </Link>
+                );
+              })}
 
               <div className="mt-3 xs:mt-3.5 sm:mt-4 p-3 xs:p-4 sm:p-5 rounded-lg xs:rounded-xl sm:rounded-2xl bg-[#001f3f] text-white">
                 <p className="text-[8px] xs:text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-[#ffd600] mb-1">Contacto directo</p>
@@ -346,8 +427,12 @@ export function Footer() {
 
   return (
     <footer className="bg-[#001f3f] text-white" role="contentinfo">
+      {/*
 
-      <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
+              <p className="text-[#ffd600] text-[10px] font-black uppercase tracking-[0.25em] mt-1">Hoteles · Perú</p>
+            Hoteles verificados en todo el Perú.<br className="hidden sm:block" />
+      */}
+      <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16">
 
           <div className="sm:col-span-2 lg:col-span-1">
@@ -361,7 +446,7 @@ export function Footer() {
               </div>
             </div>
             <p className="text-gray-400 text-xs sm:text-sm leading-relaxed mb-1">HORIZONTE ANDINO COMPANY E.I.R.L.</p>
-            <p className="text-gray-500 text-[11px] sm:text-xs mb-4 sm:mb-5">RUC: 20612408255</p>
+            <p className="text-gray-400 text-[11px] sm:text-xs mb-4 sm:mb-5">RUC: 20612408255</p>
             <div className="flex items-center gap-2">
               {[
                 { label: 'Facebook', href: config.facebook_url, icon: (
@@ -468,12 +553,12 @@ export function Footer() {
         </div>
 
         <div className="mt-8 sm:mt-10 pt-6 sm:pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
-          <p className="text-[10px] sm:text-xs text-gray-500 text-center sm:text-left">
+          <p className="text-[10px] sm:text-xs text-gray-400 text-center sm:text-left">
             © {year} Adventur. Todos los derechos reservados.
           </p>
           <div className="flex items-center gap-3 sm:gap-5">
-            <span className="text-[8px] sm:text-[10px] font-bold text-gray-600 uppercase tracking-widest">Safe Travels</span>
-            <span className="text-[8px] sm:text-[10px] font-bold text-gray-600 uppercase tracking-widest">Mincetur</span>
+            <span className="text-[8px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Safe Travels</span>
+            <span className="text-[8px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Mincetur</span>
           </div>
         </div>
       </div>

@@ -16,7 +16,7 @@ import Swal from 'sweetalert2';
 import {
   MessageCircle, CheckCircle2, XCircle, Clock, RefreshCw,
   User, Phone, Calendar, ChevronUp, ChevronDown, ChevronsUpDown,
-  ChevronLeft, ChevronRight
+  ChevronLeft, ChevronRight, Download
 } from 'lucide-react';
 
 type FilaReserva = Reserva & { habitacionNombre: string; hotelNombre: string };
@@ -39,8 +39,8 @@ export default function PaginaReservas() {
         fetch('/api/admin/datos'),
       ]);
       const [reservasData, { hoteles: hotelsData, habitaciones: habsData }] = await Promise.all([
-        reservasRes.json(),
-        datosRes.json(),
+        reservasRes.ok ? reservasRes.json() : Promise.resolve([]),
+        datosRes.ok ? datosRes.json() : Promise.resolve({ hoteles: [], habitaciones: [] }),
       ]);
       setReservas(reservasData ?? []);
       setHabitaciones(habsData ?? []);
@@ -230,9 +230,17 @@ export default function PaginaReservas() {
           </h1>
           <p className="text-gray-500 text-sm mt-0.5">Solicitudes recibidas — el cliente ya habló con el hotel por WhatsApp</p>
         </div>
-        <button onClick={cargar} className="flex items-center gap-2 border border-gray-200 text-gray-600 font-medium px-4 py-2 rounded-xl hover:bg-gray-50 transition-all text-sm">
-          <RefreshCw size={14} /> Actualizar
-        </button>
+        <div className="flex items-center gap-2">
+          <a
+            href="/api/admin/reservas?format=csv"
+            className="flex items-center gap-2 border border-gray-200 text-gray-600 font-medium px-4 py-2 rounded-xl hover:bg-gray-50 transition-all text-sm"
+          >
+            <Download size={14} /> CSV
+          </a>
+          <button onClick={cargar} className="flex items-center gap-2 border border-gray-200 text-gray-600 font-medium px-4 py-2 rounded-xl hover:bg-gray-50 transition-all text-sm">
+            <RefreshCw size={14} /> Actualizar
+          </button>
+        </div>
       </div>
 
       {/* Filtros */}

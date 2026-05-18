@@ -3,12 +3,14 @@ import { ServicioHabitaciones, AdaptadorSupabaseHabitacion } from '@/modules/hab
 import { requerirAdmin } from '@/lib/admin-auth';
 import { esquemaHabitacionAdmin, respuestaErrorValidacion } from '@/lib/admin-validaciones';
 import { z } from 'zod';
+import { revalidateTag } from 'next/cache';
+import { mapHabitacionDb } from '@/lib/mappers';
 
 const servicio = () => new ServicioHabitaciones(new AdaptadorSupabaseHabitacion());
 
 export async function GET() {
   try {
-    const auth = await requerirAdmin();
+    const auth = await requerirAdmin('gestionarContenido');
     if (!auth.autorizado) return auth.respuesta;
 
     const { data, error } = await auth.supabase
@@ -18,25 +20,7 @@ export async function GET() {
 
     if (error) throw new Error(error.message);
 
-    const habitaciones = (data ?? []).map((row: Record<string, unknown>) => ({
-      id: row.id,
-      hotelId: row.hotel_id,
-      nombre: row.nombre,
-      descripcion: row.descripcion,
-      numeroHabitacion: row.numero_habitacion,
-      tipoHabitacion: row.tipo_habitacion,
-      tipoCama: row.tipo_cama,
-      regimenAlimentacion: row.regimen_alimentacion,
-      capacidadPersonas: row.capacidad_personas,
-      cantidadCamas: row.cantidad_camas ?? 1,
-      precioNoche: Number(row.precio_noche),
-      moneda: row.moneda ?? 'USD',
-      amenidades: row.amenidades ?? [],
-      imagenesUrls: row.imagenes_urls ?? [],
-      estaDisponible: row.esta_disponible,
-      estadoMantenimiento: row.estado_mantenimiento,
-      fechaCreacion: row.fecha_creacion,
-    }));
+    const habitaciones = (data ?? []).map(mapHabitacionDb);
 
     const res = NextResponse.json(habitaciones);
     res.headers.set('Cache-Control', 'private, max-age=30, stale-while-revalidate=60');
@@ -49,7 +33,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = await requerirAdmin();
+    const auth = await requerirAdmin('gestionarContenido');
     if (!auth.autorizado) return auth.respuesta;
     const body = esquemaHabitacionAdmin.parse(await request.json());
 
@@ -76,6 +60,8 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) throw new Error(error.message);
+    revalidateTag('habitaciones', { expire: 0 });
+    revalidateTag('hoteles', { expire: 0 });
     return NextResponse.json(data, { status: 201 });
   } catch (e) {
     if (e instanceof z.ZodError) return NextResponse.json(respuestaErrorValidacion(e), { status: 400 });
@@ -86,7 +72,7 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const auth = await requerirAdmin();
+    const auth = await requerirAdmin('gestionarContenido');
     if (!auth.autorizado) return auth.respuesta;
     const body = esquemaHabitacionAdmin.extend({ id: z.string().min(1) }).parse(await request.json());
     if (!body.id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
@@ -115,6 +101,8 @@ export async function PUT(request: NextRequest) {
       .single();
 
     if (error) throw new Error(error.message);
+    revalidateTag('habitaciones', { expire: 0 });
+    revalidateTag('hoteles', { expire: 0 });
     return NextResponse.json(data);
   } catch (e) {
     if (e instanceof z.ZodError) return NextResponse.json(respuestaErrorValidacion(e), { status: 400 });
@@ -125,11 +113,13 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const auth = await requerirAdmin();
+    const auth = await requerirAdmin('gestionarContenido');
     if (!auth.autorizado) return auth.respuesta;
     const id = new URL(request.url).searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
     await servicio().eliminar(id);
+    revalidateTag('habitaciones', { expire: 0 });
+    revalidateTag('hoteles', { expire: 0 });
     return NextResponse.json({ message: 'Habitación eliminada' });
   } catch (e) {
     console.error(e);

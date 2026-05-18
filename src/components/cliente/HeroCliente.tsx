@@ -12,7 +12,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import type { TipoAlojamiento } from '@/modules/hoteles/dominio/entidades/Hotel';
 import type { HotelConPrecio } from '@/lib/hoteles-consultas';
-import { useHeroCarrusel, HERO_SLIDES, HERO_DURACION_SLIDE } from './HeroFondoAnimado';
+import { useHeroCarrusel, HERO_SLIDES } from './HeroFondoAnimado';
 
 interface HeroClienteProps {
   totalHoteles: number;
@@ -261,10 +261,10 @@ function Dropdown({
           </span>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{label}</p>
+          <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">{label}</p>
           <div className="flex items-center justify-between gap-1">
             <span className={`text-sm truncate leading-tight ${
-              value ? 'font-semibold text-[var(--brand-navy)]' : 'text-gray-400 font-normal'
+              value ? 'font-semibold text-[var(--brand-navy)]' : 'text-gray-600 font-normal'
             }`}>
               {cargando ? 'Cargando...' : (seleccionada?.value ? seleccionada.label : placeholder)}
             </span>
@@ -518,7 +518,7 @@ export function HeroCliente({ totalHoteles, totalCiudades, ciudadesDisponibles =
         aria-hidden="true"
       >
         <div className="flex items-center gap-2 bg-black/35 backdrop-blur-md border border-white/15 rounded-full px-3 py-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-[var(--brand-yellow)] animate-pulse shrink-0" />
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--brand-yellow)] shrink-0" />
           <span className="text-white/90 text-[11px] font-semibold tracking-wide">
             {HERO_SLIDES[carrusel.actual].lugar}
           </span>
@@ -536,7 +536,7 @@ export function HeroCliente({ totalHoteles, totalCiudades, ciudadesDisponibles =
             type="button"
             aria-label={`Ir a imagen ${i + 1}`}
             onClick={() => carrusel.irA(i)}
-            className="relative flex items-center justify-center focus:outline-none"
+            className="relative flex h-8 w-8 items-center justify-center focus:outline-none"
           >
             <span
               className="block rounded-full transition-all duration-300 overflow-hidden"
@@ -546,12 +546,6 @@ export function HeroCliente({ totalHoteles, totalCiudades, ciudadesDisponibles =
                 background: i === carrusel.actual ? 'var(--brand-yellow)' : 'rgba(255,255,255,0.3)',
               }}
             >
-              {i === carrusel.actual && !carrusel.pausado && (
-                <span
-                  className="absolute inset-0 rounded-full origin-left bg-white/35"
-                  style={{ animation: `progressBar ${HERO_DURACION_SLIDE}ms linear forwards` }}
-                />
-              )}
             </span>
           </button>
         ))}
@@ -589,9 +583,13 @@ export function HeroCliente({ totalHoteles, totalCiudades, ciudadesDisponibles =
       <div className="flex flex-wrap items-center justify-center gap-5 sm:gap-8 mb-8">
         <div className="flex items-center gap-3">
           <div className="flex -space-x-2.5">
-            {[10, 11, 12].map((n) => (
-              <div key={n} className="w-8 h-8 rounded-full border-2 border-[var(--brand-navy)] overflow-hidden bg-gray-700 shrink-0">
-                <Image src={`https://i.pravatar.cc/100?img=${n}`} alt="" width={32} height={32} className="object-cover" />
+            {['A', 'H', 'P'].map((inicial, index) => (
+              <div
+                key={inicial}
+                className="w-8 h-8 rounded-full border-2 border-[var(--brand-navy)] overflow-hidden bg-gradient-to-br from-[#ffd600] to-[#001f3f] shrink-0 flex items-center justify-center text-[10px] font-black text-white"
+                style={{ filter: `brightness(${1 - index * 0.08})` }}
+              >
+                {inicial}
               </div>
             ))}
           </div>

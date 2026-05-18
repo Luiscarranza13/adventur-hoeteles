@@ -16,7 +16,7 @@ export const HERO_SLIDES = [
   { src: '/imagen10.jpg', lugar: 'Lima',                 subtitulo: 'La mejor cocina de Latinoamérica' },
 ];
 
-export const HERO_DURACION_SLIDE = 5000;
+export const HERO_DURACION_SLIDE = 15000;
 
 // ── Estado compartido con HeroCliente ────────────────────────────────────────
 type CarruselState = {
@@ -124,16 +124,29 @@ export function HeroFondoAnimado() {
             zIndex: i === actual ? 2 : 1,
           }}
         >
-          <Image
-            src={slide.src}
-            alt=""
-            fill
-            priority={i < 3}
-            loading={i < 3 ? 'eager' : 'lazy'}
-            sizes="100vw"
-            aria-hidden="true"
-            className="object-cover"
-          />
+          {i === 0 ? (
+            <>
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(255,214,0,0.18),transparent_28%),linear-gradient(160deg,#001f3f_0%,#06365f_48%,#020617_100%)] sm:hidden"
+              />
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 hidden bg-cover bg-center sm:block"
+                style={{ backgroundImage: "url('/hero-inicio.webp')" }}
+              />
+            </>
+          ) : (
+            <Image
+              src={slide.src}
+              alt=""
+              fill
+              loading="lazy"
+              sizes="(max-width: 640px) 640px, (max-width: 1024px) 1024px, 1600px"
+              aria-hidden="true"
+              className="object-cover"
+            />
+          )}
         </div>
       ))}
 

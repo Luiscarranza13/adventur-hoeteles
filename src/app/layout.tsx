@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
-import { Montserrat } from "next/font/google";
+import { Poppins } from "next/font/google";
 import "@/styles/globals.css";
 import { Toaster } from 'sonner';
 import { QueryProvider } from '@/providers/QueryProvider';
-import { GoogleTranslateScript } from '@/components/shared/GoogleTranslate';
 import { WhatsAppFlotante } from '@/components/cliente/WhatsAppFlotante';
+import { getPublicEnv } from '@/lib/env';
 
-const montserrat = Montserrat({
+const poppins = Poppins({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '800', '900'],
-  style: ['normal'],
-  variable: '--font-montserrat',
-  display: 'swap',
+  style: ['normal', 'italic'],
+  variable: '--font-poppins',
+  display: 'optional',
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://hoteles.adventur.pe';
+const SITE_URL = getPublicEnv().NEXT_PUBLIC_SITE_URL;
 const SITE_NAME = 'Adventur Hoteles';
 
 export const metadata: Metadata = {
@@ -72,14 +72,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={montserrat.variable} data-scroll-behavior="smooth">
+    <html lang="es" className={poppins.variable} data-scroll-behavior="smooth">
       <head>
-        <link rel="dns-prefetch" href="//translate.google.com" />
-        <link rel="dns-prefetch" href="//translate.googleapis.com" />
-        <link rel="dns-prefetch" href="//www.gstatic.com" />
-        <link rel="preconnect" href="https://translate.google.com" />
-        <link rel="preconnect" href="https://translate.googleapis.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://www.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preload" as="image" href="/hero-inicio.webp" media="(min-width: 640px)" fetchPriority="high" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -116,12 +111,11 @@ export default function RootLayout({
           {children}
           <WhatsAppFlotante />
         </QueryProvider>
-        <GoogleTranslateScript />
         <Toaster
           position="top-right"
           richColors
           toastOptions={{
-            style: { fontFamily: 'Montserrat, sans-serif', fontSize: '14px' },
+            style: { fontFamily: 'Poppins, sans-serif', fontSize: '14px' },
           }}
         />
       </body>

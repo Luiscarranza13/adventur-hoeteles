@@ -16,7 +16,7 @@ import {
 type FormUsuario = {
   nombreCompleto: string; correo: string;
   contrasena: string; telefono: string;
-  rol: 'admin' | 'colaborador';
+  rol: 'admin' | 'colaborador' | 'viewer';
   fotoUrl: string;
 };
 
@@ -58,6 +58,7 @@ export default function PaginaUsuarios() {
   const cargar = useCallback(async () => {
     try {
       const res = await fetch('/api/admin/usuarios');
+      if (!res.ok) throw new Error('No autorizado');
       setUsuarios(await res.json());
     } catch { /* silencioso */ }
     finally { setLoading(false); }
@@ -182,6 +183,7 @@ export default function PaginaUsuarios() {
     const config: Record<string, { cls: string; Icon: typeof Shield; label: string }> = {
       admin:       { cls: 'bg-[#ffd600] text-[#001f3f] border-yellow-300',   Icon: Shield,    label: 'Admin' },
       colaborador: { cls: 'bg-emerald-100 text-emerald-800 border-emerald-200', Icon: UserCheck, label: 'Colaborador' },
+      viewer:      { cls: 'bg-slate-100 text-slate-700 border-slate-200', Icon: Users, label: 'Lectura' },
     };
     const { cls, Icon, label } = config[rol] ?? { cls: 'bg-gray-100 text-gray-700 border-gray-200', Icon: Users, label: rol };
     return (
@@ -405,10 +407,11 @@ export default function PaginaUsuarios() {
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
               Rol del usuario
             </label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {([
                 { val: 'colaborador', Icon: UserCheck, label: 'Colaborador', desc: 'Acceso al panel de gestión' },
                 { val: 'admin',       Icon: Shield,    label: 'Administrador', desc: 'Acceso completo al panel' },
+                { val: 'viewer',      Icon: Users,     label: 'Solo lectura', desc: 'Consulta reportes sin editar' },
               ] as const).map(({ val, Icon, label, desc }) => (
                 <button
                   key={val}

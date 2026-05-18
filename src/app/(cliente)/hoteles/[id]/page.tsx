@@ -5,6 +5,7 @@ import { ServicioHoteles, AdaptadorSupabaseHotel } from '@/modules/hoteles';
 import { ServicioHabitaciones, AdaptadorSupabaseHabitacion } from '@/modules/habitaciones';
 import { GaleriaHotel } from '@/components/cliente/GaleriaHotel';
 import { Metadata } from 'next';
+import { getPublicEnv } from '@/lib/env';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
@@ -35,6 +36,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
     const habitaciones = await new ServicioHabitaciones(new AdaptadorSupabaseHabitacion()).buscarPorHotel(id);
     const precioMinimo = habitaciones.length ? Math.min(...habitaciones.map(h => h.precioNoche)) : null;
+    const siteUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL;
+    const url = `${siteUrl}/hoteles/${hotel.id}`;
 
     const title = `${hotel.nombre} — Hotel ${hotel.estrellas} estrellas en ${hotel.ciudad}`;
     const description = `${hotel.descripcion} Ubicado en ${hotel.ciudad}, ${hotel.direccion}. ${habitaciones.length} habitaciones disponibles${precioMinimo ? ` desde S/${precioMinimo}` : ''}. Reserva directa por WhatsApp.`;
@@ -49,10 +52,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         `hotel ${hotel.estrellas} estrellas ${hotel.ciudad}`,
         'reserva hotel WhatsApp',
       ],
+      alternates: { canonical: url },
       openGraph: {
         title,
         description,
         type: 'website',
+        url,
         images: hotel.imagenesUrls.length > 0 ? [
           {
             url: hotel.imagenesUrls[0],
@@ -62,6 +67,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
           }
         ] : undefined,
       },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description,
+        images: hotel.imagenesUrls[0] ? [hotel.imagenesUrls[0]] : undefined,
+      },
     };
   } catch {
     return { title: 'Hotel no encontrado' };
@@ -69,6 +80,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function PaginaDetalleHotel({ params }: PageProps) {
+  const siteUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL;
   const { id } = await params;
 
   const hotel = await new ServicioHoteles(new AdaptadorSupabaseHotel()).buscarPorId(id);
@@ -317,7 +329,7 @@ export default async function PaginaDetalleHotel({ params }: PageProps) {
               ratingValue: hotel.estrellas,
             },
             image: hotel.imagenesUrls,
-            url: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://hoteles.adventur.pe'}/hoteles/${hotel.id}`,
+            url: `${siteUrl}/hoteles/${hotel.id}`,
             priceRange: precioMinimo ? `${simboloMinimo}${precioMinimo}` : undefined,
             numberOfRooms: habitaciones.length,
             amenityFeature: habitaciones.flatMap(h => h.amenidades || []).filter((v, i, a) => a.indexOf(v) === i).map(amenidad => ({

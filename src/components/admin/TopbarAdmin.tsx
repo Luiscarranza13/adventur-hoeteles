@@ -25,7 +25,7 @@ export function TopbarAdmin({ email, fotoUrl, nombre }: TopbarAdminProps) {
   const inicial = (nombre?.[0] ?? email[0])?.toUpperCase() ?? 'A';
 
   return (
-    <header className="bg-white border-b border-gray-100 h-14 flex items-center justify-between px-6 flex-shrink-0">
+    <header className="bg-white border-b border-gray-100 h-14 flex items-center justify-between px-4 md:px-6 flex-shrink-0">
       {/* Título */}
       <div>
         <h2 className="text-sm font-bold text-[#001f3f]">{titulo}</h2>

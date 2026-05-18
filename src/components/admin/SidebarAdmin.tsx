@@ -5,20 +5,22 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, Hotel, BedDouble, Users, LogOut, Settings } from 'lucide-react';
 import Swal from 'sweetalert2';
+import type { RolAdmin } from '@/lib/admin-auth';
 
 interface SidebarAdminProps {
   email: string;
+  rol: RolAdmin;
 }
 
 const navItems = [
-  { href: '/admin/dashboard',     label: 'Dashboard',     Icon: LayoutDashboard },
-  { href: '/admin/hoteles',       label: 'Hoteles',       Icon: Hotel },
-  { href: '/admin/habitaciones',  label: 'Habitaciones',  Icon: BedDouble },
-  { href: '/admin/usuarios',      label: 'Usuarios',      Icon: Users },
-  { href: '/admin/configuracion', label: 'Configuración', Icon: Settings },
-];
+  { href: '/admin/dashboard',     label: 'Dashboard',     Icon: LayoutDashboard, roles: ['admin', 'colaborador', 'viewer'] },
+  { href: '/admin/hoteles',       label: 'Hoteles',       Icon: Hotel,           roles: ['admin', 'colaborador'] },
+  { href: '/admin/habitaciones',  label: 'Habitaciones',  Icon: BedDouble,      roles: ['admin', 'colaborador'] },
+  { href: '/admin/usuarios',      label: 'Usuarios',      Icon: Users,          roles: ['admin'] },
+  { href: '/admin/configuracion', label: 'Configuracion', Icon: Settings,       roles: ['admin'] },
+] as const;
 
-export function SidebarAdmin({ email }: SidebarAdminProps) {
+export function SidebarAdmin({ email, rol }: SidebarAdminProps) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -60,7 +62,7 @@ export function SidebarAdmin({ email }: SidebarAdminProps) {
   };
 
   return (
-    <aside className="w-60 bg-[#001f3f] flex flex-col flex-shrink-0 h-full shadow-xl">
+    <aside className="hidden md:flex w-60 bg-[#001f3f] flex-col flex-shrink-0 h-full shadow-xl">
       <div className="h-16 flex items-center px-5 border-b border-white/10 flex-shrink-0 gap-3">
         <Image
           src="/logoadventur2.png"
@@ -77,7 +79,7 @@ export function SidebarAdmin({ email }: SidebarAdminProps) {
 
       <nav className="flex-1 py-3 overflow-y-auto">
         <p className="text-gray-600 text-[10px] font-bold uppercase tracking-widest px-5 mb-2">Menú</p>
-        {navItems.map(({ href, label, Icon }) => {
+        {navItems.filter(item => (item.roles as readonly RolAdmin[]).includes(rol)).map(({ href, label, Icon }) => {
           const activo = pathname === href || pathname.startsWith(href + '/');
           return (
             <Link

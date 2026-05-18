@@ -80,10 +80,10 @@ const archivosRequeridos = [
   'src/app/api/admin/logout/route.ts',
   'src/app/api/reservas/route.ts',
   // Componentes
-  'src/components/Header.tsx',
-  'src/components/Input.tsx',
-  'src/components/GaleriaHotel.tsx',
-  'src/components/FormularioReservaWhatsApp.tsx',
+  'src/components/layout/Header.tsx',
+  'src/components/ui/Input.tsx',
+  'src/components/cliente/GaleriaHotel.tsx',
+  'src/components/cliente/FormularioReservaWhatsApp.tsx',
   'src/components/admin/SidebarAdmin.tsx',
   'src/components/admin/FormDrawer.tsx',
   'src/components/admin/SubidorImagenes.tsx',
@@ -97,7 +97,7 @@ const archivosRequeridos = [
   'src/store/adminStore.ts',
   'src/providers/QueryProvider.tsx',
   // Proxy (reemplaza middleware)
-  'src/app/api/proxy.ts',
+  'src/proxy.ts',
   // Assets
   'public/logoadventur2.png',
 ];
@@ -138,7 +138,6 @@ const dependenciasRequeridas = [
   'sweetalert2',
   'sonner',
   'lucide-react',
-  'framer-motion',
   'clsx',
   'tailwindcss',
   'typescript',

@@ -20,7 +20,7 @@ export const tiposCama = ['KB', 'QB', 'TB'] as const;
 export const regimenesAlimentacion = ['RO', 'BB', 'HB', 'FB', 'AI'] as const;
 export const estadosMantenimiento = ['disponible', 'mantenimiento', 'bloqueado'] as const;
 export const monedas = ['USD', 'PEN'] as const;
-export const rolesUsuario = ['admin', 'colaborador'] as const;
+export const rolesUsuario = ['admin', 'colaborador', 'viewer'] as const;
 
 export const esquemaHotelAdmin = z.object({
   id: textoOpcional(80),
@@ -107,6 +107,38 @@ export const esquemaConfiguracionAdmin = z.object({
   mensaje_mantenimiento: textoRequerido('Mensaje de mantenimiento', 300),
   reservas_activas: z.boolean().default(true),
   moneda_default: z.enum(monedas).default('USD'),
+});
+
+export const esquemaReservaPublica = z.object({
+  habitacionId: textoRequerido('Habitacion', 80),
+  nombreCliente: textoRequerido('Nombre', 160),
+  telefonoContacto: z.string().trim().regex(/^\+?\d[\d\s\-()]{7,24}$/, 'Telefono invalido'),
+  fechaIngreso: z.coerce.date(),
+  fechaSalida: z.coerce.date(),
+}).refine(data => data.fechaSalida > data.fechaIngreso, {
+  path: ['fechaSalida'],
+  message: 'La fecha de salida debe ser posterior a la fecha de ingreso',
+});
+
+export const esquemaReservaAdmin = z.object({
+  estado: z.enum(['contacto_whatsapp', 'confirmada', 'cancelada']),
+  notas_cliente: textoOpcional(1000),
+  cantidad_huespedes: z.preprocess(
+    value => value === '' || value === null || value === undefined ? undefined : value,
+    z.coerce.number().int().min(1).max(30).optional(),
+  ),
+  precio_total: z.preprocess(
+    value => value === '' || value === null || value === undefined ? undefined : value,
+    z.coerce.number().min(0).max(999999).optional(),
+  ),
+  fecha_confirmacion: z.preprocess(
+    value => value === '' || value === null || value === undefined ? undefined : value,
+    z.coerce.date().optional(),
+  ),
+  metodo_pago: z.preprocess(
+    value => value === '' || value === null || value === undefined ? undefined : value,
+    z.enum(['efectivo', 'tarjeta', 'transferencia', 'pendiente']).optional(),
+  ),
 });
 
 export function respuestaErrorValidacion(error: z.ZodError) {

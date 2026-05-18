@@ -5,10 +5,11 @@ import {
   normalizarConfiguracion,
   type ConfiguracionWeb,
 } from '@/lib/configuracion';
+import { getEnv } from '@/lib/env';
 
 export const obtenerConfiguracionPublica = unstable_cache(
   async (): Promise<ConfiguracionWeb> => {
-    if (process.env.NODE_ENV !== 'production' && process.env.ADVENTUR_REMOTE_CONFIG_DEV !== 'true') {
+    if (process.env.NODE_ENV !== 'production' && getEnv().ADVENTUR_REMOTE_CONFIG_DEV !== 'true') {
       return CONFIGURACION_DEFAULT;
     }
 

@@ -4,6 +4,7 @@ import { AnimarAlEntrar } from '@/components/ui/AnimarAlEntrar';
 import { obtenerDestinos } from '@/lib/destinos';
 import { anexarPreciosMinimos, obtenerHotelesBase } from '@/lib/hoteles-consultas';
 import { CATEGORIA_OPCIONES, ORDEN_OPCIONES, PRECIO_OPCIONES, TIPOS_ALOJAMIENTO, construirUrlHoteles } from '@/lib/hoteles-opciones';
+import { getPublicEnv } from '@/lib/env';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { MapPin, Star, ArrowRight, Hotel, Search, X, LayoutGrid, List } from 'lucide-react';
@@ -29,6 +30,7 @@ interface PageProps {
 
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
   const { ciudad, estrellas } = await searchParams;
+  const siteUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL;
   const title = ciudad
     ? `Hoteles en ${ciudad} — Adventur Hoteles`
     : estrellas
@@ -37,7 +39,17 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   const description = ciudad
     ? `Encuentra los mejores hoteles en ${ciudad}, Perú. Reserva directa por WhatsApp, sin comisiones.`
     : 'Hoteles verificados en todo el Perú. Reserva directa por WhatsApp, sin comisiones.';
-  return { title, description, openGraph: { title, description, type: 'website' } };
+  const url = ciudad
+    ? `${siteUrl}/hoteles?ciudad=${encodeURIComponent(ciudad)}`
+    : `${siteUrl}/hoteles`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: { title, description, type: 'website', url },
+    twitter: { card: 'summary_large_image', title, description },
+  };
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -45,6 +57,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function PaginaHoteles({ searchParams }: PageProps) {
+  const siteUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL;
   const { ciudad, estrellas, orden, q, tipo, precio, vista = 'grid' } = await searchParams;
 
   const [hotelesRaw, destinos] = await Promise.all([
@@ -152,26 +165,28 @@ export default async function PaginaHoteles({ searchParams }: PageProps) {
       <Header />
 
       {/* ── Hero banner ─────────────────────────────────────────────────── */}
-      <section className="bg-[#001f3f] pt-20 sm:pt-28 pb-8 sm:pb-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_1px_1px,#ffd600_1px,transparent_0)] [background-size:32px_32px]" />
-        <div className="relative z-10 max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+      <section className="bg-[#001f3f] pt-20 sm:pt-28 pb-10 sm:pb-14 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.07] bg-[radial-gradient(circle_at_1px_1px,#ffd600_1px,transparent_0)] [background-size:28px_28px]" />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#ffd600]/30 to-transparent" />
+        <div className="relative z-10 max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
-            <p className="text-[11px] font-semibold text-[#ffd600] uppercase tracking-widest mb-2">
+            <p className="text-[10px] font-black text-[#ffd600] uppercase tracking-[0.3em] mb-3">
               Explora el Perú
             </p>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight font-[Montserrat]">
+            <h1 className="text-3xl sm:text-4xl font-black text-white leading-tight tracking-tight">
               {ciudad ? `Hoteles en ${ciudad}` : 'Todos los Destinos'}
             </h1>
-            <p className="text-gray-400 text-sm mt-2">
-              <span className="text-white font-semibold">{hoteles.length}</span> alojamientos
+            <p className="text-gray-400 text-sm mt-2.5 flex items-center gap-2">
+              <span className="text-white font-bold text-base">{hoteles.length}</span>
+              <span>alojamientos encontrados</span>
               {hayFiltros && (
-                <span className="text-gray-500"> · {resumenFiltros}</span>
+                <span className="text-[#ffd600]/60 text-xs">· {resumenFiltros}</span>
               )}
             </p>
           </div>
           <Link
             href="/"
-            className="text-xs font-medium text-white/50 hover:text-white transition-colors shrink-0"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/40 hover:text-white transition-colors shrink-0 border border-white/10 hover:border-white/30 px-4 py-2 rounded-full"
           >
             ← Volver al inicio
           </Link>
@@ -314,83 +329,101 @@ export default async function PaginaHoteles({ searchParams }: PageProps) {
                   <Link href={`/hoteles/${hotel.id}`} className="block h-full">
 
                     {vista === 'lista' ? (
-                      <article className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group flex flex-row">
-                        <div className="relative w-36 sm:w-48 shrink-0 overflow-hidden bg-gray-100">
+                      <article className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group flex flex-row">
+                        <div className="relative w-40 sm:w-52 shrink-0 overflow-hidden bg-gray-100">
                           <ImagenSegura
                             src={hotel.imagenesUrls[0] ?? ''}
                             alt={`Hotel ${hotel.nombre}`}
                             fill
-                            sizes="(max-width: 640px) 144px, 192px"
+                            sizes="(max-width: 640px) 160px, 208px"
                             className="object-cover group-hover:scale-105 transition-transform duration-500"
                           />
-                          <div className="absolute top-2 left-2 bg-white/95 px-1.5 py-0.5 rounded-md flex items-center gap-0.5 shadow-sm">
+                          <div className="absolute top-2.5 left-2.5 bg-white/95 backdrop-blur-sm px-2 py-1 rounded-lg flex items-center gap-0.5 shadow-sm">
                             {Array.from({ length: hotel.estrellas }).map((_, j) => (
-                              <Star key={j} size={8} className="text-[#ffd600] fill-[#ffd600]" />
+                              <Star key={j} size={10} className="text-amber-400 fill-amber-400" />
                             ))}
                           </div>
                         </div>
-                        <div className="p-4 flex flex-col flex-1 min-w-0">
-                          <div className="flex items-center gap-1 mb-1">
-                            <MapPin size={10} className="text-[#ffd600] shrink-0" />
-                            <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wide truncate">{hotel.ciudad}</span>
+                        <div className="p-4 sm:p-5 flex flex-col flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 mb-1.5">
+                            <MapPin size={11} className="text-[#ffd600] shrink-0" />
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider truncate">{hotel.ciudad}</span>
                             {hotel.tipoAlojamiento && (
-                              <span className="ml-auto text-[10px] font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full shrink-0">
+                              <span className="ml-auto text-[10px] font-semibold text-[#001f3f] bg-[#ffd600]/15 px-2.5 py-0.5 rounded-full shrink-0">
                                 {hotel.tipoAlojamiento}
                               </span>
                             )}
                           </div>
-                          <h3 className="text-sm font-semibold text-[#001f3f] leading-snug mb-1.5 line-clamp-1 group-hover:text-[#ffd600] transition-colors">
+                          <h3 className="text-base font-bold text-[#001f3f] leading-snug mb-1.5 line-clamp-1 group-hover:text-[#001f3f] transition-colors">
                             {hotel.nombre}
                           </h3>
                           <p className="text-xs text-gray-400 leading-relaxed line-clamp-2 flex-1 mb-3">
                             {hotel.descripcion}
                           </p>
-                          <div className="flex items-center justify-between pt-2.5 border-t border-gray-100">
-                            <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wide">
-                              {hotel.precioMinimo ? `Desde S/${hotel.precioMinimo}` : 'Ver detalles'}
-                            </span>
-                            <div className="w-6 h-6 rounded-full bg-gray-50 group-hover:bg-[#ffd600] flex items-center justify-center transition-colors">
-                              <ArrowRight size={11} className="text-gray-400 group-hover:text-[#001f3f]" />
+                          <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                            <div>
+                              {hotel.precioMinimo ? (
+                                <>
+                                  <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-0.5">Desde</p>
+                                  <p className="text-lg font-black text-[#001f3f] leading-none">S/{hotel.precioMinimo}</p>
+                                </>
+                              ) : (
+                                <span className="text-xs font-semibold text-gray-400">Ver detalles</span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1.5 bg-[#001f3f] group-hover:bg-[#ffd600] text-white group-hover:text-[#001f3f] px-3 py-1.5 rounded-full transition-all duration-300 text-[10px] font-black uppercase tracking-widest">
+                              <ArrowRight size={11} />
+                              <span>Ver</span>
                             </div>
                           </div>
                         </div>
                       </article>
                     ) : (
-                      <article className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 overflow-hidden group h-full flex flex-col">
-                        <div className="relative h-44 shrink-0 overflow-hidden bg-gray-100">
+                      <article className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group h-full flex flex-col">
+                        <div className="relative h-52 shrink-0 overflow-hidden bg-gray-100">
                           <ImagenSegura
                             src={hotel.imagenesUrls[0] ?? ''}
                             alt={`Hotel ${hotel.nombre}`}
                             fill
                             sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            className="object-cover group-hover:scale-105 transition-transform duration-700"
                           />
-                          <div className="absolute top-3 left-3 bg-white/95 px-2 py-1 rounded-lg flex items-center gap-0.5 shadow-sm">
+                          {/* Overlay gradiente en hover */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-2.5 py-1.5 rounded-xl flex items-center gap-0.5 shadow-sm">
                             {Array.from({ length: hotel.estrellas }).map((_, j) => (
-                              <Star key={j} size={9} className="text-[#ffd600] fill-[#ffd600]" />
+                              <Star key={j} size={10} className="text-amber-400 fill-amber-400" />
                             ))}
                           </div>
                           {hotel.tipoAlojamiento && (
-                            <div className="absolute top-3 right-3 bg-white/95 px-2 py-1 rounded-lg text-[10px] font-semibold text-[#001f3f] shadow-sm">
+                            <div className="absolute top-3 right-3 bg-[#001f3f]/90 backdrop-blur-sm px-2.5 py-1 rounded-xl text-[10px] font-bold text-white shadow-sm">
                               {hotel.tipoAlojamiento}
                             </div>
                           )}
+                          {/* Precio sobre la imagen */}
+                          {hotel.precioMinimo && (
+                            <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-sm rounded-xl px-3 py-1.5 shadow-md">
+                              <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest leading-none mb-0.5">Desde</p>
+                              <p className="text-base font-black text-[#001f3f] leading-none">S/{hotel.precioMinimo}</p>
+                            </div>
+                          )}
                         </div>
-                        <div className="p-4 flex flex-col flex-1">
-                          <div className="flex items-center gap-1 mb-1.5">
+                        <div className="p-4 sm:p-5 flex flex-col flex-1">
+                          <div className="flex items-center gap-1.5 mb-2">
                             <MapPin size={11} className="text-[#ffd600] shrink-0" />
-                            <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wide truncate">{hotel.ciudad}</span>
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider truncate">{hotel.ciudad}</span>
                           </div>
-                          <h3 className="text-sm font-semibold text-[#001f3f] leading-snug mb-1.5 line-clamp-2 group-hover:text-[#ffd600] transition-colors">
+                          <h3 className="text-sm sm:text-base font-bold text-[#001f3f] leading-snug mb-1.5 line-clamp-2 group-hover:text-[#001f3f] transition-colors">
                             {hotel.nombre}
                           </h3>
-                          <p className="text-xs text-gray-400 leading-relaxed line-clamp-2 flex-1 mb-3">{hotel.descripcion}</p>
+                          <p className="text-xs text-gray-400 leading-relaxed line-clamp-2 flex-1 mb-4">{hotel.descripcion}</p>
                           <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                            <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wide">
-                              {hotel.precioMinimo ? `Desde S/${hotel.precioMinimo}` : 'Ver detalles'}
+                            <span className="text-[10px] font-semibold text-gray-400">
+                              {hotel.precioMinimo ? 'Precio disponible' : 'Consultar precio'}
                             </span>
-                            <div className="w-6 h-6 rounded-full bg-gray-50 group-hover:bg-[#ffd600] flex items-center justify-center transition-colors">
-                              <ArrowRight size={11} className="text-gray-400 group-hover:text-[#001f3f]" />
+                            <div className="flex items-center gap-1.5 bg-[#001f3f] group-hover:bg-[#ffd600] text-white group-hover:text-[#001f3f] px-3 py-1.5 rounded-full transition-all duration-300 text-[10px] font-black uppercase tracking-widest">
+                              <ArrowRight size={11} />
+                              <span>Ver hotel</span>
                             </div>
                           </div>
                         </div>
@@ -447,9 +480,7 @@ export default async function PaginaHoteles({ searchParams }: PageProps) {
                   addressCountry: 'PE',
                 },
                 starRating: { '@type': 'Rating', ratingValue: hotel.estrellas },
-                url: `${
-                  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://hoteles.adventur.pe'
-                }/hoteles/${hotel.id}`,
+                url: `${siteUrl}/hoteles/${hotel.id}`,
               },
             })),
           }),

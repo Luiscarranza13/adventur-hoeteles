@@ -26,31 +26,37 @@ export default async function PaginaCheckout({ params }: PageProps) {
 
       {/* Banner */}
       <div className="bg-[var(--brand-navy)] pt-24 sm:pt-32 pb-16 sm:pb-24 px-6 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.06] bg-[radial-gradient(circle_at_1px_1px,var(--brand-yellow)_1px,transparent_0)] [background-size:28px_28px]" />
         <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--brand-yellow)]/5 rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none blur-3xl" />
-        <div className="relative z-10 container-site text-center lg:text-left">
-          <p className="label-eyebrow mb-2">Paso Final</p>
-          <h1 className="heading-hero !text-left !text-3xl sm:!text-5xl mb-2">Solicitar Reserva</h1>
-          <p className="text-gray-400 text-base sm:text-lg font-medium">Confirma tus datos y te redirigimos al WhatsApp del hotel</p>
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--brand-yellow)]/20 to-transparent" />
+        <div className="relative z-10 container-site">
+          <p className="label-eyebrow mb-3">Paso Final</p>
+          <h1 className="heading-hero !text-3xl sm:!text-5xl mb-3">Solicitar Reserva</h1>
+          <div className="section-divider !mx-0" />
+          <p className="text-gray-400 text-base sm:text-lg font-medium mt-4">
+            Confirma tus datos y te redirigimos al WhatsApp del hotel
+          </p>
         </div>
       </div>
 
-      <main className="bg-[var(--bg-subtle)] py-12 sm:py-20 px-6 min-h-screen">
+      <main className="bg-[var(--bg-subtle)] py-12 sm:py-20 px-4 sm:px-6 min-h-screen">
         <div className="max-w-xl mx-auto">
 
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-gray-400 mb-8 overflow-hidden">
+          <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 mb-8 overflow-hidden flex-wrap">
             <Link href="/hoteles" className="hover:text-[var(--brand-navy)] transition-colors shrink-0">Hoteles</Link>
-            <ChevronRight size={14} className="text-gray-300 shrink-0" />
-            <Link href={`/hoteles/${hotel.id}`} className="hover:text-[var(--brand-navy)] transition-colors truncate max-w-[150px] shrink-0">{hotel.nombre}</Link>
-            <ChevronRight size={14} className="text-gray-300 shrink-0" />
+            <ChevronRight size={12} className="text-gray-300 shrink-0" />
+            <Link href={`/hoteles/${hotel.id}`} className="hover:text-[var(--brand-navy)] transition-colors truncate max-w-[140px] shrink-0">{hotel.nombre}</Link>
+            <ChevronRight size={12} className="text-gray-300 shrink-0" />
             <span className="text-[var(--brand-navy)] shrink-0">Reservar</span>
           </nav>
 
           {/* Formulario */}
-          <AnimarAlEntrar className="card-premium !p-8 sm:!p-12">
-            <div className="mb-10 text-center lg:text-left">
-              <h2 className="heading-card !text-2xl mb-2">{habitacion.nombre}</h2>
-              <p className="body-text !text-sm">Hotel {hotel.nombre} · {hotel.ciudad}</p>
+          <AnimarAlEntrar className="bg-white rounded-3xl border border-gray-100 shadow-xl p-8 sm:p-10">
+            <div className="mb-8 pb-6 border-b border-gray-100">
+              <p className="label-eyebrow mb-2 !text-left">Habitación seleccionada</p>
+              <h2 className="text-xl sm:text-2xl font-black text-[var(--brand-navy)] mb-1">{habitacion.nombre}</h2>
+              <p className="text-sm text-gray-400 font-medium">Hotel {hotel.nombre} · {hotel.ciudad}</p>
             </div>
 
             <FormularioReservaWhatsApp
@@ -64,18 +70,18 @@ export default async function PaginaCheckout({ params }: PageProps) {
           </AnimarAlEntrar>
 
           {/* Garantías */}
-          <AnimarAlEntrar delay={0.1} className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <AnimarAlEntrar delay={0.1} className="mt-6 grid grid-cols-3 gap-3">
             {[
-              { Icon: Shield,          label: 'Reserva 100% Segura', desc: 'Sin intermediarios' },
-              { Icon: Zap,             label: 'Respuesta Inmediata', desc: 'Atención directa' },
-              { Icon: BadgeDollarSign, label: 'Mejor Precio',        desc: 'Sin comisiones' },
+              { Icon: Shield,          label: 'Reserva Segura',    desc: 'Sin intermediarios' },
+              { Icon: Zap,             label: 'Respuesta Rápida',  desc: 'Menos de 5 min' },
+              { Icon: BadgeDollarSign, label: 'Precio Directo',    desc: '0% comisión' },
             ].map(({ Icon, label, desc }) => (
-              <div key={label} className="bg-white rounded-2xl p-6 text-center border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-10 h-10 bg-[var(--brand-navy)] rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <Icon size={18} className="text-[var(--brand-yellow)]" />
+              <div key={label} className="bg-white rounded-2xl p-4 text-center border border-gray-100 shadow-sm hover:shadow-md hover:border-[var(--brand-yellow)]/30 transition-all duration-300">
+                <div className="w-10 h-10 bg-gradient-to-br from-[var(--brand-navy)] to-[var(--brand-navy-light)] rounded-xl flex items-center justify-center mx-auto mb-3 shadow-sm">
+                  <Icon size={17} className="text-[var(--brand-yellow)]" />
                 </div>
-                <p className="text-[10px] font-black text-[var(--brand-navy)] uppercase tracking-widest mb-1 leading-tight">{label}</p>
-                <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">{desc}</p>
+                <p className="text-[9px] font-black text-[var(--brand-navy)] uppercase tracking-widest mb-0.5 leading-tight">{label}</p>
+                <p className="text-[9px] text-gray-400 font-semibold">{desc}</p>
               </div>
             ))}
           </AnimarAlEntrar>

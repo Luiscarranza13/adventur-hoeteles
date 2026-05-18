@@ -156,42 +156,44 @@ export function CarruselServicios() {
                 aria-expanded={isOpen}
                 className={`w-full text-left relative overflow-hidden rounded-2xl transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd600] group ${
                   isOpen
-                    ? 'bg-[#001f3f] shadow-lg rounded-b-none'
-                    : 'bg-white border border-gray-100 shadow-sm hover:shadow-md hover:border-[#ffd600]/30'
+                    ? 'bg-[#001f3f] shadow-xl rounded-b-none'
+                    : 'bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:border-[#ffd600]/40'
                 }`}
               >
                 {/* Línea superior */}
                 <div className={`absolute top-0 left-0 right-0 h-[3px] transition-all duration-300 ${
-                  isOpen ? 'bg-[#ffd600]' : 'bg-transparent group-hover:bg-[#ffd600]/40'
+                  isOpen ? 'bg-[#ffd600]' : 'bg-transparent group-hover:bg-[#ffd600]/50'
                 }`} />
 
-                <div className="p-5">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors duration-200 ${
-                      isOpen ? 'bg-[#ffd600]' : 'bg-[#001f3f]/6 group-hover:bg-[#001f3f]'
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-5">
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200 ${
+                      isOpen
+                        ? 'bg-[#ffd600] shadow-[0_8px_20px_rgba(255,214,0,0.3)]'
+                        : 'bg-[#001f3f]/6 group-hover:bg-[#001f3f]'
                     }`}>
-                      <Icon size={18} className={`transition-colors duration-200 ${
+                      <Icon size={24} className={`transition-colors duration-200 ${
                         isOpen ? 'text-[#001f3f]' : 'text-[#001f3f] group-hover:text-[#ffd600]'
                       }`} aria-hidden="true" />
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className={`text-[10px] tabular-nums ${isOpen ? 'text-[#ffd600]/50' : 'text-gray-300'}`}>
+                      <span className={`text-[10px] font-black tabular-nums ${isOpen ? 'text-[#ffd600]/80' : 'text-gray-600'}`}>
                         {numero}
                       </span>
-                      <ChevronDown size={13} className={`transition-transform duration-300 ${
+                      <ChevronDown size={14} className={`transition-transform duration-300 ${
                         isOpen ? 'rotate-180 text-[#ffd600]/60' : 'text-gray-300'
                       }`} />
                     </div>
                   </div>
 
-                  <h3 className={`font-semibold text-sm leading-snug mb-2 transition-colors duration-200 ${
+                  <h3 className={`font-bold text-base leading-snug mb-2 transition-colors duration-200 ${
                     isOpen ? 'text-white' : 'text-[#001f3f]'
                   }`}>
                     {titulo}
                   </h3>
 
-                  <div className={`flex items-center gap-1.5 text-[10px] transition-colors duration-200 ${
-                    isOpen ? 'text-[#ffd600]/60' : 'text-gray-400 group-hover:text-[#001f3f]/50'
+                  <div className={`flex items-center gap-1.5 text-[10px] font-semibold transition-colors duration-200 ${
+                    isOpen ? 'text-[#ffd600]/90' : 'text-gray-700 group-hover:text-[#001f3f]'
                   }`}>
                     <Info size={10} />
                     {isOpen ? 'Cerrar' : 'Saber más'}
@@ -238,8 +240,8 @@ export function CarruselServicios() {
               aria-label={`Grupo ${i + 1}`}
               className="rounded-full transition-all duration-300"
               style={{
-                width: i === activeIndex ? 24 : 7,
-                height: 7,
+                width: 24,
+                height: 24,
                 background: i === activeIndex ? '#001f3f' : '#d1d5db',
               }}
             />

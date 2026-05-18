@@ -57,6 +57,7 @@ export default function PaginaHabitaciones() {
   const cargar = useCallback(async () => {
     try {
       const res = await fetch('/api/admin/datos');
+      if (!res.ok) throw new Error('No autorizado');
       const { hoteles: hotels, habitaciones: habs } = await res.json();
       setHabitaciones(habs ?? []); setHoteles(hotels ?? []);
       if (hotels?.length > 0) setForm(f => ({ ...f, hotelId: f.hotelId || hotels[0].id }));

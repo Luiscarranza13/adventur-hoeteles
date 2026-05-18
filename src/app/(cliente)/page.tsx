@@ -10,13 +10,15 @@ import { SeccionPorQueElegirnos } from '@/components/cliente/SeccionPorQueElegir
 import { obtenerDestinos, prepararProcedencias } from '@/lib/destinos';
 import { obtenerCiudadesConHoteles, listarHotelesActivos, anexarPreciosMinimos } from '@/lib/hoteles-consultas';
 import { obtenerConfiguracionPublica } from '@/lib/configuracion-consultas';
+import { getPublicEnv } from '@/lib/env';
 import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
   MessageCircle, Shield, ArrowRight,
-  CheckCircle2, ChevronDown,
+  CheckCircle2, ChevronDown, Phone,
 } from 'lucide-react';
+import { crearUrlWhatsApp } from '@/lib/configuracion';
 
 export const metadata: Metadata = {
   title: 'Adventur Hoteles — Alojamiento en Cajamarca y todo el Perú',
@@ -48,6 +50,7 @@ const faqs = [
 ];
 
 export default async function PaginaInicio() {
+  const siteUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL;
   const [hoteles, destinos, configuracion] = await Promise.all([
     listarHotelesActivos(),
     obtenerDestinos(),
@@ -65,9 +68,94 @@ export default async function PaginaInicio() {
       <Header />
       <main>
 
-        <section className="relative min-h-[calc(100svh-64px)] sm:min-h-[calc(100svh-112px)] flex flex-col bg-black overflow-hidden" style={{ isolation: 'isolate' }}>
+        <section id="inicio" className="relative min-h-[calc(100svh-57px)] flex flex-col bg-black overflow-hidden scroll-mt-40 sm:scroll-mt-48" style={{ isolation: 'isolate' }}>
           <HeroFondoAnimado />
           <HeroCliente totalHoteles={hoteles.length} totalCiudades={departamentos.length || ciudades.length} ciudadesDisponibles={ciudades} />
+          <div
+            id="contacto"
+            className="absolute inset-x-4 bottom-14 z-20 scroll-mt-40 sm:inset-x-auto sm:right-6 sm:bottom-20 lg:right-10 lg:bottom-10 sm:scroll-mt-48"
+          >
+            <a
+              href={crearUrlWhatsApp(
+                configuracion.whatsapp_numero,
+                configuracion.whatsapp_mensaje_reserva || 'Hola, quiero reservar un hotel.'
+              )}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mx-auto flex w-fit items-center justify-center gap-2 rounded-full border border-white/15 bg-black/45 px-4 py-2.5 text-xs font-black text-white shadow-2xl backdrop-blur-md md:hidden"
+            >
+              <MessageCircle size={14} className="text-[var(--brand-yellow)]" aria-hidden="true" />
+              Contacto directo
+            </a>
+            <div className="hidden w-72 rounded-2xl border border-white/15 bg-black/35 p-4 text-left text-white shadow-2xl backdrop-blur-md md:block">
+              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--brand-yellow)] mb-2">
+                Contacto directo
+              </p>
+              <p className="text-sm font-semibold text-white/85 mb-3">
+                Reserva o consulta disponibilidad con Adventur.
+              </p>
+              <div className="flex items-center gap-2 text-sm font-black mb-4">
+                <Phone size={15} className="text-[var(--brand-yellow)]" aria-hidden="true" />
+                <span>{configuracion.telefono_principal}</span>
+              </div>
+              <a
+                href={crearUrlWhatsApp(
+                  configuracion.whatsapp_numero,
+                  configuracion.whatsapp_mensaje_reserva || 'Hola, quiero reservar un hotel.'
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--brand-yellow)] px-4 py-3 text-xs font-black uppercase tracking-widest text-[var(--brand-navy)] transition-all hover:bg-[var(--brand-yellow-light)]"
+              >
+                <MessageCircle size={15} aria-hidden="true" />
+                Escribir por WhatsApp
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <section id="hoteles" className="section-padding bg-[var(--bg-subtle)] scroll-mt-40 sm:scroll-mt-48">
+          <div className="container-site">
+            <AnimarAlEntrar className="text-center mb-10">
+              <p className="label-eyebrow mb-3">Selección Exclusiva</p>
+              <h2 className="heading-section mb-3">
+                Hoteles Destacados
+              </h2>
+              <div className="section-divider" />
+              <p className="body-text max-w-2xl mx-auto mt-4">
+                Seleccionamos los mejores alojamientos para garantizar tu confort: desde hostales acogedores hasta hoteles de lujo.
+              </p>
+            </AnimarAlEntrar>
+
+            {hotelesConPrecio.length > 0 ? (
+              <>
+                <CarruselHotelesDestacados hoteles={hotelesConPrecio} />
+
+                <div className="text-center mt-6">
+                  <Link href="/hoteles" className="btn-secondary">
+                    Ver hoteles <ArrowRight size={18} aria-hidden="true" />
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <AnimarAlEntrar>
+                <div className="mx-auto flex max-w-3xl flex-col items-center rounded-2xl border border-[var(--border-base)] bg-white px-6 py-8 text-center shadow-sm sm:px-10">
+                  <p className="mb-2 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--brand-yellow)]">
+                    Aún no hay ofertas destacadas
+                  </p>
+                  <h3 className="mb-3 text-xl font-black leading-tight text-[var(--brand-navy)] sm:text-2xl">
+                    Revisa todos los hoteles disponibles
+                  </h3>
+                  <p className="body-text mb-6 max-w-xl">
+                    Estamos preparando promociones destacadas. Mientras tanto, puedes ver la lista completa de hoteles activos.
+                  </p>
+                  <Link href="/hoteles" className="btn-secondary">
+                    Ver hoteles <ArrowRight size={18} aria-hidden="true" />
+                  </Link>
+                </div>
+              </AnimarAlEntrar>
+            )}
+          </div>
         </section>
 
         <SeccionProcedencias
@@ -76,36 +164,15 @@ export default async function PaginaInicio() {
           whatsappNumero={configuracion.whatsapp_numero}
         />
 
-        <section className="section-padding bg-[var(--bg-subtle)]">
+        <section id="servicios" className="section-padding bg-[var(--bg-base)] scroll-mt-40 sm:scroll-mt-48">
           <div className="container-site">
-            <AnimarAlEntrar className="text-center mb-16">
-              <p className="label-eyebrow mb-2">Selección Exclusiva</p>
-              <h2 className="heading-section mb-4">
-                Hoteles Destacados
-              </h2>
-              <p className="body-text max-w-2xl mx-auto">
-                Seleccionamos los mejores alojamientos para garantizar tu confort: desde hostales acogedores hasta hoteles de lujo.
-              </p>
-            </AnimarAlEntrar>
-
-            <CarruselHotelesDestacados hoteles={hotelesConPrecio} />
-
-            <div className="text-center mt-4">
-              <Link href="/hoteles" className="btn-secondary">
-                Ver toda la oferta <ArrowRight size={18} aria-hidden="true" />
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        <section id="servicios" className="section-padding bg-[var(--bg-base)]">
-          <div className="container-site">
-            <AnimarAlEntrar className="text-center mb-16">
-              <p className="label-eyebrow mb-2">Nuestros Servicios</p>
-              <h2 className="heading-section mb-4">
+            <AnimarAlEntrar className="text-center mb-14">
+              <p className="label-eyebrow mb-3">Nuestros Servicios</p>
+              <h2 className="heading-section mb-3">
                 Servicios de hospedaje en Cajamarca y todo el Perú
               </h2>
-              <p className="body-text max-w-3xl mx-auto">
+              <div className="section-divider" />
+              <p className="body-text max-w-3xl mx-auto mt-4">
                 Traslados al aeropuerto, hospedaje corporativo y atención personalizada. Misma exigencia de calidad y seguridad en cada destino.
               </p>
             </AnimarAlEntrar>
@@ -115,7 +182,8 @@ export default async function PaginaInicio() {
         </section>
 
         <section className="section-padding bg-[var(--brand-navy)] relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+          <div className="absolute top-0 left-0 w-full h-full opacity-[0.04] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[var(--brand-yellow)]/5 rounded-full -translate-y-1/2 translate-x-1/3 blur-[80px] pointer-events-none" />
           <div className="container-site relative z-10">
             <div className="grid lg:grid-cols-2 gap-16 xl:gap-24 items-center">
               <AnimarAlEntrar>
@@ -123,28 +191,28 @@ export default async function PaginaInicio() {
                 <h2 className="heading-section-light mb-6">
                   Viaja con seguridad y el confort que mereces
                 </h2>
-                <p className="text-gray-400 text-lg leading-relaxed mb-10">
+                <p className="text-gray-400 text-base sm:text-lg leading-relaxed mb-10">
                   En Adventur ofrecemos hoteles verificados con la misma calidad que esperas de un operador nacional: establecimientos seguros, habitaciones modernas y atención coordinada.
                 </p>
 
-                <div className="space-y-6">
+                <div className="space-y-5">
                   {[
                     'Hoteles verificados con licencia vigente y experiencia comprobada',
                     'Habitaciones modernas con mantenimiento preventivo al día',
                     'Asistencia personalizada disponible las 24 horas del día',
                   ].map((texto) => (
                     <div key={texto} className="flex items-start gap-4">
-                      <div className="w-6 h-6 rounded-full bg-[var(--brand-yellow)]/20 flex items-center justify-center shrink-0 mt-1">
+                      <div className="w-7 h-7 rounded-full bg-[var(--brand-yellow)]/15 border border-[var(--brand-yellow)]/25 flex items-center justify-center shrink-0 mt-0.5">
                         <CheckCircle2 size={14} className="text-[var(--brand-yellow)]" aria-hidden="true" />
                       </div>
-                      <p className="text-gray-300 text-base leading-relaxed">{texto}</p>
+                      <p className="text-gray-300 text-sm sm:text-base leading-relaxed">{texto}</p>
                     </div>
                   ))}
                 </div>
               </AnimarAlEntrar>
 
               <AnimarAlEntrar delay={0.2}>
-                <div className="relative h-[400px] sm:h-[500px] rounded-3xl overflow-hidden shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] group bg-white">
+                <div className="relative h-[400px] sm:h-[500px] rounded-3xl overflow-hidden shadow-[0_20px_60px_-12px_rgba(0,0,0,0.6)] group bg-white">
                   {hoteles[1]?.imagenesUrls[0] ? (
                     <>
                       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-white via-gray-50 to-gray-100" />
@@ -157,7 +225,7 @@ export default async function PaginaInicio() {
                       />
                     </>
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-[var(--brand-navy-light)] relative z-10">
+                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-[var(--brand-navy-light)]">
                       <div className="text-center">
                         <Shield size={64} className="text-[var(--brand-yellow)]/30 mx-auto mb-4" aria-hidden="true" />
                         <p className="text-white/30 text-lg font-bold">Adventur Hoteles</p>
@@ -172,7 +240,7 @@ export default async function PaginaInicio() {
                         { n: departamentos.length || ciudades.length, sufijo: '', label: 'Cobertura' },
                         { n: 0, sufijo: '%', label: 'Comisión' },
                       ].map(({ n, sufijo, label }) => (
-                        <div key={label} className="bg-white/90 backdrop-blur-md rounded-2xl p-3 sm:p-4 text-center border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.08)] group-hover:-translate-y-1 transition-transform duration-500">
+                        <div key={label} className="bg-white/95 backdrop-blur-md rounded-2xl p-3 sm:p-4 text-center border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.08)] group-hover:-translate-y-1 transition-transform duration-500">
                           <p className="text-[var(--brand-navy)] font-black text-xl sm:text-2xl leading-none mb-1 sm:mb-2">
                             <ContadorAnimado valor={n || 10} sufijo={sufijo} />
                           </p>
@@ -187,8 +255,8 @@ export default async function PaginaInicio() {
           </div>
         </section>
 
-        <section className="relative py-12 sm:py-16 lg:py-20 px-4 sm:px-6">
-          <div className="max-w-[1200px] mx-auto">
+        <section className="relative py-12 sm:py-16 lg:py-20">
+          <div className="container-site">
             <AnimarAlEntrar>
               <div className="relative rounded-[2rem] overflow-hidden shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] group">
                 
@@ -255,19 +323,20 @@ export default async function PaginaInicio() {
 
         <SeccionPorQueElegirnos />
 
-        <section id="preguntas-frecuentes" className="section-padding bg-[var(--bg-subtle)]">
+        <section id="preguntas-frecuentes" className="section-padding bg-[var(--bg-subtle)] scroll-mt-40 sm:scroll-mt-48">
           <div className="container-site max-w-4xl">
-            <AnimarAlEntrar className="text-center mb-16">
-              <p className="label-eyebrow mb-2">Resolvemos tus dudas</p>
-              <h2 className="heading-section mb-4">
+            <AnimarAlEntrar className="text-center mb-14">
+              <p className="label-eyebrow mb-3">Resolvemos tus dudas</p>
+              <h2 className="heading-section mb-3">
                 Preguntas frecuentes
               </h2>
-              <p className="body-text max-w-2xl mx-auto">
+              <div className="section-divider" />
+              <p className="body-text max-w-2xl mx-auto mt-4">
                 Todo lo que necesitas saber sobre documentos, privacidad y modalidad de servicio para tu próxima estadía.
               </p>
             </AnimarAlEntrar>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               {faqs.map(({ pregunta, respuesta }, i) => (
                 <AnimarAlEntrar key={i} delay={i * 0.1}>
                   <FaqItem pregunta={pregunta} respuesta={respuesta} />
@@ -288,7 +357,7 @@ export default async function PaginaInicio() {
             '@type': 'WebPage',
             name: 'Adventur Hoteles — Alojamiento en Cajamarca y todo el Perú',
             description: 'Encuentra los mejores hoteles en Cajamarca, Lima, Cusco, Arequipa y todo el Perú. Reserva directa por WhatsApp.',
-            url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://hoteles.adventur.pe',
+            url: siteUrl,
             mainEntity: {
               '@type': 'ItemList',
               numberOfItems: hoteles.length,
@@ -319,11 +388,11 @@ export default async function PaginaInicio() {
 
 function FaqItem({ pregunta, respuesta }: { pregunta: string; respuesta: string }) {
   return (
-    <details className="card-premium !rounded-2xl group overflow-hidden border-none shadow-sm hover:shadow-md">
-      <summary className="flex items-center justify-between px-6 sm:px-8 py-5 sm:py-6 cursor-pointer list-none font-bold text-[var(--brand-navy)] text-sm sm:text-base hover:text-[var(--brand-yellow)] transition-colors">
-        {pregunta}
-        <div className="w-8 h-8 rounded-full bg-[var(--bg-subtle)] group-hover:bg-[var(--brand-yellow)]/10 flex items-center justify-center transition-colors shrink-0 ml-4">
-          <ChevronDown size={18} className="text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-300 group-hover:text-[var(--brand-yellow)]" aria-hidden="true" />
+    <details className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md group overflow-hidden transition-all duration-300 hover:border-[#ffd600]/30">
+      <summary className="flex items-center justify-between px-6 sm:px-8 py-5 sm:py-6 cursor-pointer list-none font-bold text-[var(--brand-navy)] text-sm sm:text-base transition-colors">
+        <span className="pr-4">{pregunta}</span>
+        <div className="w-8 h-8 rounded-full bg-[var(--bg-subtle)] group-hover:bg-[var(--brand-yellow)]/15 group-open:bg-[var(--brand-navy)] flex items-center justify-center transition-all shrink-0">
+          <ChevronDown size={16} className="text-[var(--text-muted)] group-open:rotate-180 group-open:text-white transition-all duration-300" aria-hidden="true" />
         </div>
       </summary>
       <div className="px-6 sm:px-8 pb-6 sm:pb-8 text-[var(--text-secondary)] text-sm sm:text-base leading-relaxed border-t border-[var(--border-subtle)] pt-5 sm:pt-6">

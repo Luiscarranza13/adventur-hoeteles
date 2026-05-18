@@ -55,52 +55,52 @@ function TarjetaRazon({ razon }: { razon: Razon }) {
   return (
     <div className={`rounded-2xl border transition-all duration-300 overflow-hidden ${
       open
-        ? 'border-[#001f3f]/20 shadow-lg bg-white'
-        : 'border-gray-100 bg-[var(--bg-subtle)] hover:bg-white hover:shadow-md hover:border-[#ffd600]/30'
+        ? 'border-[#001f3f]/20 shadow-xl bg-white'
+        : 'border-gray-100 bg-white hover:shadow-lg hover:border-[#ffd600]/40'
     }`}>
       {/* Cabecera — siempre visible */}
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
         aria-expanded={open}
-        className="w-full text-left p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd600] rounded-2xl"
+        className="w-full text-left p-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd600] rounded-2xl"
       >
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3 flex-1 min-w-0">
-            {/* Icono */}
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300 ${
-              open ? 'bg-[#ffd600]' : 'bg-[#001f3f]/8 group-hover:bg-[#001f3f]'
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-4 flex-1 min-w-0">
+            {/* Icono grande */}
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300 ${
+              open
+                ? 'bg-[#ffd600] shadow-[0_8px_20px_rgba(255,214,0,0.35)]'
+                : 'bg-gradient-to-br from-[#001f3f]/8 to-[#001f3f]/4'
             }`}>
               <Icon
-                size={18}
+                size={24}
                 className={`transition-colors duration-300 ${open ? 'text-[#001f3f]' : 'text-[#001f3f]'}`}
                 aria-hidden="true"
               />
             </div>
 
             {/* Texto */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-[9px] font-bold text-gray-300 tabular-nums">{numero}</span>
-              </div>
-              <h3 className="text-sm font-semibold text-[#001f3f] leading-snug mb-1">{titulo}</h3>
-              <p className="text-xs text-gray-400 leading-relaxed">{resumen}</p>
+            <div className="flex-1 min-w-0 pt-1">
+              <span className={`text-[9px] font-black uppercase tracking-[0.2em] mb-1 block ${open ? 'text-[#ffd600]' : 'text-[#8a6500]'}`}>{numero}</span>
+              <h3 className="text-base font-bold text-[#001f3f] leading-snug mb-1.5">{titulo}</h3>
+              <p className="text-sm text-gray-700 leading-relaxed">{resumen}</p>
             </div>
           </div>
 
           {/* Chevron */}
-          <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 transition-colors duration-200 ${
-            open ? 'bg-[#001f3f]' : 'bg-gray-100'
+          <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-1 transition-all duration-200 ${
+            open ? 'bg-[#001f3f]' : 'bg-gray-100 hover:bg-gray-200'
           }`}>
             <ChevronDown
-              size={13}
+              size={14}
               className={`transition-all duration-300 ${open ? 'rotate-180 text-white' : 'text-gray-400'}`}
             />
           </div>
         </div>
       </button>
 
-      {/* Panel expandible inline — sin fixed, sin portal */}
+      {/* Panel expandible inline */}
       <div
         className="overflow-hidden transition-all duration-300 ease-in-out"
         style={{
@@ -108,15 +108,15 @@ function TarjetaRazon({ razon }: { razon: Razon }) {
           opacity: open ? 1 : 0,
         }}
       >
-        <div className="mx-4 mb-4 rounded-xl overflow-hidden border border-gray-100">
+        <div className="mx-5 mb-5 rounded-2xl overflow-hidden border border-gray-100">
           {/* Stat */}
-          <div className="bg-[#001f3f] px-4 py-3 flex items-center gap-3">
-            <span className="text-xl font-bold text-[#ffd600] tabular-nums leading-none">{stat}</span>
-            <span className="text-[11px] text-white/50 leading-tight">{statLabel}</span>
+          <div className="bg-gradient-to-r from-[#001f3f] to-[#002d5a] px-5 py-4 flex items-center gap-4">
+            <span className="text-2xl font-black text-[#ffd600] tabular-nums leading-none">{stat}</span>
+            <span className="text-xs text-white/60 leading-tight font-medium">{statLabel}</span>
           </div>
           {/* Detalle */}
-          <div className="bg-gray-50 px-4 py-3">
-            <p className="text-xs text-gray-500 leading-relaxed">{detalle}</p>
+          <div className="bg-gray-50 px-5 py-4">
+            <p className="text-sm text-gray-500 leading-relaxed">{detalle}</p>
           </div>
         </div>
       </div>
@@ -127,14 +127,18 @@ function TarjetaRazon({ razon }: { razon: Razon }) {
 // ── Componente principal ──────────────────────────────────────────────────────
 export function SeccionPorQueElegirnos() {
   return (
-    <section className="py-12 sm:py-16 bg-[var(--bg-base)]">
+    <section className="section-padding bg-[var(--bg-subtle)]">
       <div className="container-site">
-        <div className="text-center mb-8 sm:mb-10">
-          <p className="label-eyebrow mb-2">La Diferencia Adventur</p>
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#001f3f]">¿Por qué elegirnos?</h2>
+        <div className="text-center mb-12 sm:mb-14">
+          <p className="label-eyebrow mb-3">La Diferencia Adventur</p>
+          <h2 className="heading-section mb-3">¿Por qué elegirnos?</h2>
+          <div className="section-divider" />
+          <p className="body-text max-w-xl mx-auto mt-4">
+            Tres razones que nos distinguen de cualquier otra plataforma de reservas.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
           {RAZONES.map(razon => (
             <TarjetaRazon key={razon.numero} razon={razon} />
           ))}

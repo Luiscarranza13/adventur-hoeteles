@@ -53,6 +53,7 @@ export default function HotelesPage() {
   const cargar = useCallback(async () => {
     try {
       const res = await fetch('/api/admin/hoteles');
+      if (!res.ok) throw new Error('No autorizado');
       setHoteles(await res.json());
     } catch { /* silencioso */ }
     finally { setLoading(false); }

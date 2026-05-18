@@ -3,6 +3,7 @@ import { createBrowserClient } from '@supabase/ssr';
 import { RepositorioUsuario, ServicioAutenticacion, SesionUsuario, CredencialesLogin } from '../../dominio/puertos/RepositorioUsuario';
 import { Usuario, DatosNuevoUsuario, DatosActualizarUsuario } from '../../dominio/entidades/Usuario';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { getPublicEnv } from '@/lib/env';
 
 interface UsuarioDb {
   id: string;
@@ -62,7 +63,7 @@ export class AdaptadorSupabaseUsuario implements RepositorioUsuario {
         nombre_completo: datos.nombreCompleto,
         correo: datos.correo,
         telefono: datos.telefono || null,
-        rol: datos.rol || 'recepcionista',
+        rol: datos.rol || 'colaborador',
         foto_url: datos.fotoUrl || null,
       })
       .select()
@@ -106,9 +107,10 @@ export class ServicioSupabaseAutenticacion implements ServicioAutenticacion {
   }
 
   async iniciarSesion(credenciales: CredencialesLogin): Promise<SesionUsuario> {
+    const env = getPublicEnv();
     const browserClient = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      env.NEXT_PUBLIC_SUPABASE_URL,
+      env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     );
 
     const { data, error } = await browserClient.auth.signInWithPassword({

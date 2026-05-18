@@ -18,24 +18,24 @@ export function FormularioContacto() {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8">
 
-      <div className="flex items-center gap-3 mb-1">
-        <div className="w-9 h-9 bg-[#25D366]/10 rounded-xl flex items-center justify-center shrink-0">
-          <MessageCircle size={16} className="text-[#25D366]" aria-hidden="true" />
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-11 h-11 bg-[#25D366]/10 rounded-xl flex items-center justify-center shrink-0">
+          <MessageCircle size={20} className="text-[#25D366]" aria-hidden="true" />
         </div>
         <div>
-          <h2 className="text-sm font-semibold text-[var(--brand-navy)]">
+          <h2 className="text-base font-bold text-[var(--brand-navy)]">
             Escríbenos por WhatsApp
           </h2>
-          <p className="text-xs text-gray-400">Completa el formulario y te abrimos el chat listo</p>
+          <p className="text-xs text-gray-400 mt-0.5">Completa el formulario y te abrimos el chat listo</p>
         </div>
       </div>
 
-      <div className="h-px bg-gray-100 my-5" />
+      <div className="h-px bg-gray-100 mb-6" />
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
         <div>
-          <label htmlFor="nombre" className="block text-xs font-medium text-gray-600 mb-1.5">
+          <label htmlFor="nombre" className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
             Tu nombre
           </label>
           <input
@@ -44,18 +44,18 @@ export function FormularioContacto() {
             type="text"
             required
             placeholder="¿Cómo te llamas?"
-            className="w-full px-4 py-2.5 text-sm text-[var(--brand-navy)] border border-gray-200 rounded-xl focus:outline-none focus:border-[var(--brand-yellow)] focus:ring-2 focus:ring-[var(--brand-yellow)]/15 transition-all bg-gray-50 placeholder:text-gray-300"
+            className="w-full px-4 py-3 text-sm text-[var(--brand-navy)] border border-gray-200 rounded-xl focus:outline-none focus:border-[var(--brand-yellow)] focus:ring-2 focus:ring-[var(--brand-yellow)]/15 transition-all bg-gray-50 hover:bg-white placeholder:text-gray-300 font-medium"
           />
         </div>
 
         <div>
-          <label htmlFor="asunto" className="block text-xs font-medium text-gray-600 mb-1.5">
+          <label htmlFor="asunto" className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
             ¿En qué te podemos ayudar?
           </label>
           <select
             id="asunto"
             name="asunto"
-            className="w-full px-4 py-2.5 text-sm text-[var(--brand-navy)] border border-gray-200 rounded-xl focus:outline-none focus:border-[var(--brand-yellow)] focus:ring-2 focus:ring-[var(--brand-yellow)]/15 transition-all bg-gray-50 appearance-none cursor-pointer"
+            className="w-full px-4 py-3 text-sm text-[var(--brand-navy)] border border-gray-200 rounded-xl focus:outline-none focus:border-[var(--brand-yellow)] focus:ring-2 focus:ring-[var(--brand-yellow)]/15 transition-all bg-gray-50 hover:bg-white appearance-none cursor-pointer font-medium"
           >
             <option value="Consulta de reserva">Consulta de reserva</option>
             <option value="Información de hoteles">Información de hoteles</option>
@@ -66,7 +66,7 @@ export function FormularioContacto() {
         </div>
 
         <div>
-          <label htmlFor="mensaje" className="block text-xs font-medium text-gray-600 mb-1.5">
+          <label htmlFor="mensaje" className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
             Mensaje
           </label>
           <textarea
@@ -75,20 +75,21 @@ export function FormularioContacto() {
             required
             rows={4}
             placeholder="Cuéntanos más detalles sobre tu consulta..."
-            className="w-full px-4 py-2.5 text-sm text-[var(--brand-navy)] border border-gray-200 rounded-xl focus:outline-none focus:border-[var(--brand-yellow)] focus:ring-2 focus:ring-[var(--brand-yellow)]/15 transition-all bg-gray-50 placeholder:text-gray-300 resize-none"
+            className="w-full px-4 py-3 text-sm text-[var(--brand-navy)] border border-gray-200 rounded-xl focus:outline-none focus:border-[var(--brand-yellow)] focus:ring-2 focus:ring-[var(--brand-yellow)]/15 transition-all bg-gray-50 hover:bg-white placeholder:text-gray-300 resize-none font-medium"
           />
         </div>
 
         <button
           type="submit"
-          className="w-full bg-[#25D366] hover:bg-[#1ebe5d] active:scale-95 text-white font-semibold text-sm py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm"
+          className="w-full bg-[#25D366] hover:bg-[#1ebe5d] active:scale-[0.98] text-white font-black text-sm py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(37,211,102,0.3)] hover:shadow-[0_6px_20px_rgba(37,211,102,0.4)] hover:-translate-y-0.5"
         >
-          <MessageCircle size={15} aria-hidden="true" />
+          <MessageCircle size={16} aria-hidden="true" />
           Abrir WhatsApp con mi mensaje
         </button>
 
-        <p className="text-center text-[10px] text-gray-400">
-          Al enviar, se abrirá WhatsApp con tu mensaje prellenado
+        <p className="text-center text-[10px] text-gray-400 leading-relaxed">
+          Al enviar, se abrirá WhatsApp con tu mensaje prellenado.<br />
+          Sin intermediarios, respuesta directa.
         </p>
 
       </form>

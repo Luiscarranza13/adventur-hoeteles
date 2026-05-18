@@ -69,12 +69,12 @@ function BadgeHotel({ hotel, ahora }: { hotel: HotelConPrecio; ahora: number }) 
   return null;
 }
 
-// ── Tarjeta de hotel ──────────────────────────────────────────────────────────
+// ── Tarjeta móvil (width variable para carrusel) ─────────────────────────────
 function TarjetaHotel({ hotel, index, ahora }: { hotel: HotelConPrecio; index: number; ahora: number }) {
   return (
     <Link href={`/hoteles/${hotel.id}`} className="block group shrink-0 snap-start" style={{ width: 'var(--card-w)' }}>
       <article className="card-premium h-full flex flex-col">
-        <div className="relative h-52 bg-[var(--brand-navy)] overflow-hidden shrink-0 rounded-t-2xl">
+        <div className="relative h-56 bg-[var(--brand-navy)] overflow-hidden shrink-0 rounded-t-2xl">
           {hotel.imagenesUrls[0] ? (
             <Image
               src={hotel.imagenesUrls[0]}
@@ -89,35 +89,79 @@ function TarjetaHotel({ hotel, index, ahora }: { hotel: HotelConPrecio; index: n
               <Star size={32} className="text-gray-600" />
             </div>
           )}
-
-          {/* Precio */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
           {hotel.precioMinimo && (
-            <div className="absolute top-3 left-3 glass px-3 py-1.5 rounded-xl shadow-lg z-10">
-              <p className="text-[8px] font-black text-[var(--brand-navy)]/60 uppercase tracking-widest leading-none mb-0.5">DESDE</p>
-              <p className="text-[var(--brand-navy)] font-black text-sm leading-none">S/{hotel.precioMinimo}</p>
+            <div className="absolute bottom-3 left-3 z-10">
+              <p className="text-[8px] font-black text-white/70 uppercase tracking-widest leading-none mb-0.5">Desde</p>
+              <p className="text-white font-black text-lg leading-none drop-shadow-md">S/{hotel.precioMinimo}</p>
             </div>
           )}
-
-          {/* Badge nuevo/popular */}
-          <div className="absolute top-3 right-3 z-10">
-            <BadgeHotel hotel={hotel} ahora={ahora} />
-          </div>
-
-          {/* Overlay gradiente */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        </div>
-
-        <div className="p-5 flex flex-col flex-1">
-          <div className="flex items-center gap-0.5 mb-2">
+          <div className="absolute top-3 right-3 z-10"><BadgeHotel hotel={hotel} ahora={ahora} /></div>
+          <div className="absolute top-3 left-3 z-10 flex items-center gap-0.5 bg-black/40 backdrop-blur-sm px-2 py-1 rounded-lg">
             {Array.from({ length: hotel.estrellas }).map((_, j) => (
-              <Star key={j} size={10} className="text-[var(--brand-yellow)] fill-[var(--brand-yellow)]" aria-hidden="true" />
+              <Star key={j} size={10} className="text-amber-400 fill-amber-400" aria-hidden="true" />
             ))}
           </div>
-          <h3 className="heading-card mb-1.5 group-hover:text-[var(--brand-yellow-light)] transition-colors line-clamp-2 text-sm">
-            {hotel.nombre}
-          </h3>
+        </div>
+        <div className="p-5 flex flex-col flex-1">
+          <h3 className="heading-card mb-1.5 group-hover:text-[var(--brand-yellow)] transition-colors line-clamp-2 text-sm font-bold">{hotel.nombre}</h3>
           <div className="flex items-center gap-1.5 mb-4">
-            <MapPin size={12} className="text-[var(--text-muted)] shrink-0" aria-hidden="true" />
+            <MapPin size={12} className="text-[var(--brand-yellow)] shrink-0" aria-hidden="true" />
+            <span className="text-[var(--text-secondary)] text-xs font-semibold truncate">{hotel.ciudad}</span>
+            {hotel.tipoAlojamiento && (
+              <span className="text-[var(--text-muted)] text-[10px] truncate">· {hotel.tipoAlojamiento}</span>
+            )}
+          </div>
+          <div className="mt-auto">
+            <div className="btn-primary !w-full !py-2.5 !text-xs group-hover:bg-[var(--brand-yellow-light)]">
+              <MessageCircle size={14} aria-hidden="true" />
+              <span>Reservar ahora</span>
+            </div>
+          </div>
+        </div>
+      </article>
+    </Link>
+  );
+}
+
+// ── Tarjeta desktop (width 100% de su celda del grid) ─────────────────────────
+function TarjetaHotelDesktop({ hotel, index, ahora }: { hotel: HotelConPrecio; index: number; ahora: number }) {
+  return (
+    <Link href={`/hoteles/${hotel.id}`} className="block group w-full">
+      <article className="card-premium h-full flex flex-col">
+        <div className="relative h-56 bg-[var(--brand-navy)] overflow-hidden shrink-0 rounded-t-2xl">
+          {hotel.imagenesUrls[0] ? (
+            <Image
+              src={hotel.imagenesUrls[0]}
+              alt={`Hotel ${hotel.nombre} en ${hotel.ciudad}`}
+              fill
+              sizes="(max-width: 1024px) 50vw, 25vw"
+              loading={index < 4 ? 'eager' : 'lazy'}
+              className="object-cover group-hover:scale-110 transition-transform duration-700"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gray-800">
+              <Star size={32} className="text-gray-600" />
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+          {hotel.precioMinimo && (
+            <div className="absolute bottom-3 left-3 z-10">
+              <p className="text-[8px] font-black text-white/70 uppercase tracking-widest leading-none mb-0.5">Desde</p>
+              <p className="text-white font-black text-lg leading-none drop-shadow-md">S/{hotel.precioMinimo}</p>
+            </div>
+          )}
+          <div className="absolute top-3 right-3 z-10"><BadgeHotel hotel={hotel} ahora={ahora} /></div>
+          <div className="absolute top-3 left-3 z-10 flex items-center gap-0.5 bg-black/40 backdrop-blur-sm px-2 py-1 rounded-lg">
+            {Array.from({ length: hotel.estrellas }).map((_, j) => (
+              <Star key={j} size={10} className="text-amber-400 fill-amber-400" aria-hidden="true" />
+            ))}
+          </div>
+        </div>
+        <div className="p-5 flex flex-col flex-1">
+          <h3 className="heading-card mb-1.5 group-hover:text-[var(--brand-yellow)] transition-colors line-clamp-2 text-sm font-bold">{hotel.nombre}</h3>
+          <div className="flex items-center gap-1.5 mb-4">
+            <MapPin size={12} className="text-[var(--brand-yellow)] shrink-0" aria-hidden="true" />
             <span className="text-[var(--text-secondary)] text-xs font-semibold truncate">{hotel.ciudad}</span>
             {hotel.tipoAlojamiento && (
               <span className="text-[var(--text-muted)] text-[10px] truncate">· {hotel.tipoAlojamiento}</span>
@@ -174,12 +218,12 @@ export function CarruselHotelesDestacados({ hoteles }: Props) {
     setActiveIndex(closest);
   }, []);
 
-  // Desktop: grid normal. Mobile: carrusel horizontal
+  // Desktop: grid real. Mobile: carrusel horizontal con snap
   if (!isMobile) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         {hoteles.map((hotel, i) => (
-          <TarjetaHotel key={hotel.id} hotel={hotel} index={i} ahora={ahora} />
+          <TarjetaHotelDesktop key={hotel.id} hotel={hotel} index={i} ahora={ahora} />
         ))}
       </div>
     );

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createReadonlyClient } from '@/lib/supabase/readonly';
 import { CONFIGURACION_DEFAULT, normalizarConfiguracion } from '@/lib/configuracion';
+import { getEnv } from '@/lib/env';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +10,7 @@ let supabaseNoDisponibleHasta = 0;
 let ultimoAviso = 0;
 
 function usarConfiguracionLocalEnDev() {
-  return process.env.NODE_ENV !== 'production' && process.env.ADVENTUR_REMOTE_CONFIG_DEV !== 'true';
+  return process.env.NODE_ENV !== 'production' && getEnv().ADVENTUR_REMOTE_CONFIG_DEV !== 'true';
 }
 
 function respuestaConfigDefault() {

@@ -81,6 +81,7 @@ export default function PaginaConfiguracion() {
   const cargar = useCallback(async () => {
     try {
       const res = await fetch('/api/admin/configuracion');
+      if (!res.ok) throw new Error('No autorizado');
       const data = await res.json();
       setConfig({ ...configVacia, ...data });
     } catch { /* silencioso */ }

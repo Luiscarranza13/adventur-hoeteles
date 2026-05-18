@@ -8,12 +8,13 @@ import {
   respuestaErrorValidacion,
 } from '@/lib/admin-validaciones';
 import { z } from 'zod';
+import { getEnv } from '@/lib/env';
 
 const repo = () => new AdaptadorSupabaseUsuario();
 
 export async function GET() {
   try {
-    const auth = await requerirAdmin();
+    const auth = await requerirAdmin('gestionarUsuarios');
     if (!auth.autorizado) return auth.respuesta;
     const data = await repo().listar();
     const res = NextResponse.json(data);
@@ -27,7 +28,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = await requerirAdmin();
+    const auth = await requerirAdmin('gestionarUsuarios');
     if (!auth.autorizado) return auth.respuesta;
 
     const body = esquemaUsuarioCrearAdmin.parse(await request.json());
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
     }
 
     let userId: string;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const serviceKey = Boolean(getEnv().SUPABASE_SERVICE_ROLE_KEY);
 
     if (serviceKey) {
       // Ruta preferida: service role — crea usuario confirmado directamente
@@ -115,7 +116,7 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const auth = await requerirAdmin();
+    const auth = await requerirAdmin('gestionarUsuarios');
     if (!auth.autorizado) return auth.respuesta;
 
     const body = esquemaUsuarioActualizarAdmin.parse(await request.json());
@@ -162,7 +163,7 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const auth = await requerirAdmin();
+    const auth = await requerirAdmin('gestionarUsuarios');
     if (!auth.autorizado) return auth.respuesta;
 
     const id = new URL(request.url).searchParams.get('id');
@@ -189,7 +190,7 @@ export async function DELETE(request: NextRequest) {
     if (error) throw error;
 
     // Intentar eliminar de Auth si hay service role key
-    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    if (getEnv().SUPABASE_SERVICE_ROLE_KEY) {
       try {
         await createAdminClient().auth.admin.deleteUser(id);
       } catch { /* ignorar si falla — el perfil ya fue eliminado */ }

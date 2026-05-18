@@ -1,10 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
+import { useEffect, useRef, useState } from 'react';
 
 interface Props {
   children: React.ReactNode;
@@ -15,6 +11,7 @@ interface Props {
 
 export function AnimarAlEntrar({ children, className, delay = 0, direction = 'up' }: Props) {
   const ref = useRef<HTMLDivElement | null>(null);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const element = ref.current;
@@ -22,42 +19,42 @@ export function AnimarAlEntrar({ children, className, delay = 0, direction = 'up
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduceMotion) {
-      gsap.set(element, { autoAlpha: 1, x: 0, y: 0, clearProps: 'transform' });
-      return;
+      const timer = window.setTimeout(() => setVisible(true), 0);
+      return () => window.clearTimeout(timer);
     }
 
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        element,
-        {
-          autoAlpha: 0,
-          y: direction === 'up' ? 36 : 0,
-          x: direction === 'left' ? -36 : direction === 'right' ? 36 : 0,
-          filter: 'blur(10px)',
-        },
-        {
-          autoAlpha: 1,
-          x: 0,
-          y: 0,
-          filter: 'blur(0px)',
-          duration: 0.85,
-          delay,
-          ease: 'power3.out',
-          clearProps: 'filter,transform,opacity,visibility',
-          scrollTrigger: {
-            trigger: element,
-            start: 'top 88%',
-            once: true,
-          },
-        },
-      );
-    }, element);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        setVisible(true);
+        observer.disconnect();
+      },
+      { rootMargin: '0px 0px -12% 0px', threshold: 0.05 },
+    );
 
-    return () => ctx.revert();
-  }, [delay, direction]);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  const translate =
+    direction === 'left'
+      ? 'translateX(-24px)'
+      : direction === 'right'
+        ? 'translateX(24px)'
+        : direction === 'none'
+          ? 'none'
+          : 'translateY(24px)';
 
   return (
-    <div ref={ref} className={className}>
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'none' : translate,
+        transition: `opacity 520ms ease ${delay}s, transform 520ms ease ${delay}s`,
+      }}
+    >
       {children}
     </div>
   );

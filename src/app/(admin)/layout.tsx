@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { redirect } from 'next/navigation';
 import { SidebarAdmin } from '@/components/admin/SidebarAdmin';
 import { TopbarAdmin } from '@/components/admin/TopbarAdmin';

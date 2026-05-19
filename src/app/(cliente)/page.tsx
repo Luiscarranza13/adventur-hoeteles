@@ -16,9 +16,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
   MessageCircle, Shield, ArrowRight,
-  CheckCircle2, ChevronDown, Phone,
+  CheckCircle2, ChevronDown,
 } from 'lucide-react';
-import { crearUrlWhatsApp } from '@/lib/configuracion';
 
 export const metadata: Metadata = {
   title: 'Adventur Hoteles — Alojamiento en Cajamarca y todo el Perú',

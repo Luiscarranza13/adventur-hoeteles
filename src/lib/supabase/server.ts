@@ -2,8 +2,10 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseEnv } from '@/lib/env';
+import { loadSystemCertificates } from '@/lib/node-ca';
 
 export async function createClient(): Promise<SupabaseClient> {
+  loadSystemCertificates();
   const env = getSupabaseEnv();
   const cookieStore = await cookies();
 

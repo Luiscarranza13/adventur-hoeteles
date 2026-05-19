@@ -1,0 +1,64 @@
+⨯ Error: Invalid src prop (https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200) on `next/image`, hostname "images.unsplash.com" is not configured under images in your `next.config.js`
+See more info: https://nextjs.org/docs/messages/next-image-unconfigured-host
+    at ignore-listed frames {
+  digest: '863891643@E231'
+}
+⨯ Error: Invalid src prop (https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200) on `next/image`, hostname "images.unsplash.com" is not configured under images in your `next.config.js`
+See more info: https://nextjs.org/docs/messages/next-image-unconfigured-host
+    at ignore-listed frames {
+  digest: '2892872859@E231'
+}
+⨯ Error: Invalid src prop (https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200) on `next/image`, hostname "images.unsplash.com" is not configured under images in your `next.config.js`
+See more info: https://nextjs.org/docs/messages/next-image-unconfigured-host
+    at ignore-listed frames {
+  digest: '2863692954@E231'
+}
+[browser] In HTML, <html> cannot be a child of <body>.
+This will cause a hydration error.
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="layout.tsx">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="es" className="poppins_c3..." data-scroll-behavior="smooth">
+                          <head>
+>                         <body className="min-h-screen flex flex-col">
+                            ...
+                              <ErrorBoundary errorComponent={function GlobalError} errorStyles={{...}} ...>
+                                <ErrorBoundaryHandler pathname="/" errorComponent={function GlobalError} ...>
+                                  <SegmentViewNode>
+                                  <script>
+                                  <script>
+                                  <GlobalError error={Error} reset={function} unstable_retry={function}>
+>                                   <html lang="es">
+                            ...
+                  ...
+ 
+[browser] <body> cannot contain a nested <html>.
+See this log for the ancestor stack trace. 
+[browser] You are mounting a new html component when a previous one has not first unmounted. It is an error to render more than one html component at a time and attributes and children of these components will likely fail in unpredictable ways. Please only render a single instance of <html> and if you need to mount a new one, ensure any previous ones have unmounted first. 
+[browser] You are mounting a new body component when a previous one has not first unmounted. It is an error to render more than one body component at a time and attributes and children of these components will likely fail in unpredictable ways. Please only render a single instance of <body> and if you need to mount a new one, ensure any previous ones have unmounted first. 
+⨯ Error: Invalid src prop (https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200) on `next/image`, hostname "images.unsplash.com" is not configured under images in your `next.config.js`
+See more info: https://nextjs.org/docs/messages/next-image-unconfigured-host
+    at ignore-listed frames {
+  digest: '2892872859@E231'
+}
+⨯ Error: Invalid src prop (https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200) on `next/image`, hostname "images.unsplash.com" is not configured under images in your `next.config.js`
+See more info: https://nextjs.org/docs/messages/next-image-unconfigured-host
+    at ignore-listed frames {
+  digest: '3014141266@E231'
+}

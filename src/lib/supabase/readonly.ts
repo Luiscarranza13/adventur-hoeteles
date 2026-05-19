@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { getSupabaseEnv } from '@/lib/env';
+import { loadSystemCertificates } from '@/lib/node-ca';
 
-const SUPABASE_TIMEOUT_MS = 1500;
+const SUPABASE_TIMEOUT_MS = 8000;
 
 function fetchConTimeout(input: RequestInfo | URL, init?: RequestInit) {
   const timeoutSignal = AbortSignal.timeout(SUPABASE_TIMEOUT_MS);
@@ -18,6 +19,7 @@ function fetchConTimeout(input: RequestInfo | URL, init?: RequestInit) {
  * cookies() de Next.js no está disponible.
  */
 export function createReadonlyClient() {
+  loadSystemCertificates();
   const env = getSupabaseEnv();
   return createClient(
     env.NEXT_PUBLIC_SUPABASE_URL,

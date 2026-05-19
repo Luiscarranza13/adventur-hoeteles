@@ -1,0 +1,25 @@
+
+> adventur-hoteles@0.1.0 dev
+> next dev -p 3001
+
+▲ Next.js 16.2.6 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://192.168.56.1:3001
+- Environments: .env
+✓ Ready in 1649ms
+Creating turbopack project { dir: 'C:\\proyectos\\adventur-hoteles', testMode: true }
+
+ GET /login 200 in 1323ms (next.js: 432ms, application-code: 891ms)
+ GET /api/configuracion 200 in 511ms (next.js: 453ms, application-code: 59ms)
+ GET /hoteles 200 in 1719ms (next.js: 241ms, application-code: 1478ms)
+ GET /hoteles 200 in 682ms (next.js: 9ms, application-code: 673ms)
+ GET / 500 in 1970ms (next.js: 176ms, application-code: 1794ms)
+ GET /hoteles 200 in 580ms (next.js: 9ms, application-code: 571ms)
+✓ Compiled in 2.6s
+ GET / 200 in 1543ms (next.js: 229ms, application-code: 1314ms)
+ GET / 200 in 1060ms (next.js: 290ms, application-code: 770ms)
+ GET / 200 in 8.2s (next.js: 4.9s, application-code: 3.3s)
+ GET / 200 in 1066ms (next.js: 158ms, application-code: 908ms)
+ GET / 200 in 1065ms (next.js: 822ms, application-code: 244ms)
+ GET / 500 in 1093ms (next.js: 17ms, application-code: 1076ms)
+[?25h

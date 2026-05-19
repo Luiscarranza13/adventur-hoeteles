@@ -15,7 +15,8 @@ export const listarHotelesActivos = unstable_cache(
   async (): Promise<Hotel[]> => {
     try {
       return await servicioHoteles().listarActivos();
-    } catch {
+    } catch (err) {
+      console.error('[supabase] listarHotelesActivos falló:', err);
       return [];
     }
   },
@@ -27,7 +28,8 @@ export const buscarHotelesActivosPorCiudad = unstable_cache(
   async (ciudad: string): Promise<Hotel[]> => {
     try {
       return await servicioHoteles().buscarPorCiudad(ciudad);
-    } catch {
+    } catch (err) {
+      console.error('[supabase] buscarHotelesActivosPorCiudad falló:', err);
       return [];
     }
   },
@@ -81,7 +83,8 @@ export const obtenerPreciosMinimos = unstable_cache(
         acc[hotelId] = acc[hotelId] ? Math.min(acc[hotelId], precio) : precio;
         return acc;
       }, {});
-    } catch {
+    } catch (err) {
+      console.error('[supabase] obtenerPreciosMinimos falló:', err);
       return {};
     }
   },

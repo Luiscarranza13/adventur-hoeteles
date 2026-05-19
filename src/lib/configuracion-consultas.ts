@@ -21,9 +21,13 @@ export const obtenerConfiguracionPublica = unstable_cache(
         .eq('id', 'global')
         .single();
 
-      if (error) return CONFIGURACION_DEFAULT;
+      if (error) {
+        console.error('[supabase] obtenerConfiguracionPublica error:', error);
+        return CONFIGURACION_DEFAULT;
+      }
       return normalizarConfiguracion(data);
-    } catch {
+    } catch (err) {
+      console.error('[supabase] obtenerConfiguracionPublica falló:', err);
       return CONFIGURACION_DEFAULT;
     }
   },

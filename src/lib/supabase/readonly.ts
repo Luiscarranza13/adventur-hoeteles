@@ -6,9 +6,10 @@ const SUPABASE_TIMEOUT_MS = 8000;
 
 function fetchConTimeout(input: RequestInfo | URL, init?: RequestInit) {
   const timeoutSignal = AbortSignal.timeout(SUPABASE_TIMEOUT_MS);
-  const signal = init?.signal
-    ? AbortSignal.any([init.signal, timeoutSignal])
-    : timeoutSignal;
+  const signal =
+    init?.signal && typeof AbortSignal.any === 'function'
+      ? AbortSignal.any([init.signal, timeoutSignal])
+      : timeoutSignal;
 
   return fetch(input, { ...init, signal });
 }

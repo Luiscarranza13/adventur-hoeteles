@@ -88,7 +88,8 @@ export const obtenerDestinos = unstable_cache(
 
       if (error || !data?.length) return destinosBase;
       return data as Destino[];
-    } catch {
+    } catch (err) {
+      console.error('[supabase] obtenerDestinos falló:', err);
       return destinosBase;
     }
   },

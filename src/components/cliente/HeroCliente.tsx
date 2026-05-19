@@ -6,13 +6,13 @@ import {
   CheckCircle2, Loader2, ArrowRight, X,
   AlertCircle, ChevronLeft, ChevronRight,
 } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import type { TipoAlojamiento } from '@/modules/hoteles/dominio/entidades/Hotel';
 import type { HotelConPrecio } from '@/lib/hoteles-consultas';
 import { useHeroCarrusel, HERO_SLIDES } from './HeroFondoAnimado';
+import { ImagenSegura } from '@/components/ui/ImagenSegura';
 
 interface HeroClienteProps {
   totalHoteles: number;
@@ -28,7 +28,7 @@ function TarjetaHotelResultado({ hotel }: { hotel: HotelConPrecio }) {
       <article className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
         <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shrink-0">
           {hotel.imagenesUrls?.[0] ? (
-            <Image
+            <ImagenSegura
               src={hotel.imagenesUrls[0]}
               alt={hotel.nombre}
               fill

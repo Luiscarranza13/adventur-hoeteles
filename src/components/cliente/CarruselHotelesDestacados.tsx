@@ -2,9 +2,9 @@
 
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, MapPin, MessageCircle, Star, TrendingUp, Sparkles } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import type { HotelConPrecio } from '@/lib/hoteles-consultas';
+import { ImagenSegura } from '@/components/ui/ImagenSegura';
 
 interface Props {
   hoteles: HotelConPrecio[];
@@ -74,14 +74,14 @@ function TarjetaHotel({ hotel, index, ahora }: { hotel: HotelConPrecio; index: n
   return (
     <Link href={`/hoteles/${hotel.id}`} className="block group shrink-0 snap-start" style={{ width: 'var(--card-w)' }}>
       <article className="card-premium h-full flex flex-col">
-        <div className="relative h-56 bg-[var(--brand-navy)] overflow-hidden shrink-0 rounded-t-2xl">
+        <div className="relative h-44 sm:h-48 bg-[var(--brand-navy)] overflow-hidden shrink-0 rounded-t-2xl">
           {hotel.imagenesUrls[0] ? (
-            <Image
+            <ImagenSegura
               src={hotel.imagenesUrls[0]}
               alt={`Hotel ${hotel.nombre} en ${hotel.ciudad}`}
               fill
               sizes="(max-width: 640px) 85vw, (max-width: 1024px) 45vw, 25vw"
-              loading={index < 4 ? 'eager' : 'lazy'}
+              priority={index < 4}
               className="object-cover group-hover:scale-110 transition-transform duration-700"
             />
           ) : (
@@ -129,14 +129,14 @@ function TarjetaHotelDesktop({ hotel, index, ahora }: { hotel: HotelConPrecio; i
   return (
     <Link href={`/hoteles/${hotel.id}`} className="block group w-full">
       <article className="card-premium h-full flex flex-col">
-        <div className="relative h-56 bg-[var(--brand-navy)] overflow-hidden shrink-0 rounded-t-2xl">
+        <div className="relative h-44 sm:h-48 bg-[var(--brand-navy)] overflow-hidden shrink-0 rounded-t-2xl">
           {hotel.imagenesUrls[0] ? (
-            <Image
+            <ImagenSegura
               src={hotel.imagenesUrls[0]}
               alt={`Hotel ${hotel.nombre} en ${hotel.ciudad}`}
               fill
               sizes="(max-width: 1024px) 50vw, 25vw"
-              loading={index < 4 ? 'eager' : 'lazy'}
+              priority={index < 4}
               className="object-cover group-hover:scale-110 transition-transform duration-700"
             />
           ) : (

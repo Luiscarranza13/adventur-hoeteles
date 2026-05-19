@@ -259,8 +259,8 @@ export function Header() {
       </div>
 
       <header
-        className={`sticky top-0 z-50 transition-all duration-300 ${
-          scrolled ? 'bg-white shadow-sm py-2.5 border-b border-gray-100' : 'bg-white py-3.5 border-b border-gray-100/50'
+        className={`sticky top-0 z-50 bg-white py-3 border-b transition-[box-shadow,border-color] duration-200 ${
+          scrolled ? 'shadow-sm border-gray-100' : 'shadow-none border-gray-100/50'
         }`}
         role="banner"
       >

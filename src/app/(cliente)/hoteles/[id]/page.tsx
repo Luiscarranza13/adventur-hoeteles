@@ -4,6 +4,8 @@ import { AnimarAlEntrar } from '@/components/ui/AnimarAlEntrar';
 import { ServicioHoteles, AdaptadorSupabaseHotel } from '@/modules/hoteles';
 import { ServicioHabitaciones, AdaptadorSupabaseHabitacion } from '@/modules/habitaciones';
 import { GaleriaHotel } from '@/components/cliente/GaleriaHotel';
+import { CarruselResenas } from '@/components/cliente/CarruselResenas';
+import { obtenerResenasPorHotel, promedioCalificacion } from '@/lib/resenas-consultas';
 import { Metadata } from 'next';
 import { getPublicEnv } from '@/lib/env';
 import Link from 'next/link';
@@ -86,7 +88,10 @@ export default async function PaginaDetalleHotel({ params }: PageProps) {
   const hotel = await new ServicioHoteles(new AdaptadorSupabaseHotel()).buscarPorId(id);
   if (!hotel) notFound();
 
-  const habitaciones = await new ServicioHabitaciones(new AdaptadorSupabaseHabitacion()).buscarPorHotel(id);
+  const [habitaciones, resenas] = await Promise.all([
+    new ServicioHabitaciones(new AdaptadorSupabaseHabitacion()).buscarPorHotel(id),
+    obtenerResenasPorHotel(id),
+  ]);
   const precioMinimo = habitaciones.length ? Math.min(...habitaciones.map(h => h.precioNoche)) : null;
   const monedaMinimo = habitaciones.find(h => h.precioNoche === precioMinimo)?.moneda ?? 'USD';
   const simboloMinimo = monedaMinimo === 'PEN' ? 'S/' : '$';
@@ -155,7 +160,7 @@ export default async function PaginaDetalleHotel({ params }: PageProps) {
       <main className="bg-white">
 
         {hotel.imagenesUrls.length > 1 && (
-          <section className="container-site max-w-6xl py-5 sm:py-6 border-b border-gray-100">
+          <section className="container-site max-w-5xl py-4 sm:py-5 border-b border-gray-100">
             <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Galería de fotos</h2>
             <GaleriaHotel imagenes={hotel.imagenesUrls} nombre={hotel.nombre} />
           </section>
@@ -306,8 +311,45 @@ export default async function PaginaDetalleHotel({ params }: PageProps) {
           </div>
         </section>
 
+        {resenas.length > 0 && (
+          <section className="container-site max-w-6xl py-10 sm:py-14">
+            <AnimarAlEntrar className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-10 gap-4">
+              <div>
+                <p className="label-eyebrow mb-2">Opiniones de huéspedes</p>
+                <h2 className="text-2xl sm:text-3xl font-black text-[var(--brand-navy)] leading-tight">
+                  Reseñas verificadas
+                </h2>
+              </div>
+              {(() => {
+                const avg = promedioCalificacion(resenas);
+                return (
+                  <div className="flex items-center gap-2 bg-[var(--bg-subtle)] rounded-xl px-4 py-2.5 shrink-0">
+                    <div className="flex items-center gap-0.5">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          size={14}
+                          className={i < Math.round(avg) ? 'fill-[#ffd600] text-[#ffd600]' : 'fill-gray-200 text-gray-200'}
+                          aria-hidden="true"
+                        />
+                      ))}
+                    </div>
+                    <span className="text-[var(--brand-navy)] font-black text-sm">
+                      {avg.toFixed(1)}
+                    </span>
+                    <span className="text-gray-400 text-xs">({resenas.length} {resenas.length === 1 ? 'reseña' : 'reseñas'})</span>
+                  </div>
+                );
+              })()}
+            </AnimarAlEntrar>
+            <AnimarAlEntrar delay={0.1}>
+              <CarruselResenas resenas={resenas} />
+            </AnimarAlEntrar>
+          </section>
+        )}
+
       </main>
-      
+
       <Footer />
 
       <script

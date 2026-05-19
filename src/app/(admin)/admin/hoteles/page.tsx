@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/Input';
 import { FormDrawer } from '@/components/admin/FormDrawer';
 import { SubidorImagenes } from '@/components/admin/SubidorImagenes';
 import { BarraFiltros } from '@/components/admin/BarraFiltros';
+import { ImagenSegura } from '@/components/ui/ImagenSegura';
 import type { Hotel, TipoAlojamiento } from '@/modules/hoteles';
 import Swal from 'sweetalert2';
 import {
@@ -13,7 +14,6 @@ import {
   ImageIcon, LayoutGrid, List, CheckCircle2, XCircle,
   ArrowUpDown, ChevronUp, ChevronDown
 } from 'lucide-react';
-import Image from 'next/image';
 
 type FormData = {
   nombre: string; descripcion: string; ciudad: string;
@@ -240,7 +240,7 @@ export default function HotelesPage() {
               <div key={h.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all overflow-hidden group">
                 <div className="relative h-44 bg-gradient-to-br from-[#001f3f] to-[#002d5a] overflow-hidden">
                   {h.imagenesUrls?.[0] ? (
-                    <Image src={h.imagenesUrls[0]} alt={h.nombre} fill className="object-cover opacity-80 group-hover:scale-105 transition-transform duration-500" sizes="400px" />
+                    <ImagenSegura src={h.imagenesUrls[0]} alt={h.nombre} fill className="opacity-80 group-hover:scale-105 transition-transform duration-500" sizes="400px" />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center"><ImageIcon size={32} className="text-white/20" /></div>
                   )}
@@ -309,7 +309,7 @@ export default function HotelesPage() {
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#001f3f] flex-shrink-0 relative">
-                          {h.imagenesUrls?.[0] ? <Image src={h.imagenesUrls[0]} alt={h.nombre} fill className="object-cover" sizes="40px" /> : <Building2 size={16} className="text-[#ffd600] absolute inset-0 m-auto" />}
+                          {h.imagenesUrls?.[0] ? <ImagenSegura src={h.imagenesUrls[0]} alt={h.nombre} fill sizes="40px" /> : <Building2 size={16} className="text-[#ffd600] absolute inset-0 m-auto" />}
                         </div>
                         <div>
                           <p className="text-sm font-bold text-[#001f3f]">{h.nombre}</p>

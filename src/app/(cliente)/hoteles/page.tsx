@@ -380,7 +380,7 @@ export default async function PaginaHoteles({ searchParams }: PageProps) {
                       </article>
                     ) : (
                       <article className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group h-full flex flex-col">
-                        <div className="relative h-52 shrink-0 overflow-hidden bg-gray-100">
+                        <div className="relative h-44 sm:h-48 shrink-0 overflow-hidden bg-gray-100">
                           <ImagenSegura
                             src={hotel.imagenesUrls[0] ?? ''}
                             alt={`Hotel ${hotel.nombre}`}

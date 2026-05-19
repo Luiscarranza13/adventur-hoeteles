@@ -7,6 +7,7 @@ import { HeroFondoAnimado } from '@/components/cliente/HeroFondoAnimado';
 import { SeccionProcedencias } from '@/components/cliente/SeccionProcedencias';
 import { CarruselHotelesDestacados, ContadorAnimado } from '@/components/cliente/CarruselHotelesDestacados';
 import { SeccionPorQueElegirnos } from '@/components/cliente/SeccionPorQueElegirnos';
+import { CarruselTestimonios } from '@/components/cliente/CarruselTestimonios';
 import { obtenerDestinos, prepararProcedencias } from '@/lib/destinos';
 import { obtenerCiudadesConHoteles, listarHotelesActivos, anexarPreciosMinimos } from '@/lib/hoteles-consultas';
 import { obtenerConfiguracionPublica } from '@/lib/configuracion-consultas';
@@ -170,7 +171,7 @@ export default async function PaginaInicio() {
               </AnimarAlEntrar>
 
               <AnimarAlEntrar delay={0.2}>
-                <div className="relative h-[400px] sm:h-[500px] rounded-3xl overflow-hidden shadow-[0_20px_60px_-12px_rgba(0,0,0,0.6)] group bg-white">
+                <div className="relative h-[300px] sm:h-[360px] lg:h-[400px] rounded-3xl overflow-hidden shadow-[0_20px_60px_-12px_rgba(0,0,0,0.6)] group bg-white">
                   {hoteles[1]?.imagenesUrls[0] ? (
                     <>
                       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-white via-gray-50 to-gray-100" />
@@ -179,7 +180,8 @@ export default async function PaginaInicio() {
                         alt="Hotel seguro y confortable"
                         fill
                         sizes="(max-width: 1024px) 100vw, 50vw"
-                        className="object-contain p-8 sm:p-16 group-hover:scale-105 transition-transform duration-1000 relative z-10"
+                        fit="contain"
+                        className="p-8 sm:p-16 group-hover:scale-105 transition-transform duration-1000 relative z-10"
                       />
                     </>
                   ) : (
@@ -191,7 +193,7 @@ export default async function PaginaInicio() {
                     </div>
                   )}
 
-                  <div className="absolute bottom-6 sm:bottom-8 left-6 right-6 sm:left-8 sm:right-8 z-20">
+                  <div className="absolute bottom-4 sm:bottom-6 left-4 right-4 sm:left-6 sm:right-6 z-20">
                     <div className="grid grid-cols-3 gap-3 sm:gap-4">
                       {[
                         { n: hoteles.length, sufijo: '+', label: 'Hoteles' },
@@ -280,6 +282,21 @@ export default async function PaginaInicio() {
         </section>
 
         <SeccionPorQueElegirnos />
+
+        <section className="section-padding bg-[var(--brand-navy)] relative overflow-hidden">
+          <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] [background-size:28px_28px] pointer-events-none" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[var(--brand-yellow)]/5 rounded-full blur-[100px] pointer-events-none" />
+          <div className="container-site relative z-10 max-w-3xl">
+            <AnimarAlEntrar className="text-center mb-12">
+              <p className="label-eyebrow mb-3">Lo que dicen nuestros viajeros</p>
+              <h2 className="heading-section-light mb-3">Testimonios reales</h2>
+              <div className="w-12 h-0.5 bg-[var(--brand-yellow)] mx-auto" />
+            </AnimarAlEntrar>
+            <AnimarAlEntrar delay={0.1}>
+              <CarruselTestimonios />
+            </AnimarAlEntrar>
+          </div>
+        </section>
 
         <section id="preguntas-frecuentes" className="section-padding bg-[var(--bg-subtle)] scroll-mt-40 sm:scroll-mt-48">
           <div className="container-site max-w-4xl">

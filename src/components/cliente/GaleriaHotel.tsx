@@ -34,17 +34,17 @@ export function GaleriaHotel({ imagenes, nombre }: GaleriaHotelProps) {
 
   // Grid estilo Airbnb: foto principal grande + hasta 4 miniaturas
   const mostrarGrid = imagenes.length >= 2;
+  const usaGridCompuesto = imagenes.length >= 3;
 
   if (mostrarGrid) {
     return (
       <>
         {/* Grid Airbnb */}
-        <div className="relative rounded-2xl overflow-hidden">
-          <div className={`grid gap-1.5 ${imagenes.length >= 3 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+        <div className="relative rounded-2xl overflow-hidden bg-gray-100">
+          <div className={`grid gap-1.5 h-[240px] sm:h-[300px] lg:h-[340px] ${usaGridCompuesto ? 'grid-cols-2 grid-rows-2' : 'grid-cols-2'}`}>
             {/* Foto principal */}
             <div
-              className={`relative overflow-hidden cursor-pointer group ${imagenes.length >= 3 ? 'row-span-2' : ''}`}
-              style={{ height: imagenes.length >= 3 ? '420px' : '320px' }}
+              className={`relative min-h-0 overflow-hidden cursor-pointer group ${usaGridCompuesto ? 'row-span-2' : ''}`}
               onClick={() => abrirLightbox(0)}
             >
               <ImagenSegura
@@ -62,8 +62,7 @@ export function GaleriaHotel({ imagenes, nombre }: GaleriaHotelProps) {
             {imagenes.slice(1, 5).map((url, i) => (
               <div
                 key={i}
-                className="relative overflow-hidden cursor-pointer group"
-                style={{ height: '204px' }}
+                className="relative min-h-0 overflow-hidden cursor-pointer group"
                 onClick={() => abrirLightbox(i + 1)}
               >
                 <ImagenSegura
@@ -140,7 +139,8 @@ export function GaleriaHotel({ imagenes, nombre }: GaleriaHotelProps) {
                       alt={`${nombre} - foto ${i + 1}`}
                       fill
                       sizes="100vw"
-                      className="object-contain"
+                      fit="contain"
+                      className="bg-black"
                       priority={i === lightboxIndex}
                     />
                   </div>
@@ -234,7 +234,7 @@ export function GaleriaHotel({ imagenes, nombre }: GaleriaHotelProps) {
             <div className="flex">
               {imagenes.map((url, i) => (
                 <div key={i} className="relative flex-none w-full aspect-video">
-                  <ImagenSegura src={url} alt={`${nombre} - foto ${i + 1}`} fill sizes="100vw" className="object-contain" priority={i === lightbox} />
+                  <ImagenSegura src={url} alt={`${nombre} - foto ${i + 1}`} fill sizes="100vw" fit="contain" className="bg-black" priority={i === lightbox} />
                 </div>
               ))}
             </div>

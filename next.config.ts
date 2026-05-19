@@ -34,6 +34,50 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'images.unsplash.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'dynamic-media-cdn.tripadvisor.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'media-cdn.tripadvisor.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'costadelsolperu.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'hotelcontinental.com.pe',
+      },
+      {
+        protocol: 'https',
+        hostname: 'hotelmonthanas.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'hotelpilanconescajamarca.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i0.wp.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lagunaseca.com.pe',
+      },
+      {
+        protocol: 'https',
+        hostname: 'portaldelmarques.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'posadapuruay.com.pe',
+      },
+      {
+        protocol: 'https',
+        hostname: 'static.wixstatic.com',
+      },
     ],
   },
 };

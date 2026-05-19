@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/Input';
 import { FormDrawer } from '@/components/admin/FormDrawer';
 import { SubidorImagenes } from '@/components/admin/SubidorImagenes';
 import { BarraFiltros } from '@/components/admin/BarraFiltros';
+import { ImagenSegura } from '@/components/ui/ImagenSegura';
 import type { Habitacion, EstadoMantenimiento, Moneda, RegimeAlimentacion, TipoCama, TipoHabitacion } from '@/modules/habitaciones';
 import { ETIQUETAS_TIPO_HABITACION } from '@/modules/habitaciones';
 import type { Hotel } from '@/modules/hoteles';
@@ -14,7 +15,6 @@ import {
   Save, Loader2, CheckCircle2, XCircle, AlertCircle,
   Hotel as HotelIcon, ImageIcon
 } from 'lucide-react';
-import Image from 'next/image';
 
 type FormHabitacion = {
   hotelId: string; nombre: string; descripcion: string;
@@ -234,11 +234,11 @@ export default function PaginaHabitaciones() {
               {/* Imagen */}
               <div className="relative h-36 bg-gradient-to-br from-blue-900 to-blue-700 overflow-hidden">
                 {h.imagenesUrls?.[0] ? (
-                  <Image
+                  <ImagenSegura
                     src={h.imagenesUrls[0]}
                     alt={h.nombre}
                     fill
-                    className="object-cover opacity-80 group-hover:scale-105 transition-transform duration-500"
+                    className="opacity-80 group-hover:scale-105 transition-transform duration-500"
                     sizes="400px"
                   />
                 ) : (

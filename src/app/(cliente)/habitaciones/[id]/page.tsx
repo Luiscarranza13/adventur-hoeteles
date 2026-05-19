@@ -118,8 +118,8 @@ export default async function PaginaDetalleHabitacion({ params }: PageProps) {
                       <div
                         key={i}
                         className={`relative overflow-hidden rounded-xl bg-gray-100 ${
-                          i === 0 && hab.imagenesUrls.length > 1 ? 'col-span-2 h-60 sm:h-80' : 'h-36 sm:h-44'
-                        } ${i === 0 && hab.imagenesUrls.length === 1 ? 'col-span-2 h-72 sm:h-96' : ''}`}
+                          i === 0 && hab.imagenesUrls.length > 1 ? 'col-span-2 h-48 sm:h-60' : 'h-28 sm:h-36'
+                        } ${i === 0 && hab.imagenesUrls.length === 1 ? 'col-span-2 h-56 sm:h-72' : ''}`}
                       >
                         <ImagenSegura
                           src={url}

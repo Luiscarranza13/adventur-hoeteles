@@ -1,8 +1,12 @@
 'use client';
 
 import { MessageCircle } from 'lucide-react';
+import { useConfiguracionWeb } from '@/hooks/useConfiguracionWeb';
+import { crearUrlWhatsApp } from '@/lib/configuracion';
 
 export function FormularioReclamacion() {
+  const config = useConfiguracionWeb();
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
@@ -11,20 +15,19 @@ export function FormularioReclamacion() {
     const tipo = fd.get('tipo') as string;
     const detalle = (fd.get('detalle') as string).trim();
     const pedido = (fd.get('pedido') as string).trim();
-    const texto = encodeURIComponent(
+    const mensaje =
       `📋 *LIBRO DE RECLAMACIONES*\n\n` +
       `*Nombre:* ${nombre}\n` +
       `*DNI/CE:* ${dni}\n` +
       `*Tipo:* ${tipo}\n\n` +
       `*Descripción del hecho:*\n${detalle}\n\n` +
-      `*Pedido del consumidor:*\n${pedido}`
-    );
-    window.open(`https://wa.me/51958101721?text=${texto}`, '_blank');
+      `*Pedido del consumidor:*\n${pedido}`;
+    window.open(crearUrlWhatsApp(config.whatsapp_numero, mensaje), '_blank');
   };
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8">
-      <h2 className="text-sm font-semibold text-[var(--brand-navy)] mb-1">Registrar queja o reclamo</h2>
+      <h2 className="text-sm font-semibold text-(--brand-navy) mb-1">Registrar queja o reclamo</h2>
       <p className="text-xs text-gray-400 mb-6">Se enviará por WhatsApp y recibirás respuesta en máximo 30 días.</p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -37,7 +40,7 @@ export function FormularioReclamacion() {
             <input
               id="nombre" name="nombre" type="text" required
               placeholder="Tu nombre completo"
-              className="w-full px-4 py-2.5 text-sm text-[var(--brand-navy)] border border-gray-200 rounded-xl focus:outline-none focus:border-[var(--brand-yellow)] focus:ring-2 focus:ring-[var(--brand-yellow)]/15 transition-all bg-gray-50 placeholder:text-gray-300"
+              className="w-full px-4 py-2.5 text-sm text-(--brand-navy) border border-gray-200 rounded-xl focus:outline-none focus:border-(--brand-yellow) focus:ring-2 focus:ring-(--brand-yellow)/15 transition-all bg-gray-50 placeholder:text-gray-300"
             />
           </div>
           <div>
@@ -47,7 +50,7 @@ export function FormularioReclamacion() {
             <input
               id="dni" name="dni" type="text" required
               placeholder="Número de documento"
-              className="w-full px-4 py-2.5 text-sm text-[var(--brand-navy)] border border-gray-200 rounded-xl focus:outline-none focus:border-[var(--brand-yellow)] focus:ring-2 focus:ring-[var(--brand-yellow)]/15 transition-all bg-gray-50 placeholder:text-gray-300"
+              className="w-full px-4 py-2.5 text-sm text-(--brand-navy) border border-gray-200 rounded-xl focus:outline-none focus:border-(--brand-yellow) focus:ring-2 focus:ring-(--brand-yellow)/15 transition-all bg-gray-50 placeholder:text-gray-300"
             />
           </div>
         </div>
@@ -58,7 +61,7 @@ export function FormularioReclamacion() {
           </label>
           <select
             id="tipo" name="tipo" required
-            className="w-full px-4 py-2.5 text-sm text-[var(--brand-navy)] border border-gray-200 rounded-xl focus:outline-none focus:border-[var(--brand-yellow)] focus:ring-2 focus:ring-[var(--brand-yellow)]/15 transition-all bg-gray-50 appearance-none cursor-pointer"
+            className="w-full px-4 py-2.5 text-sm text-(--brand-navy) border border-gray-200 rounded-xl focus:outline-none focus:border-(--brand-yellow) focus:ring-2 focus:ring-(--brand-yellow)/15 transition-all bg-gray-50 appearance-none cursor-pointer"
           >
             <option value="Reclamo">Reclamo — disconformidad con el servicio</option>
             <option value="Queja">Queja — malestar por atención recibida</option>
@@ -72,7 +75,7 @@ export function FormularioReclamacion() {
           <textarea
             id="detalle" name="detalle" required rows={4}
             placeholder="Describe con detalle lo ocurrido..."
-            className="w-full px-4 py-2.5 text-sm text-[var(--brand-navy)] border border-gray-200 rounded-xl focus:outline-none focus:border-[var(--brand-yellow)] focus:ring-2 focus:ring-[var(--brand-yellow)]/15 transition-all bg-gray-50 placeholder:text-gray-300 resize-none"
+            className="w-full px-4 py-2.5 text-sm text-(--brand-navy) border border-gray-200 rounded-xl focus:outline-none focus:border-(--brand-yellow) focus:ring-2 focus:ring-(--brand-yellow)/15 transition-all bg-gray-50 placeholder:text-gray-300 resize-none"
           />
         </div>
 
@@ -83,13 +86,13 @@ export function FormularioReclamacion() {
           <textarea
             id="pedido" name="pedido" required rows={3}
             placeholder="¿Qué solución esperas?"
-            className="w-full px-4 py-2.5 text-sm text-[var(--brand-navy)] border border-gray-200 rounded-xl focus:outline-none focus:border-[var(--brand-yellow)] focus:ring-2 focus:ring-[var(--brand-yellow)]/15 transition-all bg-gray-50 placeholder:text-gray-300 resize-none"
+            className="w-full px-4 py-2.5 text-sm text-(--brand-navy) border border-gray-200 rounded-xl focus:outline-none focus:border-(--brand-yellow) focus:ring-2 focus:ring-(--brand-yellow)/15 transition-all bg-gray-50 placeholder:text-gray-300 resize-none"
           />
         </div>
 
         <button
           type="submit"
-          className="w-full bg-[var(--brand-navy)] hover:bg-[#002d5a] active:scale-95 text-white font-semibold text-sm py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm"
+          className="w-full bg-(--brand-navy) hover:bg-[#002d5a] active:scale-95 text-white font-semibold text-sm py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm"
         >
           <MessageCircle size={15} aria-hidden="true" />
           Enviar reclamo por WhatsApp

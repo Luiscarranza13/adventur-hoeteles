@@ -39,10 +39,10 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#eef1f8] px-4 py-10">
       {/* Patrón de fondo */}
-      <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_1px_1px,#cbd5e1_1px,transparent_0)] [background-size:22px_22px]" />
+      <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_1px_1px,#cbd5e1_1px,transparent_0)] bg-size-[22px_22px]" />
 
       {/* Tarjeta */}
-      <div className="relative w-full max-w-[480px] bg-white rounded-3xl shadow-2xl shadow-slate-300/50 p-8 sm:p-10 md:p-12 animate-enter">
+      <div className="relative w-full max-w-[480px] bg-white rounded-3xl shadow-2xl shadow-slate-300/50 p-8 sm:p-10 md:p-12 animate-card-enter">
 
         {/* Header */}
         <div className="mb-8">
@@ -128,13 +128,6 @@ export default function LoginPage() {
         </div>
       </div>
 
-      <style jsx>{`
-        @keyframes enter {
-          from { opacity: 0; transform: translateY(20px) scale(0.98); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .animate-enter { animation: enter 0.5s ease-out both; }
-      `}</style>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { Header, Footer } from '@/components/layout/Header';
 import { ImagenSegura } from '@/components/ui/ImagenSegura';
 import { ServicioHabitaciones, AdaptadorSupabaseHabitacion } from '@/modules/habitaciones';
 import { ServicioHoteles, AdaptadorSupabaseHotel } from '@/modules/hoteles';
+import { FormularioReservaWhatsApp } from '@/components/cliente/FormularioReservaWhatsApp';
 import {
   ETIQUETAS_TIPO_HABITACION,
   ETIQUETAS_TIPO_CAMA,
@@ -12,7 +13,7 @@ import Link from 'next/link';
 import {
   ArrowLeft, Users, BedDouble, Coffee, Wifi, Tv,
   Wind, Waves, TreePine, CheckCircle2, ChevronRight,
-  MessageCircle, Star,
+  Star,
 } from 'lucide-react';
 import { Metadata } from 'next';
 
@@ -59,15 +60,26 @@ export default async function PaginaDetalleHabitacion({ params }: PageProps) {
       <Header />
 
       {/* Banner */}
-      <div className="bg-[var(--brand-navy)] pt-20 sm:pt-28 pb-10 sm:pb-14 px-4 sm:px-6 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.06] bg-[radial-gradient(circle_at_1px_1px,var(--brand-yellow)_1px,transparent_0)] [background-size:28px_28px]" />
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--brand-yellow)]/20 to-transparent" />
+      <div className="bg-(--brand-navy) pt-20 sm:pt-28 pb-10 sm:pb-14 px-4 sm:px-6 relative overflow-hidden">
+        {hab.imagenesUrls[0] && (
+          <ImagenSegura
+            src={hab.imagenesUrls[0]}
+            alt=""
+            fill
+            className="object-cover opacity-20"
+            priority
+            sizes="100vw"
+          />
+        )}
+        <div className="absolute inset-0 bg-linear-to-t from-(--brand-navy) via-(--brand-navy)/75 to-(--brand-navy)/30" />
+        <div className="absolute inset-0 opacity-[0.06] bg-[radial-gradient(circle_at_1px_1px,var(--brand-yellow)_1px,transparent_0)] bg-size-[28px_28px]" />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-(--brand-yellow)/20 to-transparent" />
         <div className="max-w-5xl mx-auto relative z-10">
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40 mb-6 flex-wrap">
-            <Link href="/hoteles" className="hover:text-[var(--brand-yellow)] transition-colors">Hoteles</Link>
+            <Link href="/hoteles" className="hover:text-(--brand-yellow) transition-colors">Hoteles</Link>
             <ChevronRight size={12} />
-            <Link href={`/hoteles/${hotel.id}`} className="hover:text-[var(--brand-yellow)] transition-colors truncate max-w-[140px]">{hotel.nombre}</Link>
+            <Link href={`/hoteles/${hotel.id}`} className="hover:text-(--brand-yellow) transition-colors truncate max-w-35">{hotel.nombre}</Link>
             <ChevronRight size={12} />
             <span className="text-white/70 truncate max-w-[160px]">{hab.nombre}</span>
           </nav>
@@ -75,7 +87,7 @@ export default async function PaginaDetalleHabitacion({ params }: PageProps) {
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5">
             <div>
               {hab.tipoHabitacion && (
-                <span className="inline-block bg-[var(--brand-yellow)] text-[var(--brand-navy)] text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full mb-4 shadow-[0_4px_12px_rgba(255,214,0,0.3)]">
+                <span className="inline-block bg-(--brand-yellow) text-(--brand-navy) text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full mb-4 shadow-[0_4px_12px_rgba(255,214,0,0.3)]">
                   {ETIQUETAS_TIPO_HABITACION[hab.tipoHabitacion]}
                 </span>
               )}
@@ -83,7 +95,7 @@ export default async function PaginaDetalleHabitacion({ params }: PageProps) {
                 {hab.nombre}
               </h1>
               <div className="flex items-center gap-2 text-white/50 text-xs font-semibold flex-wrap">
-                <Link href={`/hoteles/${hotel.id}`} className="hover:text-[var(--brand-yellow)] transition-colors flex items-center gap-1.5">
+                <Link href={`/hoteles/${hotel.id}`} className="hover:text-(--brand-yellow) transition-colors flex items-center gap-1.5">
                   <div className="flex gap-0.5">
                     {Array.from({ length: hotel.estrellas }).map((_, i) => (
                       <Star key={i} size={9} className="text-amber-400 fill-amber-400" />
@@ -103,7 +115,7 @@ export default async function PaginaDetalleHabitacion({ params }: PageProps) {
         </div>
       </div>
 
-      <main className="bg-[var(--bg-subtle)] py-8 sm:py-12 px-4 sm:px-6 min-h-screen">
+      <main className="bg-(--bg-subtle) py-8 sm:py-12 px-4 sm:px-6 min-h-screen">
         <div className="max-w-5xl mx-auto">
           <div className="grid lg:grid-cols-3 gap-6">
 
@@ -161,10 +173,10 @@ export default async function PaginaDetalleHabitacion({ params }: PageProps) {
                     ...(hab.regimenAlimentacion ? [{ label: 'Régimen', value: ETIQUETAS_REGIMEN[hab.regimenAlimentacion], icon: <Coffee size={15} /> }] : []),
                     ...(hab.numeroHabitacion ? [{ label: 'N° habitación', value: hab.numeroHabitacion, icon: <CheckCircle2 size={15} /> }] : []),
                   ].map(({ label, value, icon }) => (
-                    <div key={label} className="bg-[var(--bg-subtle)] rounded-xl p-4 border border-gray-100 hover:border-[var(--brand-yellow)]/30 hover:shadow-sm transition-all duration-200">
-                      <div className="flex items-center gap-1.5 text-[var(--brand-yellow)] mb-2">{icon}</div>
+                    <div key={label} className="bg-(--bg-subtle) rounded-xl p-4 border border-gray-100 hover:border-(--brand-yellow)/30 hover:shadow-sm transition-all duration-200">
+                      <div className="flex items-center gap-1.5 text-(--brand-yellow) mb-2">{icon}</div>
                       <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.15em] mb-1">{label}</p>
-                      <p className="text-xs font-bold text-[var(--brand-navy)]">{value}</p>
+                      <p className="text-xs font-bold text-(--brand-navy)">{value}</p>
                     </div>
                   ))}
                 </div>
@@ -176,8 +188,8 @@ export default async function PaginaDetalleHabitacion({ params }: PageProps) {
                   <p className="label-eyebrow mb-4 !text-left">Amenidades</p>
                   <div className="flex flex-wrap gap-2">
                     {hab.amenidades.map(a => (
-                      <span key={a} className="flex items-center gap-2 text-xs font-semibold bg-[var(--bg-subtle)] border border-gray-100 text-gray-600 px-3 py-2 rounded-xl hover:border-[var(--brand-yellow)]/40 hover:bg-[var(--brand-yellow)]/5 transition-all duration-200">
-                        <span className="text-[var(--brand-yellow)]">{iconosAmenidades[a] ?? <CheckCircle2 size={13} />}</span>
+                      <span key={a} className="flex items-center gap-2 text-xs font-semibold bg-(--bg-subtle) border border-gray-100 text-gray-600 px-3 py-2 rounded-xl hover:border-(--brand-yellow)/40 hover:bg-(--brand-yellow)/5 transition-all duration-200">
+                        <span className="text-(--brand-yellow)">{iconosAmenidades[a] ?? <CheckCircle2 size={13} />}</span>
                         {a}
                       </span>
                     ))}
@@ -189,38 +201,18 @@ export default async function PaginaDetalleHabitacion({ params }: PageProps) {
             {/* Sidebar */}
             <div className="flex flex-col gap-4">
 
-              {/* Card de reserva */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm sticky top-24">
-                <div className="mb-5 pb-5 border-b border-gray-100">
-                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Precio por noche</p>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-black text-[var(--brand-navy)]">{simbolo}{hab.precioNoche}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 mt-3">
-                    <CheckCircle2 size={13} className="text-green-500" />
-                    <span className="text-[10px] font-bold text-green-600">Disponibilidad inmediata</span>
-                  </div>
-                </div>
-
-                <Link
-                  href={`/checkout/${hab.id}`}
-                  className="flex items-center justify-center gap-2 w-full bg-[var(--brand-navy)] hover:bg-[var(--brand-yellow)] text-white hover:text-[var(--brand-navy)] py-3.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all duration-300 mb-2.5 shadow-sm hover:shadow-[0_4px_14px_rgba(255,214,0,0.3)]"
-                >
-                  <MessageCircle size={14} />
-                  Reservar ahora
-                </Link>
-
-                <Link
-                  href={`/hoteles/${hotel.id}`}
-                  className="flex items-center justify-center gap-2 w-full border border-gray-200 hover:border-[var(--brand-navy)] text-gray-400 hover:text-[var(--brand-navy)] py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all duration-200"
-                >
-                  <ArrowLeft size={12} />
-                  Volver al hotel
-                </Link>
-
-                <p className="text-[9px] text-gray-400 text-center mt-4 leading-relaxed">
-                  Sin comisiones · Confirmación directa por WhatsApp
-                </p>
+              {/* Formulario de reserva */}
+              <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+                <FormularioReservaWhatsApp
+                  habitacion={{
+                    id: hab.id,
+                    nombre: hab.nombre,
+                    precioNoche: hab.precioNoche,
+                    moneda: hab.moneda,
+                    hotelNombre: hotel.nombre,
+                    hotelEstrellas: hotel.estrellas,
+                  }}
+                />
               </div>
 
               {/* Info del hotel */}
@@ -231,8 +223,15 @@ export default async function PaginaDetalleHabitacion({ params }: PageProps) {
                     <Star key={i} size={11} className="text-amber-400 fill-amber-400" />
                   ))}
                 </div>
-                <p className="text-sm font-black text-[var(--brand-navy)] mb-1">{hotel.nombre}</p>
+                <p className="text-sm font-black text-(--brand-navy) mb-1">{hotel.nombre}</p>
                 <p className="text-xs text-gray-400">{hotel.ciudad} · {hotel.direccion}</p>
+                <Link
+                  href={`/hoteles/${hotel.id}`}
+                  className="mt-4 flex items-center justify-center gap-2 w-full border border-gray-200 hover:border-(--brand-navy) text-gray-400 hover:text-(--brand-navy) py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all duration-200"
+                >
+                  <ArrowLeft size={12} />
+                  Volver al hotel
+                </Link>
               </div>
 
             </div>

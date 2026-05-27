@@ -1,4 +1,5 @@
-import { createClient } from '@/lib/supabase/client';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient as createBrowserClient } from '@/lib/supabase/client';
 import { RepositorioHabitacion } from '../../dominio/puertos/RepositorioHabitacion';
 import { Habitacion, DatosNuevaHabitacion, DatosActualizarHabitacion, TipoHabitacion, TipoCama, RegimeAlimentacion, EstadoMantenimiento, Moneda } from '../../dominio/entidades/Habitacion';
 
@@ -44,13 +45,14 @@ function mapDbToDomain(row: HabitacionDb): Habitacion {
   };
 }
 
-export class AdaptadorSupabaseHabitacion implements RepositorioHabitacion {
-  private getCliente() {
-    return createClient();
-  }
+function getCliente() {
+  if (typeof window === 'undefined') return createAdminClient();
+  return createBrowserClient();
+}
 
+export class AdaptadorSupabaseHabitacion implements RepositorioHabitacion {
   async buscarPorId(id: string): Promise<Habitacion | null> {
-    const cliente = this.getCliente();
+    const cliente = getCliente();
     const { data, error } = await cliente
       .from('habitaciones')
       .select('*')
@@ -62,7 +64,7 @@ export class AdaptadorSupabaseHabitacion implements RepositorioHabitacion {
   }
 
   async buscarPorHotelId(hotelId: string): Promise<Habitacion[]> {
-    const cliente = this.getCliente();
+    const cliente = getCliente();
     const { data, error } = await cliente
       .from('habitaciones')
       .select('*')
@@ -74,7 +76,7 @@ export class AdaptadorSupabaseHabitacion implements RepositorioHabitacion {
   }
 
   async listarTodas(): Promise<Habitacion[]> {
-    const cliente = this.getCliente();
+    const cliente = getCliente();
     const { data, error } = await cliente
       .from('habitaciones')
       .select('*')
@@ -85,7 +87,7 @@ export class AdaptadorSupabaseHabitacion implements RepositorioHabitacion {
   }
 
   async listarDisponibles(): Promise<Habitacion[]> {
-    const cliente = this.getCliente();
+    const cliente = getCliente();
     const { data, error } = await cliente
       .from('habitaciones')
       .select('*')
@@ -98,7 +100,7 @@ export class AdaptadorSupabaseHabitacion implements RepositorioHabitacion {
   }
 
   async crear(datos: DatosNuevaHabitacion): Promise<Habitacion> {
-    const cliente = this.getCliente();
+    const cliente = getCliente();
     const { data, error } = await cliente
       .from('habitaciones')
       .insert({
@@ -126,7 +128,7 @@ export class AdaptadorSupabaseHabitacion implements RepositorioHabitacion {
   }
 
   async actualizar(id: string, datos: DatosActualizarHabitacion): Promise<Habitacion> {
-    const cliente = this.getCliente();
+    const cliente = getCliente();
     const updateData: Record<string, unknown> = {};
     if (datos.nombre !== undefined) updateData.nombre = datos.nombre;
     if (datos.descripcion !== undefined) updateData.descripcion = datos.descripcion;
@@ -155,7 +157,7 @@ export class AdaptadorSupabaseHabitacion implements RepositorioHabitacion {
   }
 
   async eliminar(id: string): Promise<void> {
-    const cliente = this.getCliente();
+    const cliente = getCliente();
     const { error } = await cliente.from('habitaciones').delete().eq('id', id);
     if (error) throw new Error(error.message);
   }

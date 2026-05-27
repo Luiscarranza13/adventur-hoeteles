@@ -19,7 +19,7 @@ import {
   ChevronLeft, ChevronRight, Download
 } from 'lucide-react';
 
-type FilaReserva = Reserva & { habitacionNombre: string; hotelNombre: string };
+type FilaReserva = Reserva & { habitacionNombre: string; hotelNombre: string; moneda: 'PEN' | 'USD' };
 
 export default function PaginaReservas() {
   const [reservas, setReservas] = useState<Reserva[]>([]);
@@ -56,6 +56,7 @@ export default function PaginaReservas() {
         ...r,
         habitacionNombre: hab?.nombre ?? 'Desconocida',
         hotelNombre: hoteles.find(h => h.id === hab?.hotelId)?.nombre ?? 'Desconocido',
+        moneda: (hab?.moneda ?? 'USD') as 'PEN' | 'USD',
       };
     });
   }, [reservas, habitaciones, hoteles]);
@@ -149,9 +150,9 @@ export default function PaginaReservas() {
       id: 'precio',
       header: 'Precio',
       accessorFn: r => r.precioTotal,
-      cell: ({ getValue }) => (
+      cell: ({ getValue, row }) => (
         <span className="text-sm font-bold text-[#ffd600]">
-          {getValue() ? `$${(getValue() as number).toFixed(2)}` : '—'}
+          {getValue() ? `${row.original.moneda === 'PEN' ? 'S/' : '$'}${(getValue() as number).toFixed(2)}` : '—'}
         </span>
       ),
     },

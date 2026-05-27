@@ -60,7 +60,7 @@ function BadgeHotel({ hotel, ahora }: { hotel: HotelConPrecio; ahora: number }) 
   }
   if (hotel.estrellas >= 4) {
     return (
-      <span className="flex items-center gap-1 bg-[var(--brand-yellow)] text-[var(--brand-navy)] text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full">
+      <span className="flex items-center gap-1 bg-(--brand-yellow) text-(--brand-navy) text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full">
         <TrendingUp size={9} />
         Popular
       </span>
@@ -74,7 +74,7 @@ function TarjetaHotel({ hotel, index, ahora }: { hotel: HotelConPrecio; index: n
   return (
     <Link href={`/hoteles/${hotel.id}`} className="block group shrink-0 snap-start" style={{ width: 'var(--card-w)' }}>
       <article className="card-premium h-full flex flex-col">
-        <div className="relative h-44 sm:h-48 bg-[var(--brand-navy)] overflow-hidden shrink-0 rounded-t-2xl">
+        <div className="relative h-44 sm:h-48 bg-(--brand-navy) overflow-hidden shrink-0 rounded-t-2xl">
           {hotel.imagenesUrls[0] ? (
             <ImagenSegura
               src={hotel.imagenesUrls[0]}
@@ -89,7 +89,7 @@ function TarjetaHotel({ hotel, index, ahora }: { hotel: HotelConPrecio; index: n
               <Star size={32} className="text-gray-600" />
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent" />
           {hotel.precioMinimo && (
             <div className="absolute bottom-3 left-3 z-10">
               <p className="text-[8px] font-black text-white/70 uppercase tracking-widest leading-none mb-0.5">Desde</p>
@@ -104,16 +104,16 @@ function TarjetaHotel({ hotel, index, ahora }: { hotel: HotelConPrecio; index: n
           </div>
         </div>
         <div className="p-5 flex flex-col flex-1">
-          <h3 className="heading-card mb-1.5 group-hover:text-[var(--brand-yellow)] transition-colors line-clamp-2 text-sm font-bold">{hotel.nombre}</h3>
+          <h3 className="heading-card mb-1.5 group-hover:text-(--brand-yellow) transition-colors line-clamp-2 text-sm font-bold">{hotel.nombre}</h3>
           <div className="flex items-center gap-1.5 mb-4">
-            <MapPin size={12} className="text-[var(--brand-yellow)] shrink-0" aria-hidden="true" />
-            <span className="text-[var(--text-secondary)] text-xs font-semibold truncate">{hotel.ciudad}</span>
+            <MapPin size={12} className="text-(--brand-yellow) shrink-0" aria-hidden="true" />
+            <span className="text-(--text-secondary) text-xs font-semibold truncate">{hotel.ciudad}</span>
             {hotel.tipoAlojamiento && (
-              <span className="text-[var(--text-muted)] text-[10px] truncate">· {hotel.tipoAlojamiento}</span>
+              <span className="text-(--text-muted) text-[10px] truncate">· {hotel.tipoAlojamiento}</span>
             )}
           </div>
           <div className="mt-auto">
-            <div className="btn-primary !w-full !py-2.5 !text-xs group-hover:bg-[var(--brand-yellow-light)]">
+            <div className="btn-primary !w-full !py-2.5 !text-xs group-hover:bg-(--brand-yellow-light)">
               <MessageCircle size={14} aria-hidden="true" />
               <span>Reservar ahora</span>
             </div>
@@ -129,7 +129,7 @@ function TarjetaHotelDesktop({ hotel, index, ahora }: { hotel: HotelConPrecio; i
   return (
     <Link href={`/hoteles/${hotel.id}`} className="block group w-full">
       <article className="card-premium h-full flex flex-col">
-        <div className="relative h-44 sm:h-48 bg-[var(--brand-navy)] overflow-hidden shrink-0 rounded-t-2xl">
+        <div className="relative h-44 sm:h-48 bg-(--brand-navy) overflow-hidden shrink-0 rounded-t-2xl">
           {hotel.imagenesUrls[0] ? (
             <ImagenSegura
               src={hotel.imagenesUrls[0]}
@@ -144,7 +144,7 @@ function TarjetaHotelDesktop({ hotel, index, ahora }: { hotel: HotelConPrecio; i
               <Star size={32} className="text-gray-600" />
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent" />
           {hotel.precioMinimo && (
             <div className="absolute bottom-3 left-3 z-10">
               <p className="text-[8px] font-black text-white/70 uppercase tracking-widest leading-none mb-0.5">Desde</p>
@@ -159,16 +159,16 @@ function TarjetaHotelDesktop({ hotel, index, ahora }: { hotel: HotelConPrecio; i
           </div>
         </div>
         <div className="p-5 flex flex-col flex-1">
-          <h3 className="heading-card mb-1.5 group-hover:text-[var(--brand-yellow)] transition-colors line-clamp-2 text-sm font-bold">{hotel.nombre}</h3>
+          <h3 className="heading-card mb-1.5 group-hover:text-(--brand-yellow) transition-colors line-clamp-2 text-sm font-bold">{hotel.nombre}</h3>
           <div className="flex items-center gap-1.5 mb-4">
-            <MapPin size={12} className="text-[var(--brand-yellow)] shrink-0" aria-hidden="true" />
-            <span className="text-[var(--text-secondary)] text-xs font-semibold truncate">{hotel.ciudad}</span>
+            <MapPin size={12} className="text-(--brand-yellow) shrink-0" aria-hidden="true" />
+            <span className="text-(--text-secondary) text-xs font-semibold truncate">{hotel.ciudad}</span>
             {hotel.tipoAlojamiento && (
-              <span className="text-[var(--text-muted)] text-[10px] truncate">· {hotel.tipoAlojamiento}</span>
+              <span className="text-(--text-muted) text-[10px] truncate">· {hotel.tipoAlojamiento}</span>
             )}
           </div>
           <div className="mt-auto">
-            <div className="btn-primary !w-full !py-2.5 !text-xs group-hover:bg-[var(--brand-yellow-light)]">
+            <div className="btn-primary !w-full !py-2.5 !text-xs group-hover:bg-(--brand-yellow-light)">
               <MessageCircle size={14} aria-hidden="true" />
               <span>Reservar ahora</span>
             </div>
@@ -269,7 +269,7 @@ export function CarruselHotelesDestacados({ hoteles }: Props) {
             onClick={() => scrollTo(activeIndex - 1)}
             disabled={activeIndex === 0}
             aria-label="Anterior"
-            className="w-9 h-9 rounded-full border border-gray-200 bg-white flex items-center justify-center text-[var(--brand-navy)] hover:bg-[var(--brand-navy)] hover:text-white disabled:opacity-30 transition-all"
+            className="w-9 h-9 rounded-full border border-gray-200 bg-white flex items-center justify-center text-(--brand-navy) hover:bg-(--brand-navy) hover:text-white disabled:opacity-30 transition-all"
           >
             <ChevronLeft size={16} />
           </button>
@@ -277,7 +277,7 @@ export function CarruselHotelesDestacados({ hoteles }: Props) {
             onClick={() => scrollTo(activeIndex + 1)}
             disabled={activeIndex >= hoteles.length - 1}
             aria-label="Siguiente"
-            className="w-9 h-9 rounded-full border border-gray-200 bg-white flex items-center justify-center text-[var(--brand-navy)] hover:bg-[var(--brand-navy)] hover:text-white disabled:opacity-30 transition-all"
+            className="w-9 h-9 rounded-full border border-gray-200 bg-white flex items-center justify-center text-(--brand-navy) hover:bg-(--brand-navy) hover:text-white disabled:opacity-30 transition-all"
           >
             <ChevronRight size={16} />
           </button>

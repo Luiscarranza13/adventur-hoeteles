@@ -1,11 +1,12 @@
 'use client';
 
-import { useRef, useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Quote, Star } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { BadgeCheck, ChevronLeft, ChevronRight, Star } from 'lucide-react';
 
 interface Testimonio {
   nombre: string;
   origen: string;
+  cargo: string;
   calificacion: number;
   texto: string;
   inicial: string;
@@ -14,168 +15,154 @@ interface Testimonio {
 
 const TESTIMONIOS: Testimonio[] = [
   {
-    nombre: 'María García',
+    nombre: 'Maria Garcia',
     origen: 'Lima',
+    cargo: 'Viajera frecuente',
     calificacion: 5,
-    texto: 'Reservé el hotel en Cajamarca por WhatsApp y en menos de 5 minutos tenía la confirmación. Sin formularios, sin comisiones, trato directo. Nunca había sido tan fácil planificar un viaje.',
+    texto: 'Reserve el hotel en Cajamarca por WhatsApp y en menos de 5 minutos tenia la confirmacion. Sin formularios, sin comisiones.',
     inicial: 'M',
-    color: '#3B82F6',
+    color: '#2563EB',
   },
   {
-    nombre: 'Roberto Sánchez',
+    nombre: 'Roberto Sanchez',
     origen: 'Trujillo',
+    cargo: 'Reserva familiar',
     calificacion: 5,
-    texto: 'Llegué al hotel y todo estuvo exactamente como me lo describieron: limpio, cómodo y en perfecto estado. Adventur realmente verifica los hoteles. Una tranquilidad enorme para el viajero.',
+    texto: 'Llegue al hotel y todo estuvo como me lo describieron: limpio, comodo y en perfecto estado. Adventur realmente verifica.',
     inicial: 'R',
-    color: '#8B5CF6',
+    color: '#7C3AED',
   },
   {
-    nombre: 'Lucía Torres',
+    nombre: 'Lucia Torres',
     origen: 'Arequipa',
+    cargo: 'Viaje en familia',
     calificacion: 5,
-    texto: 'El precio que vi fue el que pagué, sin sorpresas. Ahorré comparado con otras plataformas porque no hay comisiones. La atención fue personalizada y me ayudaron a elegir el hotel ideal para mi familia.',
+    texto: 'El precio que vi fue el que pague, sin sorpresas. La atencion fue personalizada y me ayudaron a elegir el hotel ideal.',
     inicial: 'L',
-    color: '#EC4899',
+    color: '#DB2777',
   },
   {
     nombre: 'Carlos Mendoza',
     origen: 'Chiclayo',
+    cargo: 'Grupo familiar',
     calificacion: 5,
-    texto: 'Organicé el viaje de toda la familia a Cajamarca para el Carnaval. Adventur nos consiguió habitaciones en el mejor hotel de la ciudad con disponibilidad inmediata. Servicio increíble.',
+    texto: 'Organice el viaje de toda la familia a Cajamarca. Adventur consiguio habitaciones con disponibilidad inmediata.',
     inicial: 'C',
-    color: '#10B981',
+    color: '#059669',
   },
   {
-    nombre: 'Ana Rodríguez',
+    nombre: 'Ana Rodriguez',
     origen: 'Cusco',
+    cargo: 'Viaje individual',
     calificacion: 5,
-    texto: 'Primera vez viajando sola a Cajamarca. Me orientaron sobre qué hotel elegir según mi presupuesto y me sentí completamente segura. Los hoteles verificados de Adventur son una garantía real.',
+    texto: 'Me orientaron sobre que hotel elegir segun mi presupuesto y me senti completamente segura durante todo el proceso.',
     inicial: 'A',
-    color: '#F59E0B',
+    color: '#D97706',
   },
 ];
 
-const AUTO_DELAY = 5000;
+const AUTO_DELAY = 3600;
 
 export function CarruselTestimonios() {
-  const trackRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const total = TESTIMONIOS.length;
 
+  const visibles = useMemo(() => [
+    TESTIMONIOS[activeIndex],
+    TESTIMONIOS[(activeIndex + 1) % total],
+    TESTIMONIOS[(activeIndex + 2) % total],
+  ], [activeIndex, total]);
+
   const scrollTo = useCallback((index: number) => {
-    const clamped = ((index % total) + total) % total;
-    setActiveIndex(clamped);
-    const track = trackRef.current;
-    if (!track) return;
-    track.scrollTo({ left: clamped * track.clientWidth, behavior: 'smooth' });
+    setActiveIndex(((index % total) + total) % total);
   }, [total]);
 
   useEffect(() => {
     if (paused) return;
-    const timer = setInterval(() => {
-      setActiveIndex(prev => {
-        const next = (prev + 1) % total;
-        const track = trackRef.current;
-        if (track) track.scrollTo({ left: next * track.clientWidth, behavior: 'smooth' });
-        return next;
-      });
+    const timer = window.setInterval(() => {
+      setActiveIndex((current) => (current + 1) % total);
     }, AUTO_DELAY);
-    return () => clearInterval(timer);
+    return () => window.clearInterval(timer);
   }, [paused, total]);
 
-  const onScroll = () => {
-    if (!trackRef.current) return;
-    const { scrollLeft, clientWidth } = trackRef.current;
-    const idx = Math.round(scrollLeft / clientWidth);
-    setActiveIndex(Math.max(0, Math.min(idx, total - 1)));
-  };
-
   return (
-    <div className="relative" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
-      {/* Track */}
-      <div
-        ref={trackRef}
-        onScroll={onScroll}
-        className="flex overflow-x-auto snap-x snap-mandatory"
-        style={{ scrollbarWidth: 'none', scrollSnapType: 'x mandatory' }}
-      >
-        {TESTIMONIOS.map((t, i) => (
-          <div
-            key={i}
-            className="snap-center shrink-0 w-full px-2 sm:px-4"
+    <div
+      className="relative mx-auto max-w-6xl px-3 sm:px-8"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      <div className="grid gap-5 md:grid-cols-3">
+        {visibles.map((testimonio, index) => (
+          <article
+            key={`${testimonio.nombre}-${activeIndex}-${index}`}
+            className="flex min-h-[230px] flex-col justify-between rounded-[22px] bg-slate-50 p-6 text-slate-900 ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:ring-slate-200 md:p-7"
           >
-            <div className="max-w-2xl mx-auto">
-              {/* Estrellas */}
-              <div className="flex items-center justify-center gap-1 mb-6">
-                {Array.from({ length: t.calificacion }).map((_, s) => (
-                  <Star key={s} size={18} className="fill-[#ffd600] text-[#ffd600]" aria-hidden="true" />
+            <div>
+              <div className="mb-3 flex items-center gap-0.5 text-[#ffb800]">
+                {Array.from({ length: testimonio.calificacion }).map((_, star) => (
+                  <Star key={star} size={18} className="fill-current" aria-hidden="true" />
                 ))}
               </div>
+              <p className="text-[15px] font-medium leading-relaxed text-slate-800">
+                {testimonio.texto}
+              </p>
+              <p className="mt-2 text-sm font-semibold text-slate-400">Leer mas</p>
+            </div>
 
-              {/* Cita */}
-              <div className="relative">
-                <Quote
-                  size={40}
-                  className="absolute -top-2 -left-2 text-[#ffd600]/20 fill-[#ffd600]/20"
-                  aria-hidden="true"
-                />
-                <blockquote className="text-center text-base sm:text-lg lg:text-xl text-white leading-relaxed font-medium px-6 sm:px-8 relative z-10">
-                  &ldquo;{t.texto}&rdquo;
-                </blockquote>
+            <div className="mt-7 flex items-center gap-3">
+              <div
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-base font-black text-white ring-4 ring-white"
+                style={{ background: testimonio.color }}
+                aria-hidden="true"
+              >
+                {testimonio.inicial}
               </div>
-
-              {/* Autor */}
-              <div className="flex items-center justify-center gap-3 mt-8">
-                <div
-                  className="w-11 h-11 rounded-full flex items-center justify-center text-white font-black text-base shrink-0"
-                  style={{ background: t.color }}
-                  aria-hidden="true"
-                >
-                  {t.inicial}
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <p className="truncate text-sm font-black text-slate-950">{testimonio.nombre}</p>
+                  <BadgeCheck size={15} className="shrink-0 fill-blue-500 text-white" aria-hidden="true" />
                 </div>
-                <div className="text-left">
-                  <p className="text-white font-bold text-sm">{t.nombre}</p>
-                  <p className="text-gray-400 text-xs">{t.origen}, Perú</p>
-                </div>
+                <p className="text-xs font-medium text-slate-400">{testimonio.cargo}</p>
+                <p className="mt-1 text-[10px] font-black uppercase tracking-[0.18em] text-slate-300">
+                  {testimonio.origen}
+                </p>
               </div>
             </div>
-          </div>
+          </article>
         ))}
       </div>
 
-      {/* Dots */}
-      <div className="flex items-center justify-center gap-2 mt-10">
-        {TESTIMONIOS.map((_, i) => (
+      <button
+        type="button"
+        onClick={() => scrollTo(activeIndex - 1)}
+        aria-label="Anterior testimonio"
+        className="absolute left-0 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-slate-900 shadow-[0_8px_24px_rgba(15,23,42,0.16)] transition hover:bg-(--brand-yellow)"
+      >
+        <ChevronLeft size={18} aria-hidden="true" />
+      </button>
+      <button
+        type="button"
+        onClick={() => scrollTo(activeIndex + 1)}
+        aria-label="Siguiente testimonio"
+        className="absolute right-0 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-slate-900 shadow-[0_8px_24px_rgba(15,23,42,0.16)] transition hover:bg-(--brand-yellow)"
+      >
+        <ChevronRight size={18} aria-hidden="true" />
+      </button>
+
+      <div className="mt-9 flex items-center justify-center gap-2">
+        {TESTIMONIOS.map((_, index) => (
           <button
-            key={i}
-            onClick={() => { setPaused(true); scrollTo(i); }}
-            aria-label={`Testimonio ${i + 1}`}
-            className="rounded-full transition-all duration-300"
-            style={{
-              width: i === activeIndex ? 24 : 8,
-              height: 8,
-              background: i === activeIndex ? '#ffd600' : 'rgba(255,255,255,0.2)',
-            }}
+            key={index}
+            type="button"
+            onClick={() => scrollTo(index)}
+            aria-label={`Grupo de testimonios ${index + 1}`}
+            className={`h-2 rounded-full transition-all ${
+              index === activeIndex ? 'w-7 bg-slate-950' : 'w-2 bg-slate-300 hover:bg-slate-400'
+            }`}
           />
         ))}
       </div>
-
-      {/* Flechas */}
-      <button
-        onClick={() => { setPaused(true); scrollTo(activeIndex - 1); }}
-        aria-label="Anterior testimonio"
-        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 sm:-translate-x-4 w-9 h-9 rounded-full border border-white/10 bg-white/5 hover:bg-white/15 flex items-center justify-center text-white transition-all duration-200"
-      >
-        <ChevronLeft size={16} />
-      </button>
-      <button
-        onClick={() => { setPaused(true); scrollTo(activeIndex + 1); }}
-        aria-label="Siguiente testimonio"
-        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 sm:translate-x-4 w-9 h-9 rounded-full border border-white/10 bg-white/5 hover:bg-white/15 flex items-center justify-center text-white transition-all duration-200"
-      >
-        <ChevronRight size={16} />
-      </button>
     </div>
   );
 }

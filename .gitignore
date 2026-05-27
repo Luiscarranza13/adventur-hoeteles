@@ -42,3 +42,10 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# server logs
+*.out.log
+*.err.log
+
+# duplicate video at project root (actual asset lives in /public/fondo.mp4)
+/fondo.mp4

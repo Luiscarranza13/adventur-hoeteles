@@ -46,20 +46,11 @@ export const metadata: Metadata = {
     title: `${SITE_NAME} — Hoteles en Cajamarca y todo el Perú`,
     description:
       'Hoteles verificados en todo el Perú. Reserva directa por WhatsApp, sin comisiones.',
-    images: [
-      {
-        url: `${SITE_URL}/og-image.jpg`,
-        width: 1200,
-        height: 630,
-        alt: 'Adventur Hoteles — Alojamiento en el Perú',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: `${SITE_NAME} — Hoteles en Cajamarca y todo el Perú`,
     description: 'Hoteles verificados en todo el Perú. Reserva directa por WhatsApp, sin comisiones.',
-    images: [`${SITE_URL}/og-image.jpg`],
   },
   alternates: {
     canonical: SITE_URL,
@@ -93,11 +84,7 @@ export default function RootLayout({
                 addressCountry: 'PE',
               },
               telephone: '+51958101721',
-              email: 'reservas@adventur.pe',
-              sameAs: [
-                'https://www.facebook.com/',
-                'https://www.instagram.com/',
-              ],
+              email: 'hoteles@adventur.pe',
               areaServed: {
                 '@type': 'Country',
                 name: 'Perú',

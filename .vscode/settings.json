@@ -1,5 +1,7 @@
 {
   "typescript.autoClosingTags": false,
   "css.customData": [".vscode/tailwind.json"],
-  "css.lint.unknownAtRules": "ignore"
+  "css.lint.unknownAtRules": "ignore",
+  "tailwindCSS.lint.suggestCanonicalClasses": "ignore",
+  "vscode-edge-devtools.webhint": false
 }

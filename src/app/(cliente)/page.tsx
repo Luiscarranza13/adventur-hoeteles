@@ -11,9 +11,9 @@ import { CarruselTestimonios } from '@/components/cliente/CarruselTestimonios';
 import { obtenerDestinos, prepararProcedencias } from '@/lib/destinos';
 import { obtenerCiudadesConHoteles, listarHotelesActivos, anexarPreciosMinimos } from '@/lib/hoteles-consultas';
 import { obtenerConfiguracionPublica } from '@/lib/configuracion-consultas';
+import { crearUrlWhatsApp } from '@/lib/configuracion';
 import { getPublicEnv } from '@/lib/env';
 import { Metadata } from 'next';
-import Image from 'next/image';
 import Link from 'next/link';
 import {
   MessageCircle, Shield, ArrowRight,
@@ -62,6 +62,7 @@ export default async function PaginaInicio() {
 
   // Paralelizar la query de precios con el resto del procesamiento
   const hotelesConPrecio = await anexarPreciosMinimos(hoteles.slice(0, 8));
+  const whatsappViaje = crearUrlWhatsApp(configuracion.whatsapp_numero, 'Hola, quiero planificar mi viaje por el Perú.');
 
   return (
     <>
@@ -73,7 +74,7 @@ export default async function PaginaInicio() {
           <HeroCliente totalHoteles={hoteles.length} totalCiudades={departamentos.length || ciudades.length} ciudadesDisponibles={ciudades} />
         </section>
 
-        <section id="hoteles" className="section-padding bg-[var(--bg-subtle)] scroll-mt-40 sm:scroll-mt-48">
+        <section id="hoteles" className="section-padding bg-white scroll-mt-40 sm:scroll-mt-48">
           <div className="container-site">
             <AnimarAlEntrar className="text-center mb-10">
               <p className="label-eyebrow mb-3">Selección Exclusiva</p>
@@ -98,11 +99,11 @@ export default async function PaginaInicio() {
               </>
             ) : (
               <AnimarAlEntrar>
-                <div className="mx-auto flex max-w-3xl flex-col items-center rounded-2xl border border-[var(--border-base)] bg-white px-6 py-8 text-center shadow-sm sm:px-10">
-                  <p className="mb-2 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--brand-yellow)]">
+                <div className="mx-auto flex max-w-3xl flex-col items-center rounded-2xl border border-(--border-base) bg-white px-6 py-8 text-center shadow-sm sm:px-10">
+                  <p className="mb-2 text-[10px] font-black uppercase tracking-[0.18em] text-(--brand-yellow)">
                     Aún no hay ofertas destacadas
                   </p>
-                  <h3 className="mb-3 text-xl font-black leading-tight text-[var(--brand-navy)] sm:text-2xl">
+                  <h3 className="mb-3 text-xl font-black leading-tight text-(--brand-navy) sm:text-2xl">
                     Revisa todos los hoteles disponibles
                   </h3>
                   <p className="body-text mb-6 max-w-xl">
@@ -123,7 +124,7 @@ export default async function PaginaInicio() {
           whatsappNumero={configuracion.whatsapp_numero}
         />
 
-        <section id="servicios" className="section-padding bg-[var(--bg-base)] scroll-mt-40 sm:scroll-mt-48">
+        <section id="servicios" className="section-padding bg-(--bg-base) scroll-mt-40 sm:scroll-mt-48">
           <div className="container-site">
             <AnimarAlEntrar className="text-center mb-14">
               <p className="label-eyebrow mb-3">Nuestros Servicios</p>
@@ -140,98 +141,115 @@ export default async function PaginaInicio() {
           </div>
         </section>
 
-        <section className="section-padding bg-[var(--brand-navy)] relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-full opacity-[0.04] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[var(--brand-yellow)]/5 rounded-full -translate-y-1/2 translate-x-1/3 blur-[80px] pointer-events-none" />
+        <section className="section-padding bg-white relative overflow-hidden">
           <div className="container-site relative z-10">
-            <div className="grid lg:grid-cols-2 gap-16 xl:gap-24 items-center">
+            <div className="grid lg:grid-cols-2 gap-10 xl:gap-16 items-center">
               <AnimarAlEntrar>
                 <p className="label-eyebrow mb-4">Seguridad Total</p>
-                <h2 className="heading-section-light mb-6">
+                <h2 className="heading-section mb-6">
                   Viaja con seguridad y el confort que mereces
                 </h2>
-                <p className="text-gray-400 text-base sm:text-lg leading-relaxed mb-10">
+                <p className="body-text text-base sm:text-lg leading-relaxed mb-8">
                   En Adventur ofrecemos hoteles verificados con la misma calidad que esperas de un operador nacional: establecimientos seguros, habitaciones modernas y atención coordinada.
                 </p>
 
-                <div className="space-y-5">
+                <div className="space-y-4 mb-8">
                   {[
                     'Hoteles verificados con licencia vigente y experiencia comprobada',
                     'Habitaciones modernas con mantenimiento preventivo al día',
                     'Asistencia personalizada disponible las 24 horas del día',
                   ].map((texto) => (
-                    <div key={texto} className="flex items-start gap-4">
-                      <div className="w-7 h-7 rounded-full bg-[var(--brand-yellow)]/15 border border-[var(--brand-yellow)]/25 flex items-center justify-center shrink-0 mt-0.5">
-                        <CheckCircle2 size={14} className="text-[var(--brand-yellow)]" aria-hidden="true" />
+                    <div key={texto} className="flex items-start gap-4 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
+                      <div className="w-7 h-7 rounded-full bg-(--brand-yellow) flex items-center justify-center shrink-0 mt-0.5">
+                        <CheckCircle2 size={14} className="text-(--brand-navy)" aria-hidden="true" />
                       </div>
-                      <p className="text-gray-300 text-sm sm:text-base leading-relaxed">{texto}</p>
+                      <p className="text-(--brand-navy) text-sm sm:text-base font-semibold leading-relaxed">{texto}</p>
                     </div>
                   ))}
                 </div>
+
+                <Link
+                  href="/hoteles"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-(--brand-navy) px-6 py-3 text-xs font-black uppercase tracking-widest text-white transition-all hover:-translate-y-0.5 hover:bg-(--brand-navy-light)"
+                >
+                  Ver hoteles verificados
+                  <ArrowRight size={16} aria-hidden="true" />
+                </Link>
               </AnimarAlEntrar>
 
               <AnimarAlEntrar delay={0.2}>
-                <div className="relative h-[300px] sm:h-[360px] lg:h-[400px] rounded-3xl overflow-hidden shadow-[0_20px_60px_-12px_rgba(0,0,0,0.6)] group bg-white">
-                  {hoteles[1]?.imagenesUrls[0] ? (
-                    <>
-                      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-white via-gray-50 to-gray-100" />
+                <Link
+                  href="/hoteles"
+                  className="group block overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.10)] transition-all hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(15,23,42,0.14)]"
+                >
+                  <div className="relative h-[260px] overflow-hidden bg-slate-100 sm:h-[320px] lg:h-[360px]">
+                    {hoteles[1]?.imagenesUrls[0] ? (
                       <ImagenSegura
                         src={hoteles[1].imagenesUrls[0]}
                         alt="Hotel seguro y confortable"
                         fill
                         sizes="(max-width: 1024px) 100vw, 50vw"
-                        fit="contain"
-                        className="p-8 sm:p-16 group-hover:scale-105 transition-transform duration-1000 relative z-10"
+                        fit="cover"
+                        className="transition-transform duration-700 group-hover:scale-105"
                       />
-                    </>
-                  ) : (
-                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-[var(--brand-navy-light)]">
-                      <div className="text-center">
-                        <Shield size={64} className="text-[var(--brand-yellow)]/30 mx-auto mb-4" aria-hidden="true" />
-                        <p className="text-white/30 text-lg font-bold">Adventur Hoteles</p>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="absolute bottom-4 sm:bottom-6 left-4 right-4 sm:left-6 sm:right-6 z-20">
-                    <div className="grid grid-cols-3 gap-3 sm:gap-4">
-                      {[
-                        { n: hoteles.length, sufijo: '+', label: 'Hoteles' },
-                        { n: departamentos.length || ciudades.length, sufijo: '', label: 'Cobertura' },
-                        { n: 0, sufijo: '%', label: 'Comisión' },
-                      ].map(({ n, sufijo, label }) => (
-                        <div key={label} className="bg-white/95 backdrop-blur-md rounded-2xl p-3 sm:p-4 text-center border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.08)] group-hover:-translate-y-1 transition-transform duration-500">
-                          <p className="text-[var(--brand-navy)] font-black text-xl sm:text-2xl leading-none mb-1 sm:mb-2">
-                            <ContadorAnimado valor={n || 10} sufijo={sufijo} />
-                          </p>
-                          <p className="text-[var(--brand-yellow)] text-[8px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.15em]">{label}</p>
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-slate-100">
+                        <div className="text-center">
+                          <Shield size={64} className="text-(--brand-navy)/20 mx-auto mb-4" aria-hidden="true" />
+                          <p className="text-(--brand-navy)/40 text-lg font-bold">Adventur Hoteles</p>
                         </div>
-                      ))}
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-linear-to-t from-(--brand-navy)/85 via-(--brand-navy)/20 to-transparent" />
+                    <div className="absolute bottom-5 left-5 right-5">
+                      <p className="mb-2 text-[10px] font-black uppercase tracking-[0.22em] text-(--brand-yellow)">
+                        Hoteles verificados
+                      </p>
+                      <h3 className="text-2xl font-black leading-tight text-white">
+                        Reserva con confianza y atención directa
+                      </h3>
                     </div>
                   </div>
-                </div>
+
+                  <div className="grid grid-cols-3 gap-3 p-4 sm:p-5">
+                    {[
+                      { n: hoteles.length, sufijo: '+', label: 'Hoteles' },
+                      { n: departamentos.length || ciudades.length, sufijo: '', label: 'Cobertura' },
+                      { n: 0, sufijo: '%', label: 'Comisión' },
+                    ].map(({ n, sufijo, label }) => (
+                      <div key={label} className="rounded-2xl bg-slate-50 p-3 text-center">
+                        <p className="text-(--brand-navy) font-black text-xl sm:text-2xl leading-none mb-1">
+                          <ContadorAnimado valor={n || 10} sufijo={sufijo} />
+                        </p>
+                        <p className="text-(--brand-yellow) text-[8px] sm:text-[10px] font-black uppercase tracking-[0.14em]">{label}</p>
+                      </div>
+                    ))}
+                  </div>
+                </Link>
               </AnimarAlEntrar>
             </div>
           </div>
         </section>
 
-        <section className="relative py-12 sm:py-16 lg:py-20">
+        <section className="relative bg-white py-12 sm:py-16 lg:py-20">
           <div className="container-site">
             <AnimarAlEntrar>
               <div className="relative rounded-[2rem] overflow-hidden shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] group">
                 
-                {/* Imagen de fondo contenida */}
                 <div className="absolute inset-0 z-0 bg-[#001f3f]">
-                  <Image
-                    src="/imagen1.jpg"
-                    alt="Paisaje majestuoso del Perú"
-                    fill
-                    loading="eager"
-                    className="object-cover group-hover:scale-105 transition-transform duration-1000 opacity-60"
-                  />
-                  {/* Overlays elegantes */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#001f3f] via-[#001f3f]/90 md:via-[#001f3f]/70 to-transparent" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#001f3f] via-transparent to-transparent opacity-80 md:hidden" />
+                  <video
+                    className="absolute inset-0 h-full w-full object-cover opacity-75"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    aria-hidden="true"
+                  >
+                    <source src="/fondo.mp4" type="video/mp4" />
+                  </video>
+                  <div className="absolute inset-0 bg-linear-to-r from-[#001f3f]/95 via-[#001f3f]/78 md:via-[#001f3f]/52 to-[#001f3f]/10" />
+                  <div className="absolute inset-0 bg-linear-to-t from-[#001f3f]/80 via-transparent to-black/10" />
                 </div>
 
                 {/* Contenido del Banner */}
@@ -251,7 +269,7 @@ export default async function PaginaInicio() {
                     </div>
                     
                     <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white mb-4 sm:mb-6 tracking-tight leading-tight drop-shadow-md">
-                      Vive la magia <br className="hidden md:block"/>del <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">PERÚ</span>
+                      Vive la magia <br className="hidden md:block"/>del <span className="text-transparent bg-clip-text bg-linear-to-r from-white to-gray-400">PERÚ</span>
                     </h2>
                     
                     <p className="text-gray-200 text-sm sm:text-base font-medium leading-relaxed mb-6 sm:mb-8 text-center md:text-left drop-shadow-sm">
@@ -259,7 +277,7 @@ export default async function PaginaInicio() {
                     </p>
                     
                     <a
-                      href="https://wa.me/51958101721?text=Hola%2C+quiero+planificar+mi+viaje+por+el+Perú."
+                      href={whatsappViaje}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center justify-center gap-2 bg-[#ffd600] hover:bg-[#ffdf33] text-[#001f3f] font-black text-xs sm:text-sm uppercase tracking-widest px-6 sm:px-8 py-3.5 sm:py-4 rounded-full transition-all duration-300 shadow-[0_0_20px_rgba(255,214,0,0.3)] hover:shadow-[0_0_30px_rgba(255,214,0,0.5)] hover:-translate-y-1 active:scale-95"
@@ -283,22 +301,22 @@ export default async function PaginaInicio() {
 
         <SeccionPorQueElegirnos />
 
-        <section className="section-padding bg-[var(--brand-navy)] relative overflow-hidden">
-          <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] [background-size:28px_28px] pointer-events-none" />
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[var(--brand-yellow)]/5 rounded-full blur-[100px] pointer-events-none" />
-          <div className="container-site relative z-10 max-w-3xl">
-            <AnimarAlEntrar className="text-center mb-12">
-              <p className="label-eyebrow mb-3">Lo que dicen nuestros viajeros</p>
-              <h2 className="heading-section-light mb-3">Testimonios reales</h2>
-              <div className="w-12 h-0.5 bg-[var(--brand-yellow)] mx-auto" />
-            </AnimarAlEntrar>
-            <AnimarAlEntrar delay={0.1}>
-              <CarruselTestimonios />
-            </AnimarAlEntrar>
+        <section className="section-padding bg-(--bg-subtle)">
+          <div className="container-site">
+            <div className="rounded-[2rem] border border-slate-200 bg-white px-5 py-8 shadow-[0_18px_50px_rgba(15,23,42,0.12)] sm:px-8 lg:px-10">
+              <AnimarAlEntrar className="mb-8 text-center">
+                <h2 className="text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+                  Lo que dicen nuestros viajeros
+                </h2>
+              </AnimarAlEntrar>
+              <AnimarAlEntrar delay={0.1}>
+                <CarruselTestimonios />
+              </AnimarAlEntrar>
+            </div>
           </div>
         </section>
 
-        <section id="preguntas-frecuentes" className="section-padding bg-[var(--bg-subtle)] scroll-mt-40 sm:scroll-mt-48">
+        <section id="preguntas-frecuentes" className="section-padding bg-(--bg-subtle) scroll-mt-40 sm:scroll-mt-48">
           <div className="container-site max-w-4xl">
             <AnimarAlEntrar className="text-center mb-14">
               <p className="label-eyebrow mb-3">Resolvemos tus dudas</p>
@@ -364,13 +382,13 @@ export default async function PaginaInicio() {
 function FaqItem({ pregunta, respuesta }: { pregunta: string; respuesta: string }) {
   return (
     <details className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md group overflow-hidden transition-all duration-300 hover:border-[#ffd600]/30">
-      <summary className="flex items-center justify-between px-6 sm:px-8 py-5 sm:py-6 cursor-pointer list-none font-bold text-[var(--brand-navy)] text-sm sm:text-base transition-colors">
+      <summary className="flex items-center justify-between px-6 sm:px-8 py-5 sm:py-6 cursor-pointer list-none font-bold text-(--brand-navy) text-sm sm:text-base transition-colors">
         <span className="pr-4">{pregunta}</span>
-        <div className="w-8 h-8 rounded-full bg-[var(--bg-subtle)] group-hover:bg-[var(--brand-yellow)]/15 group-open:bg-[var(--brand-navy)] flex items-center justify-center transition-all shrink-0">
-          <ChevronDown size={16} className="text-[var(--text-muted)] group-open:rotate-180 group-open:text-white transition-all duration-300" aria-hidden="true" />
+        <div className="w-8 h-8 rounded-full bg-(--bg-subtle) group-hover:bg-(--brand-yellow)/15 group-open:bg-(--brand-navy) flex items-center justify-center transition-all shrink-0">
+          <ChevronDown size={16} className="text-(--text-muted) group-open:rotate-180 group-open:text-white transition-all duration-300" aria-hidden="true" />
         </div>
       </summary>
-      <div className="px-6 sm:px-8 pb-6 sm:pb-8 text-[var(--text-secondary)] text-sm sm:text-base leading-relaxed border-t border-[var(--border-subtle)] pt-5 sm:pt-6">
+      <div className="px-6 sm:px-8 pb-6 sm:pb-8 text-(--text-secondary) text-sm sm:text-base leading-relaxed border-t border-(--border-subtle) pt-5 sm:pt-6">
         {respuesta}
       </div>
     </details>

@@ -44,10 +44,10 @@ function TarjetaHotelResultado({ hotel }: { hotel: HotelConPrecio }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1 mb-0.5">
             {Array.from({ length: hotel.estrellas }).map((_, i) => (
-              <Star key={i} size={8} className="text-[var(--brand-yellow)] fill-[var(--brand-yellow)]" />
+              <Star key={i} size={8} className="text-(--brand-yellow) fill-(--brand-yellow)" />
             ))}
           </div>
-          <p className="text-sm font-semibold text-[var(--brand-navy)] truncate group-hover:text-[var(--brand-yellow)] transition-colors leading-tight">
+          <p className="text-sm font-semibold text-(--brand-navy) truncate group-hover:text-(--brand-yellow) transition-colors leading-tight">
             {hotel.nombre}
           </p>
           <div className="flex items-center gap-1 mt-0.5">
@@ -65,12 +65,12 @@ function TarjetaHotelResultado({ hotel }: { hotel: HotelConPrecio }) {
           {hotel.precioMinimo ? (
             <div>
               <p className="text-[9px] text-gray-400 uppercase tracking-wide">Desde</p>
-              <p className="text-sm font-black text-[var(--brand-navy)]">S/{hotel.precioMinimo}</p>
+              <p className="text-sm font-black text-(--brand-navy)">S/{hotel.precioMinimo}</p>
             </div>
           ) : (
             <span className="text-[10px] text-gray-400">Ver detalles</span>
           )}
-          <ArrowRight size={12} className="text-gray-300 group-hover:text-[var(--brand-yellow)] transition-colors mt-1 ml-auto" />
+          <ArrowRight size={12} className="text-gray-300 group-hover:text-(--brand-yellow) transition-colors mt-1 ml-auto" />
         </div>
       </article>
     </Link>
@@ -202,17 +202,17 @@ function Dropdown({
                   type="button"
                   onClick={() => { onChange(v); setAbierto(false); setBusqueda(''); }}
                   className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-all group ${
-                    activo ? 'bg-[var(--brand-navy)]/5' : 'hover:bg-gray-50'
+                    activo ? 'bg-(--brand-navy)/5' : 'hover:bg-gray-50'
                   }`}
                 >
                   <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
-                    activo ? 'border-[var(--brand-navy)] bg-[var(--brand-navy)]' : 'border-gray-300 group-hover:border-gray-400'
+                    activo ? 'border-(--brand-navy) bg-(--brand-navy)' : 'border-gray-300 group-hover:border-gray-400'
                   }`}>
                     {activo && <span className="w-1.5 h-1.5 rounded-full bg-white block" />}
                   </span>
 
                   {icono && (
-                    <span className={`shrink-0 ${activo ? 'text-[var(--brand-navy)]' : 'text-gray-400'}`}>
+                    <span className={`shrink-0 ${activo ? 'text-(--brand-navy)' : 'text-gray-400'}`}>
                       {icono}
                     </span>
                   )}
@@ -220,16 +220,16 @@ function Dropdown({
                   {stars !== undefined && stars > 0 && (
                     <span className="flex items-center gap-0.5 shrink-0">
                       {Array.from({ length: stars }).map((_, i) => (
-                        <Star key={i} size={9} className="text-[var(--brand-yellow)] fill-[var(--brand-yellow)]" />
+                        <Star key={i} size={9} className="text-(--brand-yellow) fill-(--brand-yellow)" />
                       ))}
                     </span>
                   )}
 
-                  <span className={`flex-1 truncate ${activo ? 'font-semibold text-[var(--brand-navy)]' : 'text-gray-600'}`}>
+                  <span className={`flex-1 truncate ${activo ? 'font-semibold text-(--brand-navy)' : 'text-gray-600'}`}>
                     {l}
                   </span>
 
-                  {activo && <CheckCircle2 size={14} className="text-[var(--brand-navy)] shrink-0" />}
+                  {activo && <CheckCircle2 size={14} className="text-(--brand-navy) shrink-0" />}
                 </button>
               );
             })}
@@ -254,9 +254,9 @@ function Dropdown({
         } ${abierto ? 'bg-gray-50' : 'hover:bg-gray-50/70'}`}
       >
         <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors ${
-          abierto || value ? 'bg-[var(--brand-yellow)]' : 'bg-[var(--brand-yellow)]/10'
+          abierto || value ? 'bg-(--brand-yellow)' : 'bg-(--brand-yellow)/10'
         }`}>
-          <span className={abierto || value ? 'text-[var(--brand-navy)]' : 'text-[var(--brand-yellow)]'}>
+          <span className={abierto || value ? 'text-(--brand-navy)' : 'text-(--brand-yellow)'}>
             {triggerIcon}
           </span>
         </div>
@@ -264,14 +264,14 @@ function Dropdown({
           <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">{label}</p>
           <div className="flex items-center justify-between gap-1">
             <span className={`text-sm truncate leading-tight ${
-              value ? 'font-semibold text-[var(--brand-navy)]' : 'text-gray-600 font-normal'
+              value ? 'font-semibold text-(--brand-navy)' : 'text-gray-600 font-normal'
             }`}>
               {cargando ? 'Cargando...' : (seleccionada?.value ? seleccionada.label : placeholder)}
             </span>
             <ChevronDown
               size={12}
               className={`shrink-0 transition-all duration-200 ${
-                abierto ? 'rotate-180 text-[var(--brand-navy)]' : 'text-gray-300'
+                abierto ? 'rotate-180 text-(--brand-navy)' : 'text-gray-300'
               }`}
             />
           </div>
@@ -309,7 +309,7 @@ function PanelResultados({ resultados, cargando, visible, total, anchorRef, pane
       <div className="bg-white rounded-2xl shadow-[0_20px_60px_-10px_rgba(0,0,0,0.3)] border border-gray-100 overflow-hidden">
         {cargando ? (
           <div className="flex items-center justify-center gap-2.5 py-8 text-gray-400 text-sm">
-            <Loader2 size={16} className="animate-spin text-[var(--brand-yellow)]" />
+            <Loader2 size={16} className="animate-spin text-(--brand-yellow)" />
             <span>Buscando hoteles...</span>
           </div>
         ) : resultados.length > 0 ? (
@@ -330,7 +330,7 @@ function PanelResultados({ resultados, cargando, visible, total, anchorRef, pane
                 <button
                   type="button"
                   onClick={onVerTodos}
-                  className="w-full flex items-center justify-center gap-2 text-xs font-bold text-[var(--brand-navy)] hover:text-[var(--brand-yellow)] transition-colors py-1"
+                  className="w-full flex items-center justify-center gap-2 text-xs font-bold text-(--brand-navy) hover:text-(--brand-yellow) transition-colors py-1"
                 >
                   <ArrowRight size={12} />
                   Ver los {total} resultados
@@ -518,7 +518,7 @@ export function HeroCliente({ totalHoteles, totalCiudades, ciudadesDisponibles =
         aria-hidden="true"
       >
         <div className="flex items-center gap-2 bg-black/35 backdrop-blur-md border border-white/15 rounded-full px-3 py-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-[var(--brand-yellow)] shrink-0" />
+          <span className="w-1.5 h-1.5 rounded-full bg-(--brand-yellow) shrink-0" />
           <span className="text-white/90 text-[11px] font-semibold tracking-wide">
             {HERO_SLIDES[carrusel.actual].lugar}
           </span>
@@ -568,7 +568,7 @@ export function HeroCliente({ totalHoteles, totalCiudades, ciudadesDisponibles =
         style={{ fontSize: 'clamp(1.8rem, 4.5vw, 3.2rem)' }}
       >
         Alojamiento que te lleva{' '}
-        <span className="text-[var(--brand-yellow)]">más lejos</span>,{' '}
+        <span className="text-(--brand-yellow)">más lejos</span>,{' '}
         con seguridad y confianza
       </h1>
 
@@ -586,7 +586,7 @@ export function HeroCliente({ totalHoteles, totalCiudades, ciudadesDisponibles =
             {['A', 'H', 'P'].map((inicial, index) => (
               <div
                 key={inicial}
-                className="w-8 h-8 rounded-full border-2 border-[var(--brand-navy)] overflow-hidden bg-gradient-to-br from-[#ffd600] to-[#001f3f] shrink-0 flex items-center justify-center text-[10px] font-black text-white"
+                className="w-8 h-8 rounded-full border-2 border-(--brand-navy) overflow-hidden bg-linear-to-br from-[#ffd600] to-[#001f3f] shrink-0 flex items-center justify-center text-[10px] font-black text-white"
                 style={{ filter: `brightness(${1 - index * 0.08})` }}
               >
                 {inicial}
@@ -596,7 +596,7 @@ export function HeroCliente({ totalHoteles, totalCiudades, ciudadesDisponibles =
           <div className="text-left">
             <div className="flex items-center gap-0.5 mb-0.5">
               {[1,2,3,4,5].map(i => (
-                <Star key={i} size={10} className="text-[var(--brand-yellow)] fill-[var(--brand-yellow)]" aria-hidden="true" />
+                <Star key={i} size={10} className="text-(--brand-yellow) fill-(--brand-yellow)" aria-hidden="true" />
               ))}
               <span className="text-white text-xs font-black ml-1">4.9</span>
             </div>
@@ -607,11 +607,11 @@ export function HeroCliente({ totalHoteles, totalCiudades, ciudadesDisponibles =
         </div>
         <div className="hidden sm:block h-6 w-px bg-white/20" />
         <div className="flex items-center gap-1.5 text-white/70 text-xs font-semibold">
-          <MapPin size={11} className="text-[var(--brand-yellow)]" aria-hidden="true" />
+          <MapPin size={11} className="text-(--brand-yellow)" aria-hidden="true" />
           {coberturaTexto}
         </div>
         <div className="flex items-center gap-1.5 text-white/70 text-xs font-semibold">
-          <Star size={11} className="text-[var(--brand-yellow)]" aria-hidden="true" />
+          <Star size={11} className="text-(--brand-yellow)" aria-hidden="true" />
           Hoteles verificados
         </div>
       </div>

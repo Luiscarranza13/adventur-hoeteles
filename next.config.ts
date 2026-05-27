@@ -1,11 +1,51 @@
 import type { NextConfig } from "next";
 
+const SUPABASE_HOST = 'zbfrqolopbktzxfchqjy.supabase.co';
+
+// Domains that may still host hotel images referenced in Supabase data
+const HOTEL_IMAGE_HOSTS = [
+  'costadelsolperu.com',
+  'hotelcontinental.com.pe',
+  'hotelmonthanas.com',
+  'hotelpilanconescajamarca.com',
+  'i0.wp.com',
+  'lagunaseca.com.pe',
+  'portaldelmarques.com',
+  'posadapuruay.com.pe',
+  'static.wixstatic.com',
+];
+
+const cspHotelImgSrc = HOTEL_IMAGE_HOSTS.map(h => `https://${h}`).join(' ');
+
+const isDev = process.env.NODE_ENV !== 'production';
+
+// React + Turbopack require eval() in development for call-stack reconstruction.
+// It is never used in production, so we only add 'unsafe-eval' in dev mode.
+const scriptSrc = isDev
+  ? `'self' 'unsafe-inline' 'unsafe-eval'`
+  : `'self' 'unsafe-inline'`;
+
+const ContentSecurityPolicy = `
+  default-src 'self';
+  script-src ${scriptSrc};
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://translate.googleapis.com https://translate-pa.googleapis.com;
+  font-src 'self' https://fonts.gstatic.com;
+  img-src 'self' data: blob: https://${SUPABASE_HOST} ${cspHotelImgSrc};
+  connect-src 'self' https://${SUPABASE_HOST} wss://${SUPABASE_HOST} https://translate.googleapis.com https://translate-pa.googleapis.com;
+  media-src 'self' blob:;
+  frame-src https://translate.google.com;
+  frame-ancestors 'none';
+  base-uri 'self';
+  form-action 'self';
+`.replace(/\n\s+/g, ' ').trim();
+
 const nextConfig: NextConfig = {
   async headers() {
     return [
       {
         source: '/:path*',
         headers: [
+          { key: 'Content-Security-Policy', value: ContentSecurityPolicy },
           { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
@@ -23,61 +63,14 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'zbfrqolopbktzxfchqjy.supabase.co',
+        hostname: SUPABASE_HOST,
         pathname: '/storage/v1/object/public/**',
       },
-      {
-        protocol: 'https',
-        hostname: 'i.pravatar.cc',
-      },
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'dynamic-media-cdn.tripadvisor.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'media-cdn.tripadvisor.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'costadelsolperu.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'hotelcontinental.com.pe',
-      },
-      {
-        protocol: 'https',
-        hostname: 'hotelmonthanas.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'hotelpilanconescajamarca.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'i0.wp.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'lagunaseca.com.pe',
-      },
-      {
-        protocol: 'https',
-        hostname: 'portaldelmarques.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'posadapuruay.com.pe',
-      },
-      {
-        protocol: 'https',
-        hostname: 'static.wixstatic.com',
-      },
+      // Peruvian hotel websites that may still host images referenced in DB
+      ...HOTEL_IMAGE_HOSTS.map(hostname => ({
+        protocol: 'https' as const,
+        hostname,
+      })),
     ],
   },
 };

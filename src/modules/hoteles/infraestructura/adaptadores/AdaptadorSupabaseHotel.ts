@@ -1,4 +1,4 @@
-import { createReadonlyClient } from '@/lib/supabase/readonly';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient as createBrowserClient } from '@/lib/supabase/client';
 import { RepositorioHotel } from '../../dominio/puertos/RepositorioHotel';
 import { Hotel, DatosNuevoHotel, DatosActualizarHotel, TipoAlojamiento } from '../../dominio/entidades/Hotel';
@@ -45,7 +45,7 @@ function mapDbToDomain(row: HotelDb): Hotel {
 
 function getCliente() {
   if (typeof window === 'undefined') {
-    return createReadonlyClient();
+    return createAdminClient();
   }
   return createBrowserClient();
 }

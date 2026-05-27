@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { getPublicEnv } from '@/lib/env';
 import { listarHotelesActivos } from '@/lib/hoteles-consultas';
+import { ServicioHabitaciones, AdaptadorSupabaseHabitacion } from '@/modules/habitaciones';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL;
@@ -28,5 +29,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  return [...rutasEstaticas, ...rutasHoteles];
+  const habitaciones = await new ServicioHabitaciones(new AdaptadorSupabaseHabitacion())
+    .listarDisponibles()
+    .catch(() => []);
+  const rutasHabitaciones = habitaciones.map(hab => ({
+    url: `${siteUrl}/habitaciones/${hab.id}`,
+    lastModified: now,
+    changeFrequency: 'weekly' as const,
+    priority: 0.7,
+  }));
+
+  return [...rutasEstaticas, ...rutasHoteles, ...rutasHabitaciones];
 }

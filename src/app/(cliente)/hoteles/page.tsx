@@ -166,8 +166,8 @@ export default async function PaginaHoteles({ searchParams }: PageProps) {
 
       {/* ── Hero banner ─────────────────────────────────────────────────── */}
       <section className="bg-[#001f3f] pt-20 sm:pt-28 pb-10 sm:pb-14 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.07] bg-[radial-gradient(circle_at_1px_1px,#ffd600_1px,transparent_0)] [background-size:28px_28px]" />
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#ffd600]/30 to-transparent" />
+        <div className="absolute inset-0 opacity-[0.07] bg-[radial-gradient(circle_at_1px_1px,#ffd600_1px,transparent_0)] bg-size-[28px_28px]" />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-[#ffd600]/30 to-transparent" />
         <div className="relative z-10 max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
             <p className="text-[10px] font-black text-[#ffd600] uppercase tracking-[0.3em] mb-3">
@@ -389,7 +389,7 @@ export default async function PaginaHoteles({ searchParams }: PageProps) {
                             className="object-cover group-hover:scale-105 transition-transform duration-700"
                           />
                           {/* Overlay gradiente en hover */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                           <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-2.5 py-1.5 rounded-xl flex items-center gap-0.5 shadow-sm">
                             {Array.from({ length: hotel.estrellas }).map((_, j) => (
                               <Star key={j} size={10} className="text-amber-400 fill-amber-400" />

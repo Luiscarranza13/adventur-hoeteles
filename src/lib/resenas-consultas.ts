@@ -1,4 +1,4 @@
-import { createReadonlyClient } from '@/lib/supabase/readonly';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { unstable_cache } from 'next/cache';
 
 export interface Resena {
@@ -16,7 +16,7 @@ export interface Resena {
 export const obtenerResenasPorHotel = unstable_cache(
   async (hotelId: string): Promise<Resena[]> => {
     try {
-      const supabase = createReadonlyClient();
+      const supabase = createAdminClient();
       const { data, error } = await supabase
         .from('resenas')
         .select('id,hotel_id,nombre_revisor,origen,calificacion,comentario,fecha,fuente,avatar_url')

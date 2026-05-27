@@ -1,4 +1,4 @@
-import { createReadonlyClient } from '@/lib/supabase/readonly';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { unstable_cache } from 'next/cache';
 import { AdaptadorSupabaseHotel, ServicioHoteles } from '@/modules/hoteles';
 import type { Hotel, TipoAlojamiento } from '@/modules/hoteles/dominio/entidades/Hotel';
@@ -66,7 +66,7 @@ export const obtenerPreciosMinimos = unstable_cache(
     if (!hotelIds.length) return {};
 
     try {
-      const supabase = createReadonlyClient();
+      const supabase = createAdminClient();
       const { data, error } = await supabase
         .from('habitaciones')
         .select('hotel_id, precio_noche')

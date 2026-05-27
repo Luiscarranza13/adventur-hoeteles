@@ -1,7 +1,6 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { RepositorioReserva } from '../../dominio/puertos/RepositorioReserva';
 import { Reserva, DatosNuevaReserva, DatosActualizarReserva, EstadoReserva, MetodoPago } from '../../dominio/entidades/Reserva';
-import type { SupabaseClient } from '@supabase/supabase-js';
 
 interface ReservaDb {
   id: string;
@@ -38,12 +37,8 @@ function mapDbToDomain(row: ReservaDb): Reserva {
 }
 
 export class AdaptadorSupabaseReserva implements RepositorioReserva {
-  private async getCliente(): Promise<SupabaseClient> {
-    return createClient();
-  }
-
   async buscarPorId(id: string): Promise<Reserva | null> {
-    const cliente = await this.getCliente();
+    const cliente = createAdminClient();
     const { data, error } = await cliente
       .from('reservas')
       .select('*')
@@ -55,7 +50,7 @@ export class AdaptadorSupabaseReserva implements RepositorioReserva {
   }
 
   async listar(): Promise<Reserva[]> {
-    const cliente = await this.getCliente();
+    const cliente = createAdminClient();
     const { data, error } = await cliente
       .from('reservas')
       .select('*')
@@ -66,7 +61,7 @@ export class AdaptadorSupabaseReserva implements RepositorioReserva {
   }
 
   async crear(datos: DatosNuevaReserva): Promise<Reserva> {
-    const cliente = await this.getCliente();
+    const cliente = createAdminClient();
     const { data, error } = await cliente
       .from('reservas')
       .insert({
@@ -89,7 +84,7 @@ export class AdaptadorSupabaseReserva implements RepositorioReserva {
   }
 
   async actualizarEstado(id: string, datos: DatosActualizarReserva): Promise<Reserva> {
-    const cliente = await this.getCliente();
+    const cliente = createAdminClient();
     const updateData: Record<string, unknown> = {};
     if (datos.estado !== undefined) updateData.estado = datos.estado;
     if (datos.notasCliente !== undefined) updateData.notas_cliente = datos.notasCliente;

@@ -22,11 +22,10 @@ function formatearFecha(fecha: string) {
   return new Date(fecha).toLocaleDateString('es-PE', { month: 'long', year: 'numeric' });
 }
 
-function InicialAvatar({ nombre, color }: { nombre: string; color: string }) {
+function InicialAvatar({ nombre, colorClass }: { nombre: string; colorClass: string }) {
   return (
     <div
-      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-black text-sm shrink-0"
-      style={{ background: color }}
+      className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-black text-sm shrink-0 ${colorClass}`}
       aria-hidden="true"
     >
       {nombre.charAt(0).toUpperCase()}
@@ -34,7 +33,7 @@ function InicialAvatar({ nombre, color }: { nombre: string; color: string }) {
   );
 }
 
-const COLORES = ['#3B82F6', '#8B5CF6', '#EC4899', '#10B981', '#F59E0B', '#EF4444', '#06B6D4', '#84CC16'];
+const COLORES = ['bg-blue-500', 'bg-violet-500', 'bg-pink-500', 'bg-emerald-500', 'bg-amber-500', 'bg-red-500', 'bg-cyan-500', 'bg-lime-500'];
 
 export function CarruselResenas({ resenas }: Props) {
   const trackRef = useRef<HTMLDivElement>(null);
@@ -50,9 +49,14 @@ export function CarruselResenas({ resenas }: Props) {
       const container = trackRef.current?.parentElement;
       if (!container) return;
       const w = container.clientWidth;
-      if (w < 640) { setCardsVisible(1); setCardWidth(w - 32); }
-      else if (w < 1024) { setCardsVisible(2); setCardWidth((w - GAP) / 2); }
-      else { setCardsVisible(3); setCardWidth((w - GAP * 2) / 3); }
+      if (w < 640) setCardsVisible(1);
+      else if (w < 1024) setCardsVisible(2);
+      else setCardsVisible(3);
+
+      const firstCard = trackRef.current?.firstElementChild;
+      if (firstCard instanceof HTMLElement) {
+        setCardWidth(firstCard.getBoundingClientRect().width);
+      }
     };
     measure();
     const t = setTimeout(measure, 80);
@@ -99,16 +103,14 @@ export function CarruselResenas({ resenas }: Props) {
       <div
         ref={trackRef}
         onScroll={onScroll}
-        className="flex overflow-x-auto snap-x snap-mandatory pb-2 pt-1"
-        style={{ scrollbarWidth: 'none', gap: `${GAP}px` }}
+        className="flex overflow-x-auto snap-x snap-mandatory pb-2 pt-1 gap-4 [scrollbar-width:none]"
       >
         {resenas.map((r, i) => {
-          const color = COLORES[i % COLORES.length];
+          const colorClass = COLORES[i % COLORES.length];
           return (
             <article
               key={r.id}
-              className="snap-start shrink-0 bg-white border border-gray-100 rounded-2xl p-5 sm:p-6 hover:shadow-md hover:border-[#ffd600]/30 transition-all duration-200 flex flex-col gap-4"
-              style={{ width: `${cardWidth}px` }}
+              className="snap-start shrink-0 w-[calc(100vw-2rem)] max-w-[320px] sm:w-[calc((100%-1rem)/2)] sm:max-w-none lg:w-[calc((100%-2rem)/3)] bg-white border border-gray-100 rounded-2xl p-5 sm:p-6 hover:shadow-md hover:border-[#ffd600]/30 transition-all duration-200 flex flex-col gap-4"
             >
               {/* Cabecera: estrellas + fuente */}
               <div className="flex items-center justify-between">
@@ -141,7 +143,7 @@ export function CarruselResenas({ resenas }: Props) {
 
               {/* Autor */}
               <div className="flex items-center gap-3 pt-2 border-t border-gray-50">
-                <InicialAvatar nombre={r.nombre_revisor} color={color} />
+                <InicialAvatar nombre={r.nombre_revisor} colorClass={colorClass} />
                 <div className="min-w-0">
                   <p className="text-[#001f3f] font-bold text-sm leading-snug truncate">{r.nombre_revisor}</p>
                   <p className="text-gray-400 text-xs">
@@ -162,32 +164,32 @@ export function CarruselResenas({ resenas }: Props) {
               <button
                 key={i}
                 onClick={() => { setPaused(true); scrollTo(i); }}
+                type="button"
                 aria-label={`Grupo ${i + 1}`}
-                className="rounded-full transition-all duration-300"
-                style={{
-                  width: i === activeIndex ? 24 : 8,
-                  height: 8,
-                  background: i === activeIndex ? '#001f3f' : '#d1d5db',
-                }}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  i === activeIndex ? 'w-6 bg-[#001f3f]' : 'w-2 bg-gray-300'
+                }`}
               />
             ))}
           </div>
           <div className="flex items-center gap-2">
             <button
+              type="button"
               onClick={() => { setPaused(true); scrollTo(activeIndex - 1); }}
               disabled={activeIndex === 0}
               aria-label="Anterior"
               className="w-9 h-9 rounded-full border border-gray-200 bg-white flex items-center justify-center text-[#001f3f] hover:bg-[#001f3f] hover:text-white hover:border-[#001f3f] disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 shadow-sm"
             >
-              <ChevronLeft size={16} />
+              <ChevronLeft size={16} aria-hidden="true" />
             </button>
             <button
+              type="button"
               onClick={() => { setPaused(true); scrollTo(activeIndex + 1); }}
               disabled={activeIndex >= maxIndex}
               aria-label="Siguiente"
               className="w-9 h-9 rounded-full border border-gray-200 bg-white flex items-center justify-center text-[#001f3f] hover:bg-[#001f3f] hover:text-white hover:border-[#001f3f] disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 shadow-sm"
             >
-              <ChevronRight size={16} />
+              <ChevronRight size={16} aria-hidden="true" />
             </button>
           </div>
         </div>

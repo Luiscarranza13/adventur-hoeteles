@@ -22,7 +22,7 @@ export const CONFIGURACION_DEFAULT: ConfiguracionWeb = {
   nombre_negocio: 'Adventur Hoteles',
   slogan: 'Atrevete y descubre',
   descripcion: '',
-  email_contacto: 'reservas@adventur.pe',
+  email_contacto: 'hoteles@adventur.pe',
   telefono_principal: '+51 958 101 721',
   whatsapp_numero: '51958101721',
   whatsapp_mensaje_reserva: 'Hola, quiero consultar por un hotel.',

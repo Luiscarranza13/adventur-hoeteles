@@ -77,7 +77,6 @@ export function CarruselServicios() {
   const [cardWidth, setCardWidth] = useState(300);
   const [cardsVisible, setCardsVisible] = useState(3);
   const [paused, setPaused] = useState(false);
-  // numero del servicio abierto, o null
   const [abierto, setAbierto] = useState<string | null>(null);
 
   const total = SERVICIOS.length;
@@ -87,9 +86,14 @@ export function CarruselServicios() {
       const container = trackRef.current?.parentElement;
       if (!container) return;
       const w = container.clientWidth;
-      if (w < 640) { setCardsVisible(1); setCardWidth(w - 32); }
-      else if (w < 1024) { setCardsVisible(2); setCardWidth((w - GAP) / 2); }
-      else { setCardsVisible(3); setCardWidth((w - GAP * 2) / 3); }
+      if (w < 640) setCardsVisible(1);
+      else if (w < 1024) setCardsVisible(2);
+      else setCardsVisible(3);
+
+      const firstCard = trackRef.current?.firstElementChild;
+      if (firstCard instanceof HTMLElement) {
+        setCardWidth(firstCard.getBoundingClientRect().width);
+      }
     };
     measure();
     const t = setTimeout(measure, 80);
@@ -136,24 +140,23 @@ export function CarruselServicios() {
         onScroll={onScroll}
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => { if (!abierto) setPaused(false); }}
-        className="flex overflow-x-auto snap-x snap-mandatory pb-2 pt-1"
-        style={{ scrollbarWidth: 'none', gap: `${GAP}px` }}
+        className="flex overflow-x-auto snap-x snap-mandatory pb-2 pt-1 gap-4 [scrollbar-width:none]"
       >
         {SERVICIOS.map((servicio) => {
           const { Icon, numero, titulo, desc, badge1, badge2 } = servicio;
           const isOpen = abierto === numero;
+          const panelId = `servicio-panel-${numero}`;
 
           return (
             <div
               key={numero}
-              className="snap-start shrink-0"
-              style={{ width: `${cardWidth}px` }}
+              className="snap-start shrink-0 w-[calc(100vw-2rem)] max-w-[300px] sm:w-[calc((100%-1rem)/2)] sm:max-w-none lg:w-[calc((100%-2rem)/3)]"
             >
               {/* Tarjeta */}
               <button
                 type="button"
                 onClick={() => toggleServicio(numero)}
-                aria-expanded={isOpen}
+                aria-label={`${isOpen ? 'Cerrar' : 'Abrir'} servicio ${titulo}`}
                 className={`w-full text-left relative overflow-hidden rounded-2xl transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd600] group ${
                   isOpen
                     ? 'bg-[#001f3f] shadow-xl rounded-b-none'
@@ -161,7 +164,7 @@ export function CarruselServicios() {
                 }`}
               >
                 {/* Línea superior */}
-                <div className={`absolute top-0 left-0 right-0 h-[3px] transition-all duration-300 ${
+                <div className={`absolute top-0 left-0 right-0 h-0.75 transition-all duration-300 ${
                   isOpen ? 'bg-[#ffd600]' : 'bg-transparent group-hover:bg-[#ffd600]/50'
                 }`} />
 
@@ -203,25 +206,24 @@ export function CarruselServicios() {
 
               {/* Panel expandible inline — debajo de la tarjeta, mismo ancho */}
               <div
-                className="overflow-hidden transition-all duration-300 ease-in-out rounded-b-2xl"
-                style={{
-                  maxHeight: isOpen ? '220px' : '0px',
-                  opacity: isOpen ? 1 : 0,
-                  background: '#fff',
-                  border: isOpen ? '1px solid #e5e7eb' : 'none',
-                  borderTop: 'none',
-                  boxShadow: isOpen ? '0 8px 24px -4px rgba(0,31,63,0.12)' : 'none',
-                }}
+                id={panelId}
+                className={`grid transition-all duration-300 ease-in-out rounded-b-2xl ${
+                  isOpen
+                    ? 'grid-rows-[1fr] opacity-100 bg-white border border-gray-200 border-t-0 shadow-[0_8px_24px_-4px_rgba(0,31,63,0.12)]'
+                    : 'grid-rows-[0fr] opacity-0'
+                }`}
               >
-                <div className="p-4">
-                  <p className="text-xs text-gray-500 leading-relaxed mb-3">{desc}</p>
-                  <div className="flex gap-2">
-                    <span className="text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-[#001f3f] text-[#ffd600]">
-                      {badge1}
-                    </span>
-                    <span className="text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-[#ffd600]/15 text-[#001f3f]">
-                      {badge2}
-                    </span>
+                <div className="overflow-hidden">
+                  <div className="p-4">
+                    <p className="text-xs text-gray-500 leading-relaxed mb-3">{desc}</p>
+                    <div className="flex gap-2">
+                      <span className="text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-[#001f3f] text-[#ffd600]">
+                        {badge1}
+                      </span>
+                      <span className="text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-[#ffd600]/15 text-[#001f3f]">
+                        {badge2}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -236,33 +238,33 @@ export function CarruselServicios() {
           {Array.from({ length: maxIndex + 1 }).map((_, i) => (
             <button
               key={i}
+              type="button"
               onClick={() => { setPaused(true); scrollTo(i); }}
               aria-label={`Grupo ${i + 1}`}
-              className="rounded-full transition-all duration-300"
-              style={{
-                width: 24,
-                height: 24,
-                background: i === activeIndex ? '#001f3f' : '#d1d5db',
-              }}
+              className={`rounded-full transition-all duration-300 w-6 h-6 ${
+                i === activeIndex ? 'bg-[#001f3f]' : 'bg-gray-300'
+              }`}
             />
           ))}
         </div>
         <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={() => { setPaused(true); scrollTo(activeIndex - 1); }}
             disabled={activeIndex === 0}
             aria-label="Anterior"
             className="w-9 h-9 rounded-full border border-gray-200 bg-white flex items-center justify-center text-[#001f3f] hover:bg-[#001f3f] hover:text-white hover:border-[#001f3f] disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 shadow-sm"
           >
-            <ChevronLeft size={16} />
+            <ChevronLeft size={16} aria-hidden="true" />
           </button>
           <button
+            type="button"
             onClick={() => { setPaused(true); scrollTo(activeIndex + 1); }}
             disabled={activeIndex >= maxIndex}
             aria-label="Siguiente"
             className="w-9 h-9 rounded-full border border-gray-200 bg-white flex items-center justify-center text-[#001f3f] hover:bg-[#001f3f] hover:text-white hover:border-[#001f3f] disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 shadow-sm"
           >
-            <ChevronRight size={16} />
+            <ChevronRight size={16} aria-hidden="true" />
           </button>
         </div>
       </div>

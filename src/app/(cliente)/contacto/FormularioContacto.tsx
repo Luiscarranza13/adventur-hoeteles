@@ -1,18 +1,25 @@
 'use client';
 
+import { type FormEvent, useRef } from 'react';
 import { MessageCircle } from 'lucide-react';
+import { useConfiguracionWeb } from '@/hooks/useConfiguracionWeb';
+import { crearUrlWhatsApp } from '@/lib/configuracion';
 
 export function FormularioContacto() {
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const config = useConfiguracionWeb();
+  const anchorRef = useRef<HTMLAnchorElement>(null);
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const nombre = (fd.get('nombre') as string).trim();
     const asunto = fd.get('asunto') as string;
     const mensaje = (fd.get('mensaje') as string).trim();
-    const texto = encodeURIComponent(
-      `Hola, soy ${nombre}.\n\nAsunto: ${asunto}\n\n${mensaje}`
-    );
-    window.open(`https://wa.me/51958101721?text=${texto}`, '_blank');
+    const textoMensaje = `Hola, soy ${nombre}.\n\nAsunto: ${asunto}\n\n${mensaje}`;
+    if (anchorRef.current) {
+      anchorRef.current.href = crearUrlWhatsApp(config.whatsapp_numero, textoMensaje);
+      anchorRef.current.click();
+    }
   };
 
   return (
@@ -23,7 +30,7 @@ export function FormularioContacto() {
           <MessageCircle size={20} className="text-[#25D366]" aria-hidden="true" />
         </div>
         <div>
-          <h2 className="text-base font-bold text-[var(--brand-navy)]">
+          <h2 className="text-base font-bold text-(--brand-navy)">
             Escríbenos por WhatsApp
           </h2>
           <p className="text-xs text-gray-400 mt-0.5">Completa el formulario y te abrimos el chat listo</p>
@@ -44,7 +51,7 @@ export function FormularioContacto() {
             type="text"
             required
             placeholder="¿Cómo te llamas?"
-            className="w-full px-4 py-3 text-sm text-[var(--brand-navy)] border border-gray-200 rounded-xl focus:outline-none focus:border-[var(--brand-yellow)] focus:ring-2 focus:ring-[var(--brand-yellow)]/15 transition-all bg-gray-50 hover:bg-white placeholder:text-gray-300 font-medium"
+            className="w-full px-4 py-3 text-sm text-(--brand-navy) border border-gray-200 rounded-xl focus:outline-none focus:border-(--brand-yellow) focus:ring-2 focus:ring-(--brand-yellow)/15 transition-all bg-gray-50 hover:bg-white placeholder:text-gray-300 font-medium"
           />
         </div>
 
@@ -55,7 +62,7 @@ export function FormularioContacto() {
           <select
             id="asunto"
             name="asunto"
-            className="w-full px-4 py-3 text-sm text-[var(--brand-navy)] border border-gray-200 rounded-xl focus:outline-none focus:border-[var(--brand-yellow)] focus:ring-2 focus:ring-[var(--brand-yellow)]/15 transition-all bg-gray-50 hover:bg-white appearance-none cursor-pointer font-medium"
+            className="w-full px-4 py-3 text-sm text-(--brand-navy) border border-gray-200 rounded-xl focus:outline-none focus:border-(--brand-yellow) focus:ring-2 focus:ring-(--brand-yellow)/15 transition-all bg-gray-50 hover:bg-white appearance-none cursor-pointer font-medium"
           >
             <option value="Consulta de reserva">Consulta de reserva</option>
             <option value="Información de hoteles">Información de hoteles</option>
@@ -75,7 +82,7 @@ export function FormularioContacto() {
             required
             rows={4}
             placeholder="Cuéntanos más detalles sobre tu consulta..."
-            className="w-full px-4 py-3 text-sm text-[var(--brand-navy)] border border-gray-200 rounded-xl focus:outline-none focus:border-[var(--brand-yellow)] focus:ring-2 focus:ring-[var(--brand-yellow)]/15 transition-all bg-gray-50 hover:bg-white placeholder:text-gray-300 resize-none font-medium"
+            className="w-full px-4 py-3 text-sm text-(--brand-navy) border border-gray-200 rounded-xl focus:outline-none focus:border-(--brand-yellow) focus:ring-2 focus:ring-(--brand-yellow)/15 transition-all bg-gray-50 hover:bg-white placeholder:text-gray-300 resize-none font-medium"
           />
         </div>
 
@@ -93,6 +100,8 @@ export function FormularioContacto() {
         </p>
 
       </form>
+
+      <a ref={anchorRef} target="_blank" rel="noopener noreferrer" className="hidden" aria-hidden="true" />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { getSupabaseEnv } from '@/lib/env';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { apiError, logApiError, ok } from '@/lib/api-response';
 
 export async function POST(request: NextRequest) {
@@ -35,10 +36,12 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error || !data.user) {
-      return apiError('Credenciales invalidas', 401, 'UNAUTHENTICATED');
+      console.error('[login] signInWithPassword error:', error?.message, error?.status);
+      return apiError(error?.message ?? 'Credenciales invalidas', 401, 'UNAUTHENTICATED');
     }
 
-    const { data: usuarioData } = await supabase
+    const adminClient = createAdminClient();
+    const { data: usuarioData } = await adminClient
       .from('usuarios')
       .select('rol')
       .eq('id', data.user.id)

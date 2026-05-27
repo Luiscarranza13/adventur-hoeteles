@@ -128,12 +128,12 @@ function SidebarContenido({
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
 
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100 bg-[var(--brand-navy)]">
+      <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100 bg-(--brand-navy)">
         <div className="flex items-center gap-2">
-          <SlidersHorizontal size={14} className="text-[var(--brand-yellow)]" />
+          <SlidersHorizontal size={14} className="text-(--brand-yellow)" />
           <span className="text-sm font-black text-white uppercase tracking-widest">Filtros</span>
           {hayFiltros && (
-            <span className="w-5 h-5 rounded-full bg-[var(--brand-yellow)] text-[var(--brand-navy)] text-[9px] font-black flex items-center justify-center">
+            <span className="w-5 h-5 rounded-full bg-(--brand-yellow) text-(--brand-navy) text-[9px] font-black flex items-center justify-center">
               {filtrosActivosCount}
             </span>
           )}
@@ -142,7 +142,7 @@ function SidebarContenido({
           <Link
             href="/hoteles"
             onClick={onClose}
-            className="flex items-center gap-1 text-[10px] font-bold text-white/50 hover:text-[var(--brand-yellow)] transition-colors"
+            className="flex items-center gap-1 text-[10px] font-bold text-white/50 hover:text-(--brand-yellow) transition-colors"
           >
             <X size={10} /> Limpiar
           </Link>

@@ -182,26 +182,26 @@ export function Header() {
 
   return (
     <>
-      <div className="bg-[var(--brand-navy)] hidden md:block border-b border-[var(--border-white-10)]">
+      <div className="bg-(--brand-navy) hidden md:block border-b border-(--border-white-10)">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between gap-3">
           <a
             href={whatsappConsulta}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 text-xs sm:text-sm text-[var(--text-muted)] hover:text-[var(--brand-yellow)] transition-colors"
+            className="flex items-center gap-2 text-xs sm:text-sm text-(--text-muted) hover:text-(--brand-yellow) transition-colors"
           >
-            <MessageCircle size={13} className="text-[var(--brand-yellow)] shrink-0" />
+            <MessageCircle size={13} className="text-(--brand-yellow) shrink-0" />
             <span className="hidden sm:inline">Atención rápida por WhatsApp:</span>
             <span className="font-bold text-white">{config.telefono_principal}</span>
           </a>
-          <div className={`${redes.length ? 'flex' : 'hidden'} items-center gap-3 sm:gap-5 text-xs sm:text-sm text-[var(--text-muted)]`}>
+          <div className={`${redes.length ? 'flex' : 'hidden'} items-center gap-3 sm:gap-5 text-xs sm:text-sm text-(--text-muted)`}>
             <span className="hidden sm:inline">Síguenos:</span>
             {config.facebook_url && (
             <a
               href={config.facebook_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-[var(--brand-yellow)] transition-colors font-semibold flex items-center gap-1"
+              className="hover:text-(--brand-yellow) transition-colors font-semibold flex items-center gap-1"
               aria-label="Facebook"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -215,7 +215,7 @@ export function Header() {
               href={config.instagram_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-[var(--brand-yellow)] transition-colors font-semibold flex items-center gap-1"
+              className="hover:text-(--brand-yellow) transition-colors font-semibold flex items-center gap-1"
               aria-label="Instagram"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
@@ -231,7 +231,7 @@ export function Header() {
               href={config.tiktok_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-[var(--brand-yellow)] transition-colors font-semibold flex items-center gap-1"
+              className="hover:text-(--brand-yellow) transition-colors font-semibold flex items-center gap-1"
               aria-label="TikTok"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -245,7 +245,7 @@ export function Header() {
               href={config.twitter_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-[var(--brand-yellow)] transition-colors font-semibold flex items-center gap-1"
+              className="hover:text-(--brand-yellow) transition-colors font-semibold flex items-center gap-1"
               aria-label="Twitter/X"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -278,16 +278,16 @@ export function Header() {
               />
             </div>
             <div className="hidden xs:block sm:hidden leading-none">
-              <p className="font-black text-[var(--brand-navy)] text-[10px] tracking-tight uppercase leading-none">Adventur</p>
-              <p className="text-[var(--brand-yellow)] text-[7px] font-black uppercase tracking-[0.1em] mt-0.5">Hoteles</p>
+              <p className="font-black text-(--brand-navy) text-[10px] tracking-tight uppercase leading-none">Adventur</p>
+              <p className="text-(--brand-yellow) text-[7px] font-black uppercase tracking-[0.1em] mt-0.5">Hoteles</p>
             </div>
             <div className="hidden sm:block md:hidden leading-none">
-              <p className="font-black text-[var(--brand-navy)] text-xs tracking-tight uppercase leading-none">Adventur</p>
-              <p className="text-[var(--brand-yellow)] text-[8px] font-black uppercase tracking-[0.15em] mt-0.5">Hoteles</p>
+              <p className="font-black text-(--brand-navy) text-xs tracking-tight uppercase leading-none">Adventur</p>
+              <p className="text-(--brand-yellow) text-[8px] font-black uppercase tracking-[0.15em] mt-0.5">Hoteles</p>
             </div>
             <div className="hidden md:block leading-none">
-              <p className="font-black text-[var(--brand-navy)] text-sm md:text-base tracking-tight uppercase leading-none">Adventur</p>
-              <p className="text-[var(--brand-yellow)] text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] mt-0.5">Hoteles</p>
+              <p className="font-black text-(--brand-navy) text-sm md:text-base tracking-tight uppercase leading-none">Adventur</p>
+              <p className="text-(--brand-yellow) text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] mt-0.5">Hoteles</p>
             </div>
           </Link>
 
@@ -346,13 +346,12 @@ export function Header() {
               <span>Reservar ahora</span>
             </a>
             <button
+              type="button"
               className="lg:hidden p-1.5 xs:p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-gray-100 text-[#001f3f] hover:bg-gray-200 transition-colors"
               onClick={() => setMenuAbierto(v => !v)}
-              aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'}
-              aria-expanded={menuAbierto}
-              aria-controls="mobile-menu"
+              aria-label={menuAbierto ? 'Cerrar menu' : 'Abrir menu'}
             >
-              {menuAbierto ? <X size={20} /> : <Menu size={20} />}
+              {menuAbierto ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
             </button>
           </div>
         </div>
@@ -513,7 +512,7 @@ export function Footer() {
             <h3 className="text-[10px] sm:text-xs font-black tracking-[0.2em] uppercase text-[#ffd600] mb-3 sm:mb-5">Compañía</h3>
             <ul className="flex flex-col gap-2 sm:gap-3" role="list">
               {[
-                { label: 'Nosotros', href: '/#nosotros' },
+                { label: 'Nosotros', href: '/#servicios' },
                 { label: 'Términos y Condiciones', href: '/terminos' },
                 { label: 'Políticas de Privacidad', href: '/privacidad' },
                 { label: 'Libro de Reclamaciones', href: '/reclamaciones' }

@@ -1,6 +1,6 @@
 export default function CargandoHoteles() {
   return (
-    <div className="bg-[var(--bg-subtle)] min-h-screen">
+    <div className="bg-(--bg-subtle) min-h-screen">
       {/* Hero skeleton */}
       <div className="bg-[#001f3f] pt-20 sm:pt-28 pb-10 sm:pb-14 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">

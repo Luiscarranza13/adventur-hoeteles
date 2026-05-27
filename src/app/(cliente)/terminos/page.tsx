@@ -10,17 +10,17 @@ export default function PaginaTerminos() {
   return (
     <>
       <Header />
-      <section className="bg-[var(--brand-navy)] pt-24 sm:pt-32 pb-14 sm:pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.06] bg-[radial-gradient(circle_at_1px_1px,var(--brand-yellow)_1px,transparent_0)] [background-size:28px_28px]" />
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--brand-yellow)]/20 to-transparent" />
+      <section className="bg-(--brand-navy) pt-24 sm:pt-32 pb-14 sm:pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.06] bg-[radial-gradient(circle_at_1px_1px,var(--brand-yellow)_1px,transparent_0)] bg-size-[28px_28px]" />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-(--brand-yellow)/20 to-transparent" />
         <div className="relative z-10 max-w-3xl mx-auto text-center">
           <p className="label-eyebrow mb-3">Legal</p>
           <h1 className="heading-hero mb-3">Términos y Condiciones</h1>
           <div className="section-divider" />
-          <p className="text-gray-400 text-sm mt-4">Última actualización: enero 2025</p>
+          <p className="text-gray-400 text-sm mt-4">Última actualización: mayo 2026</p>
         </div>
       </section>
-      <main className="bg-[var(--bg-subtle)] py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
+      <main className="bg-(--bg-subtle) py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
           <div className="space-y-4">
             {[
@@ -57,14 +57,14 @@ export default function PaginaTerminos() {
               {
                 num: '07',
                 titulo: 'Contacto',
-                texto: 'Para consultas sobre estos términos, puede contactarnos a través de WhatsApp al +51 958 101 721 o por correo a reservas@adventur.pe.',
+                texto: 'Para consultas sobre estos términos, puede contactarnos a través de WhatsApp al +51 958 101 721 o por correo a hoteles@adventur.pe.',
               },
             ].map(({ num, titulo, texto }) => (
-              <div key={num} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8 hover:shadow-md hover:border-[var(--brand-yellow)]/20 transition-all duration-300">
+              <div key={num} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8 hover:shadow-md hover:border-(--brand-yellow)/20 transition-all duration-300">
                 <div className="flex items-start gap-4">
-                  <span className="text-[10px] font-black text-[var(--brand-yellow)] tabular-nums shrink-0 mt-1 bg-[var(--brand-yellow)]/10 px-2 py-1 rounded-lg">{num}</span>
+                  <span className="text-[10px] font-black text-(--brand-yellow) tabular-nums shrink-0 mt-1 bg-(--brand-yellow)/10 px-2 py-1 rounded-lg">{num}</span>
                   <div>
-                    <h2 className="text-sm sm:text-base font-black text-[var(--brand-navy)] mb-2">{titulo}</h2>
+                    <h2 className="text-sm sm:text-base font-black text-(--brand-navy) mb-2">{titulo}</h2>
                     <p className="text-gray-500 text-sm leading-relaxed">{texto}</p>
                   </div>
                 </div>

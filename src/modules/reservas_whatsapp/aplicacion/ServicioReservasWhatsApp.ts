@@ -8,6 +8,10 @@ export interface ResultadoSolicitudWhatsApp {
   urlWhatsApp: string;
 }
 
+interface OpcionesServicioReservasWhatsApp {
+  numeroWhatsAppReservas?: string;
+}
+
 /**
  * Servicio de aplicación para el módulo de reservas WhatsApp.
  * Encapsula el flujo completo: guardar intención → generar URL de WhatsApp.
@@ -16,7 +20,8 @@ export class ServicioReservasWhatsApp {
   constructor(
     private readonly repositorioReserva: RepositorioReserva,
     private readonly repositorioHabitacion: RepositorioHabitacion,
-    private readonly repositorioHotel: RepositorioHotel
+    private readonly repositorioHotel: RepositorioHotel,
+    private readonly opciones: OpcionesServicioReservasWhatsApp = {}
   ) {}
 
   listar(): Promise<Reserva[]> {
@@ -40,14 +45,15 @@ export class ServicioReservasWhatsApp {
 
     // 3. Construir URL de WhatsApp con mensaje pre-formateado
     const mensaje = this.construirMensaje(reserva, hotel.nombre, habitacion.nombre);
-    const urlWhatsApp = `https://wa.me/${this.limpiarTelefono(hotel.telefonoWhatsapp)}?text=${encodeURIComponent(mensaje)}`;
+    const numeroWhatsApp = this.opciones.numeroWhatsAppReservas || hotel.telefonoWhatsapp;
+    const urlWhatsApp = `https://wa.me/${this.limpiarTelefono(numeroWhatsApp)}?text=${encodeURIComponent(mensaje)}`;
 
     return { reserva, urlWhatsApp };
   }
 
   private construirMensaje(reserva: Reserva, nombreHotel: string, nombreHabitacion: string): string {
-    const ingreso = new Date(reserva.fechaIngreso).toLocaleDateString('es-ES');
-    const salida = new Date(reserva.fechaSalida).toLocaleDateString('es-ES');
+    const ingreso = this.formatearFechaReserva(reserva.fechaIngreso);
+    const salida = this.formatearFechaReserva(reserva.fechaSalida);
     return [
       `Hola, soy ${reserva.nombreCliente}.`,
       `Teléfono: ${reserva.telefonoContacto}`,
@@ -61,5 +67,15 @@ export class ServicioReservasWhatsApp {
 
   private limpiarTelefono(telefono: string): string {
     return telefono.replace(/\D/g, '');
+  }
+
+  private formatearFechaReserva(fecha: string | Date): string {
+    const date = new Date(fecha);
+    return new Intl.DateTimeFormat('es-ES', {
+      timeZone: 'UTC',
+      day: 'numeric',
+      month: 'numeric',
+      year: 'numeric',
+    }).format(date);
   }
 }

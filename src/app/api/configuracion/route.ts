@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createReadonlyClient } from '@/lib/supabase/readonly';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { CONFIGURACION_DEFAULT, normalizarConfiguracion } from '@/lib/configuracion';
 import { getEnv } from '@/lib/env';
 
@@ -39,7 +39,7 @@ export async function GET() {
   }
 
   try {
-    const supabase = createReadonlyClient();
+    const supabase = createAdminClient();
     const { data, error } = await supabase
       .from('configuracion')
       .select('*')

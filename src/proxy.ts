@@ -6,7 +6,6 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const esPublica =
-    pathname === '/login' ||
     pathname === '/api/admin/login' ||
     pathname === '/api/admin/logout';
 
@@ -14,7 +13,8 @@ export async function proxy(request: NextRequest) {
 
   const esRutaProtegida =
     pathname.startsWith('/admin') ||
-    pathname.startsWith('/api/admin');
+    pathname.startsWith('/api/admin') ||
+    pathname === '/login';
 
   if (!esRutaProtegida) return NextResponse.next();
 
@@ -39,7 +39,12 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
+  if (user && pathname === '/login') {
+    return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+  }
+
   if (!user) {
+    if (pathname === '/login') return response;
     if (pathname.startsWith('/api/')) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
@@ -50,5 +55,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/api/admin/:path*'],
+  matcher: ['/admin/:path*', '/api/admin/:path*', '/login'],
 };

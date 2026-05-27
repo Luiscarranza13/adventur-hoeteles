@@ -4,12 +4,14 @@ import { redirect } from 'next/navigation';
 import { SidebarAdmin } from '@/components/admin/SidebarAdmin';
 import { TopbarAdmin } from '@/components/admin/TopbarAdmin';
 import { obtenerAdminActual, type RolAdmin } from '@/lib/admin-auth';
+import { createAdminClient } from '@/lib/supabase/admin';
 import Link from 'next/link';
 
 const navAdmin = [
   { href: '/admin/dashboard', label: 'Dashboard', roles: ['admin', 'colaborador', 'viewer'] },
   { href: '/admin/hoteles', label: 'Hoteles', roles: ['admin', 'colaborador'] },
   { href: '/admin/habitaciones', label: 'Habitaciones', roles: ['admin', 'colaborador'] },
+  { href: '/admin/reservas', label: 'Reservas', roles: ['admin', 'colaborador'] },
   { href: '/admin/usuarios', label: 'Usuarios', roles: ['admin'] },
   { href: '/admin/configuracion', label: 'Config', roles: ['admin'] },
 ] as const;
@@ -19,8 +21,7 @@ export default async function LayoutAdmin({ children }: { children: React.ReactN
 
   if (!auth.autorizado) redirect('/login');
 
-  // Obtener foto_url del usuario actual
-  const { data: perfil } = await auth.supabase
+  const { data: perfil } = await createAdminClient()
     .from('usuarios')
     .select('foto_url, nombre_completo')
     .eq('id', auth.user.id)

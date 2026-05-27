@@ -100,15 +100,25 @@ export default async function PaginaDetalleHotel({ params }: PageProps) {
     <>
       <Header />
 
-      <section className="relative bg-[var(--brand-navy)] pt-16 sm:pt-24 pb-10 sm:pb-14 flex items-end overflow-hidden">
-        {/* Patrón elegante en lugar de una imagen estirada */}
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_1px_1px,var(--brand-yellow)_1px,transparent_0)] [background-size:32px_32px]" />
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[var(--brand-yellow)]/5 rounded-full -translate-y-1/2 translate-x-1/3 blur-[100px] pointer-events-none" />
+      <section className="relative bg-(--brand-navy) pt-16 sm:pt-24 pb-10 sm:pb-14 flex items-end overflow-hidden">
+        {hotel.imagenesUrls[0] && (
+          <ImagenSegura
+            src={hotel.imagenesUrls[0]}
+            alt=""
+            fill
+            className="object-cover opacity-20"
+            priority
+            sizes="100vw"
+          />
+        )}
+        <div className="absolute inset-0 bg-linear-to-t from-(--brand-navy) via-(--brand-navy)/70 to-(--brand-navy)/20" />
+        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_1px_1px,var(--brand-yellow)_1px,transparent_0)] bg-size-[32px_32px]" />
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-(--brand-yellow)/5 rounded-full -translate-y-1/2 translate-x-1/3 blur-[100px] pointer-events-none" />
 
         <AnimarAlEntrar direction="none" className="relative z-10 container-site max-w-6xl w-full">
           <Link 
             href="/hoteles" 
-            className="inline-flex items-center gap-2 text-white/60 text-[10px] sm:text-xs font-bold hover:text-[var(--brand-yellow)] transition-colors mb-5 group uppercase tracking-widest"
+            className="inline-flex items-center gap-2 text-white/60 text-[10px] sm:text-xs font-bold hover:text-(--brand-yellow) transition-colors mb-5 group uppercase tracking-widest"
           >
             <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" aria-hidden="true" /> Volver a hoteles
           </Link>
@@ -116,10 +126,10 @@ export default async function PaginaDetalleHotel({ params }: PageProps) {
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5 sm:gap-8">
             <div className="max-w-2xl">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-7 h-7 rounded-full bg-[var(--brand-yellow)]/10 border border-[var(--brand-yellow)]/20 flex items-center justify-center shrink-0">
-                  <MapPin size={12} className="text-[var(--brand-yellow)]" aria-hidden="true" />
+                <div className="w-7 h-7 rounded-full bg-(--brand-yellow)/10 border border-(--brand-yellow)/20 flex items-center justify-center shrink-0">
+                  <MapPin size={12} className="text-(--brand-yellow)" aria-hidden="true" />
                 </div>
-                <p className="text-[var(--brand-yellow)] text-[10px] sm:text-xs font-black uppercase tracking-[0.16em] leading-relaxed">
+                <p className="text-(--brand-yellow) text-[10px] sm:text-xs font-black uppercase tracking-[0.16em] leading-relaxed">
                   {hotel.ciudad} · {hotel.direccion}
                 </p>
               </div>
@@ -129,13 +139,13 @@ export default async function PaginaDetalleHotel({ params }: PageProps) {
               <div className="flex items-center gap-3 flex-wrap">
                 <div className="flex items-center gap-0.5 bg-white/5 border border-white/10 px-3 py-1.5 rounded-lg">
                   {Array.from({ length: hotel.estrellas }).map((_, i) => (
-                    <Star key={i} size={12} className="text-[var(--brand-yellow)] fill-[var(--brand-yellow)]" aria-hidden="true" />
+                    <Star key={i} size={12} className="text-(--brand-yellow) fill-(--brand-yellow)" aria-hidden="true" />
                   ))}
                   <span className="text-white text-[10px] font-black uppercase tracking-widest ml-2">{hotel.estrellas} estrellas</span>
                 </div>
                 
                 {precioMinimo && (
-                  <span className="bg-[var(--brand-yellow)] text-[#001f3f] text-[10px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest shadow-lg shadow-[var(--brand-yellow)]/10">
+                  <span className="bg-(--brand-yellow) text-(--brand-navy) text-[10px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest shadow-lg shadow-(--brand-yellow)/10">
                     Desde {simboloMinimo}{precioMinimo} por noche
                   </span>
                 )}
@@ -144,12 +154,12 @@ export default async function PaginaDetalleHotel({ params }: PageProps) {
             
             <AnimarAlEntrar delay={0.2} className="shrink-0 bg-white/5 backdrop-blur-md border border-white/10 px-5 py-4 rounded-xl text-center min-w-40">
               <p className="text-gray-400 text-[9px] font-black uppercase tracking-[0.18em] mb-2 flex items-center justify-center gap-2">
-                <BedDouble size={13} className="text-[var(--brand-yellow)]" aria-hidden="true" /> Disponibilidad
+                <BedDouble size={13} className="text-(--brand-yellow)" aria-hidden="true" /> Disponibilidad
               </p>
               <p className="text-2xl sm:text-3xl font-black text-white leading-none mb-1">
                 {habitaciones.length}
               </p>
-              <p className="text-[10px] font-bold text-[var(--brand-yellow)] uppercase tracking-widest">
+              <p className="text-[10px] font-bold text-(--brand-yellow) uppercase tracking-widest">
                 {habitaciones.length === 1 ? 'Habitación' : 'Habitaciones'}
               </p>
             </AnimarAlEntrar>
@@ -170,7 +180,7 @@ export default async function PaginaDetalleHotel({ params }: PageProps) {
           <div className="grid lg:grid-cols-[1fr_420px] gap-8 lg:gap-10 items-start">
             <AnimarAlEntrar className="flex-1">
               <p className="label-eyebrow mb-2">Descripción</p>
-              <h2 className="text-2xl sm:text-3xl font-black text-[var(--brand-navy)] mb-4 leading-tight">Sobre el hotel</h2>
+              <h2 className="text-2xl sm:text-3xl font-black text-(--brand-navy) mb-4 leading-tight">Sobre el hotel</h2>
               <p className="body-text !text-sm sm:!text-base max-w-3xl leading-relaxed">{hotel.descripcion}</p>
             </AnimarAlEntrar>
             
@@ -181,27 +191,27 @@ export default async function PaginaDetalleHotel({ params }: PageProps) {
                 { Icon: BedDouble,     label: 'Oferta',       valor: `${habitaciones.length} Habitaciones` },
                 { Icon: MessageCircle, label: 'Reservas',     valor: 'Vía WhatsApp' },
               ].map(({ Icon, label, valor }) => (
-                <div key={label} className="bg-[var(--bg-subtle)] rounded-xl p-4 text-center border border-transparent hover:border-[var(--brand-yellow)]/20 hover:bg-white hover:shadow-md transition-all duration-300">
-                  <div className="w-9 h-9 bg-[var(--brand-navy)] rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <Icon size={16} className="text-[var(--brand-yellow)]" aria-hidden="true" />
+                <div key={label} className="bg-(--bg-subtle) rounded-xl p-4 text-center border border-transparent hover:border-(--brand-yellow)/20 hover:bg-white hover:shadow-md transition-all duration-300">
+                  <div className="w-9 h-9 bg-(--brand-navy) rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <Icon size={16} className="text-(--brand-yellow)" aria-hidden="true" />
                   </div>
                   <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">{label}</p>
-                  <p className="text-xs sm:text-sm font-black text-[var(--brand-navy)] uppercase leading-snug">{valor}</p>
+                  <p className="text-xs sm:text-sm font-black text-(--brand-navy) uppercase leading-snug">{valor}</p>
                 </div>
               ))}
             </AnimarAlEntrar>
           </div>
         </section>
 
-        <section className="bg-[var(--bg-subtle)] py-10 sm:py-14 px-5 sm:px-6 lg:px-8">
+        <section className="bg-(--bg-subtle) py-10 sm:py-14 px-5 sm:px-6 lg:px-8">
           <div className="container-site max-w-6xl !px-0">
             <AnimarAlEntrar className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-10 gap-5">
               <div className="max-w-xl">
                 <p className="label-eyebrow mb-2">Alojamiento</p>
-                <h2 className="text-2xl sm:text-3xl font-black text-[var(--brand-navy)] leading-tight">Habitaciones Disponibles</h2>
+                <h2 className="text-2xl sm:text-3xl font-black text-(--brand-navy) leading-tight">Habitaciones Disponibles</h2>
                 <p className="body-text mt-4">Elige la opción que mejor se adapte a tu viaje. Todas nuestras habitaciones están verificadas.</p>
               </div>
-              <div className="glass-dark !bg-[var(--brand-navy)] text-white text-[10px] sm:text-xs font-black px-4 sm:px-5 py-3 rounded-xl uppercase tracking-widest flex items-center gap-3 w-full sm:w-auto justify-center">
+              <div className="glass-dark !bg-(--brand-navy) text-white text-[10px] sm:text-xs font-black px-4 sm:px-5 py-3 rounded-xl uppercase tracking-widest flex items-center gap-3 w-full sm:w-auto justify-center">
                 <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                 {habitaciones.length} {habitaciones.length === 1 ? 'opción disponible' : 'opciones disponibles'}
               </div>
@@ -280,17 +290,11 @@ export default async function PaginaDetalleHotel({ params }: PageProps) {
                         {/* Botones */}
                         <div className="flex sm:flex-col gap-2 w-full sm:w-auto">
                           <Link
-                            href={`/checkout/${hab.id}`}
+                            href={`/habitaciones/${hab.id}`}
                             className="flex items-center justify-center gap-1.5 bg-[#001f3f] hover:bg-[#ffd600] text-white hover:text-[#001f3f] px-4 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap"
                           >
                             <MessageCircle size={13} />
                             Reservar
-                          </Link>
-                          <Link
-                            href={`/habitaciones/${hab.id}`}
-                            className="flex items-center justify-center gap-1.5 bg-gray-50 hover:bg-gray-100 text-gray-600 hover:text-gray-800 px-4 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap border border-gray-100"
-                          >
-                            Ver detalles
                           </Link>
                         </div>
                       </div>
@@ -316,14 +320,14 @@ export default async function PaginaDetalleHotel({ params }: PageProps) {
             <AnimarAlEntrar className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-10 gap-4">
               <div>
                 <p className="label-eyebrow mb-2">Opiniones de huéspedes</p>
-                <h2 className="text-2xl sm:text-3xl font-black text-[var(--brand-navy)] leading-tight">
+                <h2 className="text-2xl sm:text-3xl font-black text-(--brand-navy) leading-tight">
                   Reseñas verificadas
                 </h2>
               </div>
               {(() => {
                 const avg = promedioCalificacion(resenas);
                 return (
-                  <div className="flex items-center gap-2 bg-[var(--bg-subtle)] rounded-xl px-4 py-2.5 shrink-0">
+                  <div className="flex items-center gap-2 bg-(--bg-subtle) rounded-xl px-4 py-2.5 shrink-0">
                     <div className="flex items-center gap-0.5">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star
@@ -334,7 +338,7 @@ export default async function PaginaDetalleHotel({ params }: PageProps) {
                         />
                       ))}
                     </div>
-                    <span className="text-[var(--brand-navy)] font-black text-sm">
+                    <span className="text-(--brand-navy) font-black text-sm">
                       {avg.toFixed(1)}
                     </span>
                     <span className="text-gray-400 text-xs">({resenas.length} {resenas.length === 1 ? 'reseña' : 'reseñas'})</span>

@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { apiError } from '@/lib/api-response';
 
 export const ROLES_ADMIN = ['admin', 'colaborador', 'viewer'] as const;
@@ -48,7 +49,8 @@ export async function obtenerAdminActual() {
   if (cached && Date.now() - cached.ts < CACHE_TTL) {
     rol = cached.rol;
   } else {
-    const { data: perfil, error: perfilError } = await supabase
+    const adminClient = createAdminClient();
+    const { data: perfil, error: perfilError } = await adminClient
       .from('usuarios')
       .select('rol')
       .eq('id', user.id)

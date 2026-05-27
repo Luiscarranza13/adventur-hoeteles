@@ -238,13 +238,13 @@ export default function HotelesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {hotelesFiltrados.map(h => (
               <div key={h.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all overflow-hidden group">
-                <div className="relative h-44 bg-gradient-to-br from-[#001f3f] to-[#002d5a] overflow-hidden">
+                <div className="relative h-44 bg-linear-to-br from-[#001f3f] to-[#002d5a] overflow-hidden">
                   {h.imagenesUrls?.[0] ? (
                     <ImagenSegura src={h.imagenesUrls[0]} alt={h.nombre} fill className="opacity-80 group-hover:scale-105 transition-transform duration-500" sizes="400px" />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center"><ImageIcon size={32} className="text-white/20" /></div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/70 to-transparent" />
                   <div className="absolute bottom-3 left-3">
                     <div className="flex items-center gap-0.5 mb-1">{Array.from({ length: h.estrellas }).map((_, i) => <Star key={i} size={10} className="text-[#ffd600] fill-[#ffd600]" />)}</div>
                     <p className="text-white font-bold text-sm">{h.nombre}</p>

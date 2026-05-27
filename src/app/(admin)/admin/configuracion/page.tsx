@@ -393,10 +393,11 @@ export default function PaginaConfiguracion() {
                   </div>
                   {config.modo_mantenimiento && (
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                      <label htmlFor="mensaje-mantenimiento" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                         Mensaje de mantenimiento
                       </label>
                       <textarea
+                        id="mensaje-mantenimiento"
                         className="w-full px-4 py-3 border-0 border-b-2 border-amber-300 bg-amber-50 rounded-t-lg focus:outline-none focus:border-[#ffd600] transition-all text-sm text-gray-800 resize-none"
                         rows={2}
                         value={config.mensaje_mantenimiento}
@@ -449,17 +450,6 @@ export default function PaginaConfiguracion() {
             </>
           )}
 
-          {/* Botón guardar al fondo */}
-          <div className="pt-4 border-t border-gray-100 flex justify-end">
-            <button
-              onClick={guardar}
-              disabled={guardando}
-              className="flex items-center gap-2 bg-[#ffd600] text-[#001f3f] font-bold px-6 py-2.5 rounded-xl hover:bg-yellow-300 active:scale-95 transition-all text-sm shadow-sm disabled:opacity-60"
-            >
-              {guardando ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
-              Guardar cambios
-            </button>
-          </div>
         </div>
       </div>
     </div>

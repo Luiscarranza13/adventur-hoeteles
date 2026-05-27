@@ -6,8 +6,8 @@ import { FormDrawer } from '@/components/admin/FormDrawer';
 import { SubidorImagenes } from '@/components/admin/SubidorImagenes';
 import { BarraFiltros } from '@/components/admin/BarraFiltros';
 import { ImagenSegura } from '@/components/ui/ImagenSegura';
-import type { Habitacion, EstadoMantenimiento, Moneda, RegimeAlimentacion, TipoCama, TipoHabitacion } from '@/modules/habitaciones';
-import { ETIQUETAS_TIPO_HABITACION } from '@/modules/habitaciones';
+import type { Habitacion, EstadoMantenimiento, Moneda, RegimeAlimentacion, TipoCama, TipoHabitacion } from '@/modules/habitaciones/dominio/entidades/Habitacion';
+import { ETIQUETAS_TIPO_HABITACION } from '@/modules/habitaciones/dominio/entidades/Habitacion';
 import type { Hotel } from '@/modules/hoteles';
 import Swal from 'sweetalert2';
 import {
@@ -198,19 +198,19 @@ export default function PaginaHabitaciones() {
         {/* Filtros */}
         <BarraFiltros busqueda={busqueda} onBusqueda={setBusqueda} placeholder="Buscar por nombre, hotel o descripción..." total={habitaciones.length} filtrado={habitacionesFiltradas.length} hayFiltrosActivos={hayFiltros} onLimpiar={limpiarFiltros}>
           {/* Hotel */}
-          <select value={filtroHotel} onChange={e => setFiltroHotel(e.target.value)} className={`text-xs px-3 py-2 rounded-xl border transition-all focus:outline-none ${filtroHotel ? 'border-[#ffd600] bg-yellow-50 text-[#001f3f] font-bold' : 'border-gray-200 bg-gray-50 text-gray-500'}`}>
+          <select aria-label="Filtrar por hotel" value={filtroHotel} onChange={e => setFiltroHotel(e.target.value)} className={`text-xs px-3 py-2 rounded-xl border transition-all focus:outline-none ${filtroHotel ? 'border-[#ffd600] bg-yellow-50 text-[#001f3f] font-bold' : 'border-gray-200 bg-gray-50 text-gray-500'}`}>
             <option value="">Todos los hoteles</option>
             {hoteles.map(h => <option key={h.id} value={h.id}>{h.nombre}</option>)}
           </select>
 
           {/* Tipo */}
-          <select value={filtroTipo} onChange={e => setFiltroTipo(e.target.value)} className={`text-xs px-3 py-2 rounded-xl border transition-all focus:outline-none ${filtroTipo ? 'border-[#ffd600] bg-yellow-50 text-[#001f3f] font-bold' : 'border-gray-200 bg-gray-50 text-gray-500'}`}>
+          <select aria-label="Filtrar por tipo de habitacion" value={filtroTipo} onChange={e => setFiltroTipo(e.target.value)} className={`text-xs px-3 py-2 rounded-xl border transition-all focus:outline-none ${filtroTipo ? 'border-[#ffd600] bg-yellow-50 text-[#001f3f] font-bold' : 'border-gray-200 bg-gray-50 text-gray-500'}`}>
             <option value="">Todos los tipos</option>
             {TIPOS_HABITACION.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
 
           {/* Estado */}
-          <select value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)} className={`text-xs px-3 py-2 rounded-xl border transition-all focus:outline-none ${filtroEstado ? 'border-[#ffd600] bg-yellow-50 text-[#001f3f] font-bold' : 'border-gray-200 bg-gray-50 text-gray-500'}`}>
+          <select aria-label="Filtrar por estado" value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)} className={`text-xs px-3 py-2 rounded-xl border transition-all focus:outline-none ${filtroEstado ? 'border-[#ffd600] bg-yellow-50 text-[#001f3f] font-bold' : 'border-gray-200 bg-gray-50 text-gray-500'}`}>
             <option value="">Todos los estados</option>
             <option value="disponible">Disponible</option>
             <option value="mantenimiento">Mantenimiento</option>
@@ -220,7 +220,7 @@ export default function PaginaHabitaciones() {
           {/* Moneda */}
           <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-xl px-2 py-1.5">
             {[{ val: '', label: 'Todas' }, { val: 'USD', label: '$ USD' }, { val: 'PEN', label: 'S/ PEN' }].map(({ val, label }) => (
-              <button key={val} onClick={() => setFiltroMoneda(val)}
+              <button key={val} type="button" aria-label={`Filtrar por moneda ${label}`} onClick={() => setFiltroMoneda(val)}
                 className={`text-xs px-2.5 py-0.5 rounded-lg transition-all font-medium ${filtroMoneda === val ? 'bg-[#001f3f] text-white' : 'text-gray-400 hover:text-gray-600'}`}>
                 {label}
               </button>
@@ -232,7 +232,7 @@ export default function PaginaHabitaciones() {
           {habitacionesFiltradas.map(h => (
             <div key={h.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all overflow-hidden group">
               {/* Imagen */}
-              <div className="relative h-36 bg-gradient-to-br from-blue-900 to-blue-700 overflow-hidden">
+              <div className="relative h-36 bg-linear-to-br from-blue-900 to-blue-700 overflow-hidden">
                 {h.imagenesUrls?.[0] ? (
                   <ImagenSegura
                     src={h.imagenesUrls[0]}
@@ -246,13 +246,13 @@ export default function PaginaHabitaciones() {
                     <ImageIcon size={28} className="text-white/20" />
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent" />
                 <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button onClick={() => abrirEditar(h)} className="p-1.5 bg-white/90 hover:bg-white text-blue-600 rounded-lg transition-colors shadow-sm">
-                    <Pencil size={13} />
+                  <button type="button" aria-label={`Editar habitacion ${h.nombre}`} onClick={() => abrirEditar(h)} className="p-1.5 bg-white/90 hover:bg-white text-blue-600 rounded-lg transition-colors shadow-sm">
+                    <Pencil size={13} aria-hidden="true" />
                   </button>
-                  <button onClick={() => eliminar(h.id, h.nombre)} className="p-1.5 bg-white/90 hover:bg-white text-red-500 rounded-lg transition-colors shadow-sm">
-                    <Trash2 size={13} />
+                  <button type="button" aria-label={`Eliminar habitacion ${h.nombre}`} onClick={() => eliminar(h.id, h.nombre)} className="p-1.5 bg-white/90 hover:bg-white text-red-500 rounded-lg transition-colors shadow-sm">
+                    <Trash2 size={13} aria-hidden="true" />
                   </button>
                 </div>
               </div>
@@ -318,12 +318,13 @@ export default function PaginaHabitaciones() {
           />
 
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+            <label htmlFor="habitacion-hotel" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
               Hotel <span className="text-red-400">*</span>
             </label>
             <div className="relative">
               <HotelIcon size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
               <select
+                id="habitacion-hotel"
                 className="w-full pl-10 pr-4 py-3 border-0 border-b-2 border-gray-200 bg-gray-50 rounded-t-lg focus:outline-none focus:border-[#ffd600] focus:bg-white transition-all text-sm text-gray-800 appearance-none"
                 value={form.hotelId}
                 onChange={e => setForm({ ...form, hotelId: e.target.value })}
@@ -352,10 +353,11 @@ export default function PaginaHabitaciones() {
               hint="Opcional"
             />
             <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+              <label htmlFor="habitacion-tipo" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                 Tipo de habitación
               </label>
               <select
+                id="habitacion-tipo"
                 className="w-full px-4 py-3 border-0 border-b-2 border-gray-200 bg-gray-50 rounded-t-lg focus:outline-none focus:border-[#ffd600] focus:bg-white transition-all text-sm text-gray-800 appearance-none"
                 value={form.tipoHabitacion}
                 onChange={e => setForm({ ...form, tipoHabitacion: e.target.value as TipoHabitacion })}
@@ -385,7 +387,7 @@ export default function PaginaHabitaciones() {
 
           {/* Precio + Moneda */}
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+            <label htmlFor="habitacion-precio" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
               Precio por noche
             </label>
             <div className="flex gap-2">
@@ -412,6 +414,7 @@ export default function PaginaHabitaciones() {
                   {form.moneda === 'USD' ? '$' : 'S/'}
                 </span>
                 <input
+                  id="habitacion-precio"
                   type="number"
                   min={1}
                   step={0.01}
@@ -425,10 +428,10 @@ export default function PaginaHabitaciones() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            <label id="habitacion-amenidades-label" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
               Amenidades
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2" role="group" aria-labelledby="habitacion-amenidades-label">
               {['WiFi', 'TV', 'Aire Acondicionado', 'Minibar', 'Jacuzzi', 'Balcón'].map(amenidad => (
                 <label key={amenidad} className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
                   <input
@@ -450,10 +453,11 @@ export default function PaginaHabitaciones() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+            <label htmlFor="habitacion-descripcion" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
               Descripción
             </label>
             <textarea
+              id="habitacion-descripcion"
               className="w-full px-4 py-3 border-0 border-b-2 border-gray-200 bg-gray-50 rounded-t-lg focus:outline-none focus:border-[#ffd600] focus:bg-white transition-all text-sm text-gray-800 placeholder:text-gray-300 resize-none"
               rows={3}
               value={form.descripcion}
@@ -463,10 +467,11 @@ export default function PaginaHabitaciones() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+            <label htmlFor="habitacion-estado" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
               Estado <span className="text-red-400">*</span>
             </label>
             <select
+              id="habitacion-estado"
               className="w-full px-4 py-3 border-0 border-b-2 border-gray-200 bg-gray-50 rounded-t-lg focus:outline-none focus:border-[#ffd600] focus:bg-white transition-all text-sm text-gray-800 appearance-none"
               value={form.estadoMantenimiento}
               onChange={e => setForm({ ...form, estadoMantenimiento: e.target.value as EstadoMantenimiento })}

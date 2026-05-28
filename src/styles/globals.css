@@ -102,8 +102,9 @@ html {
 #destinos,
 #contacto,
 #servicios,
+#por-que-elegirnos,
 #preguntas-frecuentes {
-  scroll-margin-top: 57px;
+  scroll-margin-top: 0;
 }
 
 ::selection {
@@ -181,8 +182,71 @@ body {
   padding-right: 1.25rem;
 }
 
+.section-screen {
+  min-height: calc(100svh - 57px);
+}
+
+.topbar-ticker {
+  mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+}
+
+.topbar-ticker-track {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  animation: topbar-ticker 38s linear infinite;
+}
+
+.topbar-ticker:hover .topbar-ticker-track {
+  animation-play-state: paused;
+}
+
+@keyframes topbar-ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.servicios-marquee {
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+.servicios-marquee-track {
+  display: flex;
+  width: max-content;
+  gap: 1.5rem;
+  animation: servicios-marquee 34s linear infinite;
+}
+
+.servicios-marquee-track-reverse {
+  animation-direction: reverse;
+  animation-duration: 40s;
+}
+
+.servicios-marquee:hover .servicios-marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes servicios-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-50% - 0.75rem));
+  }
+}
+
+.section-hoteles {
+  padding: 2.5rem 1.25rem var(--section-py-sm);
+}
+
 @media (min-width: 640px) {
   .section-padding {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  .section-hoteles {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
   }
@@ -195,11 +259,23 @@ body {
     padding-left: 2rem;
     padding-right: 2rem;
   }
+
+  .section-hoteles {
+    padding-top: 3rem;
+    padding-bottom: var(--section-py-md);
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
 }
 
 @media (min-width: 1024px) {
   .section-padding {
     padding-top: var(--section-py-lg);
+    padding-bottom: var(--section-py-lg);
+  }
+
+  .section-hoteles {
+    padding-top: 3.25rem;
     padding-bottom: var(--section-py-lg);
   }
 }
@@ -409,36 +485,6 @@ body {
 
 details summary::-webkit-details-marker { display: none; }
 details summary { cursor: pointer; }
-
-/* Ocultar barra superior y tooltips de Google Translate */
-.goog-te-banner-frame,
-.goog-te-balloon-frame,
-.goog-te-menu-frame,
-iframe.goog-te-banner-frame {
-  display: none !important;
-  visibility: hidden !important;
-}
-
-body {
-  top: 0 !important;
-}
-
-.skiptranslate {
-  display: none !important;
-}
-
-#google_translate_element {
-  display: none !important;
-}
-
-#goog-gt-tt {
-  display: none !important;
-}
-
-.goog-text-highlight {
-  background-color: transparent !important;
-  box-shadow: none !important;
-}
 
 @keyframes card-enter {
   from { opacity: 0; transform: translateY(20px) scale(0.98); }

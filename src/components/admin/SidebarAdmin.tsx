@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Hotel, BedDouble, Users, LogOut, Settings } from 'lucide-react';
+import { LayoutDashboard, Hotel, BedDouble, Users, LogOut, Settings, MessageSquare } from 'lucide-react';
 import Swal from 'sweetalert2';
 import type { RolAdmin } from '@/lib/admin-auth';
 
@@ -16,6 +16,7 @@ const navItems = [
   { href: '/admin/dashboard',     label: 'Dashboard',     Icon: LayoutDashboard, roles: ['admin', 'colaborador', 'viewer'] },
   { href: '/admin/hoteles',       label: 'Hoteles',       Icon: Hotel,           roles: ['admin', 'colaborador'] },
   { href: '/admin/habitaciones',  label: 'Habitaciones',  Icon: BedDouble,      roles: ['admin', 'colaborador'] },
+  { href: '/admin/testimonios',   label: 'Testimonios',   Icon: MessageSquare,  roles: ['admin', 'colaborador'] },
   { href: '/admin/usuarios',      label: 'Usuarios',      Icon: Users,          roles: ['admin'] },
   { href: '/admin/configuracion', label: 'Configuracion', Icon: Settings,       roles: ['admin'] },
 ] as const;

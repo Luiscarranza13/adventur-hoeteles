@@ -107,6 +107,11 @@ export const esquemaConfiguracionAdmin = z.object({
   mensaje_mantenimiento: textoRequerido('Mensaje de mantenimiento', 300),
   reservas_activas: z.boolean().default(true),
   moneda_default: z.enum(monedas).default('USD'),
+  hero_avatar_1: z.union([z.literal(''), z.string().trim().url()]).default(''),
+  hero_avatar_2: z.union([z.literal(''), z.string().trim().url()]).default(''),
+  hero_avatar_3: z.union([z.literal(''), z.string().trim().url()]).default(''),
+  hero_clientes_count: z.coerce.number().int().min(0).max(9_999_999).default(1050),
+  hero_rating: z.coerce.number().min(0).max(5).default(4.9),
 });
 
 export const esquemaReservaPublica = z.object({
@@ -139,6 +144,23 @@ export const esquemaReservaAdmin = z.object({
     value => value === '' || value === null || value === undefined ? undefined : value,
     z.enum(['efectivo', 'tarjeta', 'transferencia', 'pendiente']).optional(),
   ),
+});
+
+export const COLORES_TESTIMONIO = [
+  '#2563EB', '#7C3AED', '#DB2777', '#059669',
+  '#D97706', '#DC2626', '#0891B2', '#64748B',
+] as const;
+
+export const esquemaTestimonioAdmin = z.object({
+  id: textoOpcional(80),
+  nombre: textoRequerido('Nombre', 100),
+  origen: textoRequerido('Origen', 80),
+  cargo: textoRequerido('Cargo', 100),
+  calificacion: z.coerce.number().int().min(1).max(5).default(5),
+  texto: textoRequerido('Texto', 600),
+  color: z.string().trim().regex(/^#[0-9A-Fa-f]{6}$/, 'Color invalido').default('#2563EB'),
+  orden: z.coerce.number().int().min(0).max(9999).default(0),
+  activo: z.boolean().default(true),
 });
 
 export function respuestaErrorValidacion(error: z.ZodError) {

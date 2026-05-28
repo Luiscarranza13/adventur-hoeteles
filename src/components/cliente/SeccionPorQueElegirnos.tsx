@@ -117,7 +117,7 @@ function TarjetaRazon({ razon }: { razon: Razon }) {
 
 export function SeccionPorQueElegirnos() {
   return (
-    <section className="section-padding bg-(--bg-subtle)">
+    <section id="por-que-elegirnos" className="section-padding bg-white">
       <div className="container-site">
         <div className="text-center mb-12 sm:mb-14">
           <p className="label-eyebrow mb-3">La Diferencia Adventur</p>

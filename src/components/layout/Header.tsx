@@ -3,20 +3,22 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, type MouseEvent } from 'react';
-import { MapPin, Menu, X, MessageCircle, Hotel, BedDouble, Info, ArrowRight, Phone } from 'lucide-react';
+import { MapPin, Menu, X, MessageCircle, Hotel, BedDouble, Info, ArrowRight, Phone, ShieldCheck, Award } from 'lucide-react';
 import { ScrollToTop } from '@/components/ui/ScrollToTop';
-import { SelectorIdioma } from '@/components/shared/GoogleTranslate';
 import Image from 'next/image';
 import { crearUrlWhatsApp, type ConfiguracionWeb } from '@/lib/configuracion';
 import { useConfiguracionWeb } from '@/hooks/useConfiguracionWeb';
 
 const navItems = [
-  { href: '/#inicio',               label: 'Inicio',    Icon: Hotel,        hash: 'inicio' },
-  { href: '/#hoteles',              label: 'Hoteles',   Icon: BedDouble,    hash: 'hoteles' },
-  { href: '/#destinos',             label: 'Destinos',  Icon: MapPin,       hash: 'destinos' },
-  { href: '/#servicios',            label: 'Servicios', Icon: Info,         hash: 'servicios' },
-  { href: '/#preguntas-frecuentes', label: 'FAQ',       Icon: MessageCircle,hash: 'preguntas-frecuentes' },
-  { href: '/contacto',              label: 'Contacto',  Icon: Phone,        hash: null },
+  { href: '/#inicio',               label: 'Inicio',       Icon: Hotel,        hash: 'inicio' },
+  { href: '/#hoteles',              label: 'Hoteles',      Icon: BedDouble,    hash: 'hoteles' },
+  { href: '/#destinos',             label: 'Destinos',     Icon: MapPin,       hash: 'destinos' },
+  { href: '/#servicios',            label: 'Servicios',    Icon: Info,         hash: 'servicios' },
+  { href: '/#seguridad',            label: 'Seguridad',    Icon: ShieldCheck,  hash: 'seguridad' },
+  { href: '/#por-que-elegirnos',    label: '¿Por qué?',   Icon: Award,        hash: 'por-que-elegirnos' },
+  { href: '/#testimonios',          label: 'Testimonios',  Icon: MessageCircle, hash: 'testimonios' },
+  { href: '/#preguntas-frecuentes', label: 'FAQ',          Icon: Info,         hash: 'preguntas-frecuentes' },
+  { href: '/contacto',              label: 'Contacto',     Icon: Phone,        hash: null },
 ];
 
 function redesConfiguradas(config: ConfiguracionWeb) {
@@ -62,6 +64,49 @@ function redesConfiguradas(config: ConfiguracionWeb) {
   ].filter((red) => Boolean(red.href?.trim()));
 }
 
+const FRASES_TOPBAR = [
+  { texto: 'Reserva directa por WhatsApp, sin comisiones ni formularios' },
+  { texto: 'Hoteles verificados en todo el Perú — confirmación en minutos' },
+  { texto: 'Atención personalizada 24/7 para tu próximo viaje' },
+  { texto: 'Sin intermediarios · Sin formularios · Sin sorpresas en el precio' },
+  { texto: '+50 hoteles en Cajamarca, Lima, Cusco, Arequipa y más destinos' },
+  { texto: 'Elige tu hotel, escríbenos por WhatsApp y viaja tranquilo' },
+];
+
+function Separador() {
+  return (
+    <span className="mx-5 shrink-0 flex items-center gap-1.5" aria-hidden="true">
+      <span className="w-1 h-1 rounded-full bg-(--brand-yellow) opacity-80" />
+      <span className="w-1.5 h-1.5 rounded-full bg-(--brand-yellow)" />
+      <span className="w-1 h-1 rounded-full bg-(--brand-yellow) opacity-80" />
+    </span>
+  );
+}
+
+function FraseAnimada() {
+  const items = (
+    <>
+      {FRASES_TOPBAR.map((f, i) => (
+        <span key={i} className="flex items-center shrink-0">
+          <span className="text-[11px] sm:text-xs text-gray-300 font-medium tracking-wide whitespace-nowrap">
+            {f.texto}
+          </span>
+          <Separador />
+        </span>
+      ))}
+    </>
+  );
+
+  return (
+    <div className="topbar-ticker flex-1 overflow-hidden">
+      <div className="topbar-ticker-track">
+        {items}
+        {items}
+      </div>
+    </div>
+  );
+}
+
 export function Header() {
   const pathname = usePathname();
   const [menuAbierto, setMenuAbierto] = useState(false);
@@ -77,8 +122,6 @@ export function Header() {
     config.whatsapp_numero,
     config.whatsapp_mensaje_reserva || 'Hola, quiero reservar un hotel.'
   );
-  const redes = redesConfiguradas(config);
-
   // ── Scroll detector ──────────────────────────────────────────────────────
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -94,7 +137,7 @@ export function Header() {
       return;
     }
 
-    const SECCIONES = ['inicio', 'contacto', 'hoteles', 'destinos', 'servicios', 'preguntas-frecuentes'];
+    const SECCIONES = ['inicio', 'contacto', 'hoteles', 'destinos', 'servicios', 'seguridad', 'por-que-elegirnos', 'testimonios', 'preguntas-frecuentes'];
     const calcularActivo = () => {
       const scrollY = window.scrollY;
       const alturaVentana = window.innerHeight;
@@ -143,7 +186,8 @@ export function Header() {
 
     const header = document.querySelector('header[role="banner"]') as HTMLElement | null;
     const headerHeight = header?.offsetHeight ?? 57;
-    const y = el.getBoundingClientRect().top + window.scrollY - headerHeight;
+    const extraOffset = hash === 'destinos' ? 55 : 0;
+    const y = el.getBoundingClientRect().top + window.scrollY - headerHeight + extraOffset;
     window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
   };
 
@@ -175,78 +219,8 @@ export function Header() {
   return (
     <>
       <div className="bg-(--brand-navy) hidden md:block border-b border-(--border-white-10)">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between gap-3">
-          <a
-            href={whatsappConsulta}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-xs sm:text-sm text-(--text-muted) hover:text-(--brand-yellow) transition-colors"
-          >
-            <MessageCircle size={13} className="text-(--brand-yellow) shrink-0" />
-            <span className="hidden sm:inline">Atención rápida por WhatsApp:</span>
-            <span className="font-bold text-white">{config.telefono_principal}</span>
-          </a>
-          <div className={`${redes.length ? 'flex' : 'hidden'} items-center gap-3 sm:gap-5 text-xs sm:text-sm text-(--text-muted)`}>
-            <span className="hidden sm:inline">Síguenos:</span>
-            {config.facebook_url && (
-            <a
-              href={config.facebook_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-(--brand-yellow) transition-colors font-semibold flex items-center gap-1"
-              aria-label="Facebook"
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
-              </svg>
-              <span className="hidden sm:inline">Facebook</span>
-            </a>
-            )}
-            {config.instagram_url && (
-            <a
-              href={config.instagram_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-(--brand-yellow) transition-colors font-semibold flex items-center gap-1"
-              aria-label="Instagram"
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
-              </svg>
-              <span className="hidden sm:inline">Instagram</span>
-            </a>
-            )}
-            {config.tiktok_url && (
-            <a
-              href={config.tiktok_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-(--brand-yellow) transition-colors font-semibold flex items-center gap-1"
-              aria-label="TikTok"
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M16.6 2c.2 1.7 1.2 3.2 2.7 4.1.9.5 1.8.8 2.7.8v4.1c-1.8 0-3.5-.5-5-1.4v6.2c0 3.5-2.8 6.2-6.3 6.2S4.5 19.3 4.5 15.8s2.8-6.2 6.2-6.2c.5 0 1 .1 1.5.2v4.3c-.4-.2-.9-.3-1.4-.3-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2V2h3.8z"/>
-              </svg>
-              <span className="hidden sm:inline">TikTok</span>
-            </a>
-            )}
-            {config.twitter_url && (
-            <a
-              href={config.twitter_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-(--brand-yellow) transition-colors font-semibold flex items-center gap-1"
-              aria-label="Twitter/X"
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M18.9 2h3.3l-7.2 8.2L23.5 22h-6.6l-5.2-6.8L5.8 22H2.5l7.7-8.8L2 2h6.8l4.7 6.2L18.9 2zm-1.2 18h1.8L7.8 3.9H5.9L17.7 20z"/>
-              </svg>
-              <span className="hidden sm:inline">Twitter/X</span>
-            </a>
-            )}
-          </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+          <FraseAnimada />
         </div>
       </div>
 
@@ -283,51 +257,37 @@ export function Header() {
             </div>
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-1 xl:gap-2" aria-label="Navegación principal">
-            {navItems.map(({ href, label, Icon, hash }) => {
+          <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1" aria-label="Navegación principal">
+            {navItems.filter(({ href }) => href !== '/contacto').map(({ href, label, hash }) => {
               const activo = esActivo(href, hash);
-              const esContacto = href === '/contacto';
               return (
                 <Link
                   key={href}
                   href={href}
                   onClick={(event) => handleNavClick(event, hash)}
-                  className={`relative flex items-center gap-1.5 px-3 py-2 text-xs xl:text-sm tracking-wide transition-all group ${
-                    esContacto
-                      ? `rounded-full border ${
-                          activo
-                            ? 'border-[#001f3f] bg-[#001f3f] text-white font-black shadow-sm'
-                            : 'border-[#001f3f]/15 bg-[#001f3f]/5 text-[#001f3f] font-bold hover:bg-[#001f3f] hover:text-white'
-                        }`
-                      : `rounded-lg ${
-                          activo
-                            ? 'text-[#001f3f] font-bold'
-                            : 'text-slate-500 font-medium hover:text-[#001f3f] hover:bg-gray-50'
-                        }`
+                  className={`relative flex items-center px-2.5 py-2 xl:px-3 text-[11px] xl:text-xs font-medium tracking-wide transition-all whitespace-nowrap rounded-lg ${
+                    activo
+                      ? 'text-[#001f3f] font-bold'
+                      : 'text-slate-500 hover:text-[#001f3f] hover:bg-gray-50'
                   }`}
                 >
-                  <Icon
-                    size={15}
-                    className={
-                      esContacto
-                        ? (activo ? 'text-[#ffd600]' : 'text-[#001f3f] group-hover:text-[#ffd600] transition-colors')
-                        : (activo ? 'text-[#001f3f]' : 'text-slate-400 group-hover:text-[#001f3f] transition-colors')
-                    }
-                    aria-hidden="true"
-                  />
                   {label}
-                  {activo && !esContacto && (
-                    <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-[#ffd600] rounded-full" />
+                  {activo && (
+                    <span className="absolute bottom-0 left-2.5 right-2.5 xl:left-3 xl:right-3 h-0.5 bg-[#ffd600] rounded-full" />
                   )}
                 </Link>
               );
             })}
           </nav>
 
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <div className="hidden sm:block">
-              <SelectorIdioma />
-            </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              href="/contacto"
+              className="hidden md:flex items-center gap-1.5 bg-[#16a34a] hover:bg-[#15803d] text-white font-black text-xs px-5 py-2.5 rounded-full transition-all active:scale-95 shadow-[0_4px_12px_rgba(22,163,74,0.3)] hover:shadow-[0_6px_18px_rgba(22,163,74,0.4)] hover:-translate-y-0.5"
+            >
+              <Phone size={14} aria-hidden="true" />
+              <span>Contacto</span>
+            </Link>
             <a
               href={whatsappReserva}
               target="_blank"
@@ -337,6 +297,26 @@ export function Header() {
               <MessageCircle size={14} aria-hidden="true" />
               <span>Reservar ahora</span>
             </a>
+            {/* Redes sociales — solo las que tienen URL configurada */}
+            {[
+              { label: 'Facebook',   url: config.facebook_url,  bg: '#1877F2', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M24 12.073C24 5.446 18.627 0 12 0S0 5.446 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047v-2.66c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.971h-1.513c-1.491 0-1.956.93-1.956 1.886v2.264h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg> },
+              { label: 'Instagram',  url: config.instagram_url, bg: 'linear-gradient(135deg,#feda77 0%,#f1873a 25%,#d62976 50%,#962fbf 75%,#4f5bd5 100%)', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg> },
+              { label: 'TikTok',     url: config.tiktok_url,    bg: '#010101', icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.41a8.16 8.16 0 004.77 1.52V7.48a4.85 4.85 0 01-1-.47z"/></svg> },
+              { label: 'Twitter/X',  url: config.twitter_url,   bg: '#000000', icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg> },
+            ].filter(({ url }) => url?.trim()).map(({ label, url, bg, icon }) => (
+              <a
+                key={label}
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={label}
+                title={label}
+                className="hidden md:flex w-8 h-8 rounded-full items-center justify-center transition-all hover:scale-110 hover:shadow-md active:scale-95 shrink-0"
+                style={{ background: bg }}
+              >
+                {icon}
+              </a>
+            ))}
             <button
               type="button"
               className="lg:hidden p-1.5 xs:p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-gray-100 text-[#001f3f] hover:bg-gray-200 transition-colors"
@@ -399,14 +379,10 @@ export function Header() {
                 </a>
               </div>
 
-              <div className="mt-2 flex justify-center">
-                <SelectorIdioma />
-              </div>
             </nav>
           </div>
         )}
       </header>
-
       <ScrollToTop />
     </>
   );

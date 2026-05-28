@@ -6,7 +6,7 @@ import {
   Settings, Save, Loader2, Globe, MessageCircle,
   Phone, Mail, AlertTriangle,
   CheckCircle2, Building2, Zap,
-  ToggleLeft, ToggleRight, RefreshCw, Link2
+  ToggleLeft, ToggleRight, RefreshCw, Link2, Image, Users, Star
 } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 
@@ -26,6 +26,11 @@ interface Configuracion {
   mensaje_mantenimiento: string;
   reservas_activas: boolean;
   moneda_default: string;
+  hero_avatar_1: string;
+  hero_avatar_2: string;
+  hero_avatar_3: string;
+  hero_clientes_count: number;
+  hero_rating: number;
 }
 
 const configVacia: Configuracion = {
@@ -44,14 +49,20 @@ const configVacia: Configuracion = {
   mensaje_mantenimiento: 'Sitio en mantenimiento. Volvemos pronto.',
   reservas_activas: true,
   moneda_default: 'USD',
+  hero_avatar_1: '',
+  hero_avatar_2: '',
+  hero_avatar_3: '',
+  hero_clientes_count: 1050,
+  hero_rating: 4.9,
 };
 
-type Seccion = 'negocio' | 'whatsapp' | 'redes' | 'sistema';
+type Seccion = 'negocio' | 'whatsapp' | 'redes' | 'hero' | 'sistema';
 
 const secciones: { id: Seccion; label: string; Icon: typeof Settings; desc: string }[] = [
   { id: 'negocio',   label: 'Negocio',       Icon: Building2,      desc: 'Información general' },
   { id: 'whatsapp',  label: 'WhatsApp',       Icon: MessageCircle,  desc: 'Reservas y contacto' },
   { id: 'redes',     label: 'Redes Sociales', Icon: Globe,          desc: 'Links y perfiles' },
+  { id: 'hero',      label: 'Hero / Inicio',  Icon: Image,          desc: 'Avatares y estadísticas' },
   { id: 'sistema',   label: 'Sistema',        Icon: Settings,       desc: 'Mantenimiento y reservas' },
 ];
 
@@ -137,7 +148,7 @@ export default function PaginaConfiguracion() {
     } finally { setGuardando(false); }
   };
 
-  const set = (key: keyof Configuracion, value: string | boolean) =>
+  const set = (key: keyof Configuracion, value: string | boolean | number) =>
     setConfig(c => ({ ...c, [key]: value }));
 
   if (loading) return (
@@ -367,6 +378,124 @@ export default function PaginaConfiguracion() {
                     </div>
                   </div>
                 )}
+              </div>
+            </>
+          )}
+
+          {/* ── HERO ── */}
+          {seccion === 'hero' && (
+            <>
+              <SectionHeader Icon={Image} title="Hero / Inicio" desc="Fotos de avatares y estadísticas de la sección principal" />
+              <div className="space-y-6">
+
+                {/* Avatares */}
+                <div>
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <Users size={13} className="text-[#001f3f]" />
+                    Fotos de avatares (círculos de clientes)
+                  </p>
+                  <p className="text-xs text-gray-400 mb-4">Pega la URL pública de la foto de cada cliente. Si dejas el campo vacío se mostrará una inicial.</p>
+                  <div className="space-y-3">
+                    {([
+                      { key: 'hero_avatar_1' as const, label: 'Avatar 1 (izquierda)', inicial: 'A' },
+                      { key: 'hero_avatar_2' as const, label: 'Avatar 2 (centro)', inicial: 'H' },
+                      { key: 'hero_avatar_3' as const, label: 'Avatar 3 (derecha)', inicial: 'P' },
+                    ] as const).map(({ key, label, inicial }) => (
+                      <div key={key} className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border-2 border-gray-200 bg-gradient-to-br from-[#ffd600] to-[#001f3f] flex items-center justify-center text-xs font-black text-white">
+                          {config[key] ? (
+                            <img src={config[key]} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            inicial
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <Input
+                            label={label}
+                            value={config[key]}
+                            onChange={e => set(key, e.target.value)}
+                            placeholder="https://ejemplo.com/foto-cliente.jpg"
+                            icon={<Link2 size={15} />}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Estadísticas */}
+                <div className="border-t border-gray-100 pt-5">
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <Star size={13} className="text-[#001f3f]" />
+                    Estadísticas del hero
+                  </p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                        Cantidad de clientes
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={9999999}
+                        step={1}
+                        value={config.hero_clientes_count}
+                        onChange={e => set('hero_clientes_count', e.target.value)}
+                        className="w-full px-4 py-3 border-0 border-b-2 border-gray-200 bg-gray-50 rounded-t-lg focus:outline-none focus:border-[#ffd600] focus:bg-white transition-all text-sm text-gray-800"
+                      />
+                      <p className="text-xs text-gray-400 mt-1">Se muestra como "+1,050 clientes"</p>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                        Calificación (0–5)
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={5}
+                        step={0.1}
+                        value={config.hero_rating}
+                        onChange={e => set('hero_rating', e.target.value)}
+                        className="w-full px-4 py-3 border-0 border-b-2 border-gray-200 bg-gray-50 rounded-t-lg focus:outline-none focus:border-[#ffd600] focus:bg-white transition-all text-sm text-gray-800"
+                      />
+                      <p className="text-xs text-gray-400 mt-1">Ej: 4.9 → muestra "★★★★★ 4.9"</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Preview */}
+                <div className="bg-[#001f3f] rounded-xl p-4">
+                  <p className="text-xs font-bold text-[#ffd600] uppercase tracking-wider mb-3">Vista previa</p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex -space-x-2.5">
+                      {[
+                        { k: 'hero_avatar_1' as const, i: 'A' },
+                        { k: 'hero_avatar_2' as const, i: 'H' },
+                        { k: 'hero_avatar_3' as const, i: 'P' },
+                      ].map(({ k, i }, idx) => (
+                        <div
+                          key={k}
+                          className="w-8 h-8 rounded-full border-2 border-[#001f3f] overflow-hidden shrink-0 bg-gradient-to-br from-[#ffd600] to-[#001f3f] flex items-center justify-center text-[10px] font-black text-white"
+                          style={{ filter: `brightness(${1 - idx * 0.08})` }}
+                        >
+                          {config[k] ? <img src={config[k]} alt="" className="w-full h-full object-cover" /> : i}
+                        </div>
+                      ))}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-0.5 mb-0.5">
+                        {'★★★★★'.split('').map((s, i) => (
+                          <span key={i} className="text-[#ffd600] text-xs">{s}</span>
+                        ))}
+                        <span className="text-white text-xs font-black ml-1">{Number(config.hero_rating).toFixed(1)}</span>
+                      </div>
+                      <p className="text-gray-400 text-[9px] font-bold uppercase tracking-widest">
+                        +{Number(config.hero_clientes_count).toLocaleString('es-PE')} clientes
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </>
           )}

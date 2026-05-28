@@ -15,6 +15,11 @@ export interface ConfiguracionWeb {
   mensaje_mantenimiento: string;
   reservas_activas: boolean;
   moneda_default: string;
+  hero_avatar_1: string;
+  hero_avatar_2: string;
+  hero_avatar_3: string;
+  hero_clientes_count: number;
+  hero_rating: number;
 }
 
 export const CONFIGURACION_DEFAULT: ConfiguracionWeb = {
@@ -34,6 +39,11 @@ export const CONFIGURACION_DEFAULT: ConfiguracionWeb = {
   mensaje_mantenimiento: 'Sitio en mantenimiento. Volvemos pronto.',
   reservas_activas: true,
   moneda_default: 'USD',
+  hero_avatar_1: '',
+  hero_avatar_2: '',
+  hero_avatar_3: '',
+  hero_clientes_count: 1050,
+  hero_rating: 4.9,
 };
 
 export const CAMPOS_CONFIGURACION = [
@@ -52,6 +62,11 @@ export const CAMPOS_CONFIGURACION = [
   'mensaje_mantenimiento',
   'reservas_activas',
   'moneda_default',
+  'hero_avatar_1',
+  'hero_avatar_2',
+  'hero_avatar_3',
+  'hero_clientes_count',
+  'hero_rating',
 ] as const;
 
 export type CampoConfiguracion = (typeof CAMPOS_CONFIGURACION)[number];

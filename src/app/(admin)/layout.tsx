@@ -11,6 +11,7 @@ const navAdmin = [
   { href: '/admin/dashboard', label: 'Dashboard', roles: ['admin', 'colaborador', 'viewer'] },
   { href: '/admin/hoteles', label: 'Hoteles', roles: ['admin', 'colaborador'] },
   { href: '/admin/habitaciones', label: 'Habitaciones', roles: ['admin', 'colaborador'] },
+  { href: '/admin/testimonios', label: 'Testimonios', roles: ['admin', 'colaborador'] },
   { href: '/admin/reservas', label: 'Reservas', roles: ['admin', 'colaborador'] },
   { href: '/admin/usuarios', label: 'Usuarios', roles: ['admin'] },
   { href: '/admin/configuracion', label: 'Config', roles: ['admin'] },

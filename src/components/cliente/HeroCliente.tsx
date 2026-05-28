@@ -5,6 +5,7 @@ import {
   Hotel, Home, Layers, TreePine, Leaf, Backpack,
   CheckCircle2, Loader2, ArrowRight, X,
   AlertCircle, ChevronLeft, ChevronRight,
+  Users, ShieldCheck,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -13,6 +14,7 @@ import type { TipoAlojamiento } from '@/modules/hoteles/dominio/entidades/Hotel'
 import type { HotelConPrecio } from '@/lib/hoteles-consultas';
 import { useHeroCarrusel, HERO_SLIDES } from './HeroFondoAnimado';
 import { ImagenSegura } from '@/components/ui/ImagenSegura';
+import { useConfiguracionWeb } from '@/hooks/useConfiguracionWeb';
 
 interface HeroClienteProps {
   totalHoteles: number;
@@ -25,52 +27,62 @@ interface HeroClienteProps {
 function TarjetaHotelResultado({ hotel }: { hotel: HotelConPrecio }) {
   return (
     <Link href={`/hoteles/${hotel.id}`} className="block group">
-      <article className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
-        <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+      <article className="flex items-center gap-4 px-4 py-3.5 rounded-2xl hover:bg-[#001f3f]/[0.03] transition-all duration-200 border border-transparent hover:border-[#001f3f]/8">
+        {/* Imagen */}
+        <div className="relative w-[72px] h-[56px] rounded-xl overflow-hidden bg-gray-100 shrink-0 shadow-sm">
           {hotel.imagenesUrls?.[0] ? (
             <ImagenSegura
               src={hotel.imagenesUrls[0]}
               alt={hotel.nombre}
               fill
-              sizes="64px"
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              sizes="72px"
+              className="object-cover group-hover:scale-110 transition-transform duration-500"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-300">
+            <div className="w-full h-full flex items-center justify-center text-gray-300 bg-gray-50">
               <Hotel size={20} />
             </div>
           )}
         </div>
+
+        {/* Info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1 mb-0.5">
+          {/* Estrellas */}
+          <div className="flex items-center gap-0.5 mb-1">
             {Array.from({ length: hotel.estrellas }).map((_, i) => (
-              <Star key={i} size={8} className="text-(--brand-yellow) fill-(--brand-yellow)" />
+              <Star key={i} size={9} className="text-amber-400 fill-amber-400" />
             ))}
           </div>
-          <p className="text-sm font-semibold text-(--brand-navy) truncate group-hover:text-(--brand-yellow) transition-colors leading-tight">
+          <p className="text-sm font-bold text-[#001f3f] truncate leading-tight group-hover:text-[#001f3f] transition-colors">
             {hotel.nombre}
           </p>
-          <div className="flex items-center gap-1 mt-0.5">
-            <MapPin size={9} className="text-gray-400 shrink-0" />
-            <span className="text-[10px] text-gray-400 truncate">{hotel.ciudad}</span>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <MapPin size={9} className="text-[#ffd600] shrink-0" />
+            <span className="text-[10px] text-gray-400 font-medium truncate">{hotel.ciudad}</span>
             {hotel.tipoAlojamiento && (
               <>
-                <span className="text-gray-200 mx-0.5">·</span>
+                <span className="text-gray-200">·</span>
                 <span className="text-[10px] text-gray-400">{hotel.tipoAlojamiento}</span>
               </>
             )}
           </div>
         </div>
+
+        {/* Precio */}
         <div className="shrink-0 text-right">
           {hotel.precioMinimo ? (
             <div>
-              <p className="text-[9px] text-gray-400 uppercase tracking-wide">Desde</p>
-              <p className="text-sm font-black text-(--brand-navy)">S/{hotel.precioMinimo}</p>
+              <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-0.5">Desde</p>
+              <p className="text-base font-black text-[#001f3f] leading-none">S/{hotel.precioMinimo}</p>
             </div>
           ) : (
-            <span className="text-[10px] text-gray-400">Ver detalles</span>
+            <span className="text-[10px] text-gray-400 font-medium">Ver más</span>
           )}
-          <ArrowRight size={12} className="text-gray-300 group-hover:text-(--brand-yellow) transition-colors mt-1 ml-auto" />
+          <div className="flex justify-end mt-1.5">
+            <div className="w-5 h-5 rounded-full bg-gray-100 group-hover:bg-[#ffd600] flex items-center justify-center transition-all duration-200">
+              <ArrowRight size={10} className="text-gray-400 group-hover:text-[#001f3f] transition-colors" />
+            </div>
+          </div>
         </div>
       </article>
     </Link>
@@ -301,53 +313,135 @@ function PanelResultados({ resultados, cargando, visible, total, anchorRef, pane
   useEffect(() => {
     if (!visible || !anchorRef.current) return;
     const r = anchorRef.current.getBoundingClientRect();
-    setPos({ top: r.bottom + window.scrollY + 8, left: r.left + window.scrollX, width: r.width });
+    setPos({ top: r.bottom + window.scrollY + 10, left: r.left + window.scrollX, width: r.width });
   }, [visible, anchorRef]);
   if (!visible || typeof document === 'undefined') return null;
+
   return createPortal(
     <div ref={panelRef} style={{ position: 'absolute', top: pos.top, left: pos.left, width: pos.width, zIndex: 9999 }}>
-      <div className="bg-white rounded-2xl shadow-[0_20px_60px_-10px_rgba(0,0,0,0.3)] border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-3xl shadow-[0_24px_64px_-12px_rgba(0,31,63,0.22)] border border-gray-100/80 overflow-hidden">
+
         {cargando ? (
-          <div className="flex items-center justify-center gap-2.5 py-8 text-gray-400 text-sm">
-            <Loader2 size={16} className="animate-spin text-(--brand-yellow)" />
-            <span>Buscando hoteles...</span>
+          <div className="flex flex-col items-center justify-center gap-3 py-10">
+            <div className="w-10 h-10 rounded-2xl bg-[#ffd600]/10 flex items-center justify-center">
+              <Loader2 size={18} className="animate-spin text-[#001f3f]" />
+            </div>
+            <p className="text-sm font-medium text-gray-400">Buscando hoteles...</p>
           </div>
+
         ) : resultados.length > 0 ? (
           <>
-            <div className="px-4 pt-3 pb-1 flex items-center justify-between">
-              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
-                {total} resultado{total !== 1 ? 's' : ''}
-              </span>
-              <span className="text-[10px] text-gray-300">Selecciona para ver detalles</span>
+            {/* Header del panel */}
+            <div className="px-5 pt-4 pb-3 flex items-center justify-between border-b border-gray-50">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#ffd600] animate-pulse" />
+                <span className="text-[10px] font-black text-[#001f3f] uppercase tracking-[0.18em]">
+                  {total} resultado{total !== 1 ? 's' : ''}
+                </span>
+              </div>
+              <span className="text-[10px] text-gray-300 font-medium">Toca para ver detalles</span>
             </div>
-            <div className="px-2 pb-2 max-h-80 overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
-              {resultados.map(hotel => (
-                <TarjetaHotelResultado key={hotel.id} hotel={hotel} />
+
+            {/* Lista de hoteles */}
+            <div className="py-2 max-h-[340px] overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
+              {resultados.map((hotel, i) => (
+                <div key={hotel.id}>
+                  <TarjetaHotelResultado hotel={hotel} />
+                  {i < resultados.length - 1 && (
+                    <div className="mx-4 h-px bg-gray-50" />
+                  )}
+                </div>
               ))}
             </div>
+
+            {/* Footer — ver todos */}
             {total > resultados.length && (
-              <div className="border-t border-gray-50 px-4 py-3">
+              <div className="border-t border-gray-50 px-4 py-3.5">
                 <button
                   type="button"
                   onClick={onVerTodos}
-                  className="w-full flex items-center justify-center gap-2 text-xs font-bold text-(--brand-navy) hover:text-(--brand-yellow) transition-colors py-1"
+                  className="w-full flex items-center justify-center gap-2 bg-[#001f3f] hover:bg-[#002d5a] text-white text-xs font-bold py-3 rounded-2xl transition-all duration-200 hover:-translate-y-0.5 shadow-sm uppercase tracking-widest"
                 >
-                  <ArrowRight size={12} />
+                  <ArrowRight size={13} />
                   Ver los {total} resultados
                 </button>
               </div>
             )}
           </>
+
         ) : (
-          <div className="flex flex-col items-center justify-center gap-2 py-8 text-gray-400">
-            <AlertCircle size={20} className="text-gray-300" />
-            <p className="text-sm font-medium">Sin resultados para estos filtros</p>
-            <p className="text-xs text-gray-300">Prueba con otros criterios de búsqueda</p>
+          <div className="flex flex-col items-center justify-center gap-3 py-10 px-6 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center">
+              <AlertCircle size={20} className="text-gray-300" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-[#001f3f] mb-1">Sin resultados</p>
+              <p className="text-xs text-gray-400">Prueba con otro destino o categoría</p>
+            </div>
           </div>
         )}
       </div>
     </div>,
     document.body
+  );
+}
+
+// ─── Stats bar ────────────────────────────────────────────────────────────────
+
+function StatItem({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <div className="w-9 h-9 rounded-xl bg-white/10 backdrop-blur-sm border border-white/15 flex items-center justify-center shrink-0">
+        {icon}
+      </div>
+      <div className="text-left">
+        <p className="text-white text-sm font-black leading-none tabular-nums">{value}</p>
+        <p className="text-white/45 text-[9px] font-bold uppercase tracking-[0.15em] mt-0.5">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+function StatsBar({ config, coberturaTexto }: { config: ReturnType<typeof useConfiguracionWeb>; coberturaTexto: string }) {
+  const rating  = Number(config.hero_rating)         || 4.9;
+  const clientes = Number(config.hero_clientes_count) || 1050;
+
+  const sep = <div className="hidden sm:block h-8 w-px bg-white/12" />;
+
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-5 mb-8">
+
+      <StatItem
+        icon={<Star size={16} className="text-(--brand-yellow) fill-(--brand-yellow)" aria-hidden="true" />}
+        value={rating.toFixed(1)}
+        label="Calificación"
+      />
+
+      {sep}
+
+      <StatItem
+        icon={<Users size={15} className="text-(--brand-yellow)" aria-hidden="true" />}
+        value={`+${clientes.toLocaleString('es-PE')}`}
+        label="Clientes felices"
+      />
+
+      {sep}
+
+      <StatItem
+        icon={<MapPin size={15} className="text-(--brand-yellow)" aria-hidden="true" />}
+        value={coberturaTexto.replace(' destinos', '')}
+        label="Destinos"
+      />
+
+      {sep}
+
+      <StatItem
+        icon={<ShieldCheck size={15} className="text-(--brand-yellow)" aria-hidden="true" />}
+        value="100%"
+        label="Hoteles verificados"
+      />
+
+    </div>
   );
 }
 
@@ -474,6 +568,9 @@ export function HeroCliente({ totalHoteles, totalCiudades, ciudadesDisponibles =
     ? `${totalCiudades || ciudades.length} destinos`
     : 'Todo el Perú';
 
+  // ── Config real-time ──
+  const config = useConfiguracionWeb();
+
   // ── Carrusel state ──
   const carrusel = useHeroCarrusel();
   const [lugarVisible, setLugarVisible] = useState(true);
@@ -580,41 +677,7 @@ export function HeroCliente({ totalHoteles, totalCiudades, ciudadesDisponibles =
         sin comisiones y con confirmación inmediata por WhatsApp.
       </p>
 
-      <div className="flex flex-wrap items-center justify-center gap-5 sm:gap-8 mb-8">
-        <div className="flex items-center gap-3">
-          <div className="flex -space-x-2.5">
-            {['A', 'H', 'P'].map((inicial, index) => (
-              <div
-                key={inicial}
-                className="w-8 h-8 rounded-full border-2 border-(--brand-navy) overflow-hidden bg-linear-to-br from-[#ffd600] to-[#001f3f] shrink-0 flex items-center justify-center text-[10px] font-black text-white"
-                style={{ filter: `brightness(${1 - index * 0.08})` }}
-              >
-                {inicial}
-              </div>
-            ))}
-          </div>
-          <div className="text-left">
-            <div className="flex items-center gap-0.5 mb-0.5">
-              {[1,2,3,4,5].map(i => (
-                <Star key={i} size={10} className="text-(--brand-yellow) fill-(--brand-yellow)" aria-hidden="true" />
-              ))}
-              <span className="text-white text-xs font-black ml-1">4.9</span>
-            </div>
-            <p className="text-gray-400 text-[9px] font-bold uppercase tracking-widest">
-              +{totalHoteles > 0 ? totalHoteles * 50 : 150} clientes
-            </p>
-          </div>
-        </div>
-        <div className="hidden sm:block h-6 w-px bg-white/20" />
-        <div className="flex items-center gap-1.5 text-white/70 text-xs font-semibold">
-          <MapPin size={11} className="text-(--brand-yellow)" aria-hidden="true" />
-          {coberturaTexto}
-        </div>
-        <div className="flex items-center gap-1.5 text-white/70 text-xs font-semibold">
-          <Star size={11} className="text-(--brand-yellow)" aria-hidden="true" />
-          Hoteles verificados
-        </div>
-      </div>
+      <StatsBar config={config} coberturaTexto={coberturaTexto} />
 
       <div ref={wrapperRef} className="w-full max-w-5xl relative">
         <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl sm:rounded-full p-1.5">

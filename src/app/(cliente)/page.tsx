@@ -74,7 +74,7 @@ export default async function PaginaInicio() {
           <HeroCliente totalHoteles={hoteles.length} totalCiudades={departamentos.length || ciudades.length} ciudadesDisponibles={ciudades} />
         </section>
 
-        <section id="hoteles" className="section-padding bg-white">
+        <section id="hoteles" className="section-hoteles bg-white">
           <div className="container-site">
             <AnimarAlEntrar className="text-center mb-10">
               <p className="label-eyebrow mb-3">Selección Exclusiva</p>
@@ -124,7 +124,7 @@ export default async function PaginaInicio() {
           whatsappNumero={configuracion.whatsapp_numero}
         />
 
-        <section id="servicios" className="section-padding bg-(--bg-base)">
+        <section id="servicios" className="section-padding section-screen bg-white">
           <div className="container-site">
             <AnimarAlEntrar className="text-center mb-14">
               <p className="label-eyebrow mb-3">Nuestros Servicios</p>
@@ -141,7 +141,7 @@ export default async function PaginaInicio() {
           </div>
         </section>
 
-        <section className="section-padding bg-white relative overflow-hidden">
+        <section id="seguridad" className="section-padding section-screen bg-white relative overflow-hidden">
           <div className="container-site relative z-10">
             <div className="grid lg:grid-cols-2 gap-10 xl:gap-16 items-center">
               <AnimarAlEntrar>
@@ -301,7 +301,7 @@ export default async function PaginaInicio() {
 
         <SeccionPorQueElegirnos />
 
-        <section className="section-padding bg-(--bg-subtle)">
+        <section id="testimonios" className="section-padding bg-white">
           <div className="container-site">
             <div className="rounded-[2rem] border border-slate-200 bg-white px-5 py-8 shadow-[0_18px_50px_rgba(15,23,42,0.12)] sm:px-8 lg:px-10">
               <AnimarAlEntrar className="mb-8 text-center">
@@ -316,7 +316,7 @@ export default async function PaginaInicio() {
           </div>
         </section>
 
-        <section id="preguntas-frecuentes" className="section-padding bg-(--bg-subtle)">
+        <section id="preguntas-frecuentes" className="section-padding bg-white">
           <div className="container-site max-w-4xl">
             <AnimarAlEntrar className="text-center mb-14">
               <p className="label-eyebrow mb-3">Resolvemos tus dudas</p>

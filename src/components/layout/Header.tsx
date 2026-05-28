@@ -140,7 +140,11 @@ export function Header() {
 
     window.history.pushState(null, '', `/#${hash}`);
     setHashActivo(hash);
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    const header = document.querySelector('header[role="banner"]') as HTMLElement | null;
+    const headerHeight = header?.offsetHeight ?? 57;
+    const y = el.getBoundingClientRect().top + window.scrollY - headerHeight;
+    window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
   };
 
   const handleNavClick = (event: MouseEvent<HTMLAnchorElement>, hash: string | null) => {

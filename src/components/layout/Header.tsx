@@ -138,21 +138,9 @@ export function Header() {
     const el = document.getElementById(hash);
     if (!el) return;
 
-    const header = document.querySelector('header[role="banner"]');
-    const altoHeader = header instanceof HTMLElement ? header.offsetHeight : 80;
-    const ajustes: Record<string, number> = {
-      inicio: 0,
-      contacto: 0,
-      destinos: 0,
-      hoteles: 0,
-      servicios: 0,
-      'preguntas-frecuentes': 0,
-    };
-    const top = el.getBoundingClientRect().top + window.scrollY - altoHeader + (ajustes[hash] ?? 70);
-
     window.history.pushState(null, '', `/#${hash}`);
     setHashActivo(hash);
-    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const handleNavClick = (event: MouseEvent<HTMLAnchorElement>, hash: string | null) => {

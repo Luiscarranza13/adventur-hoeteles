@@ -69,12 +69,12 @@ export default async function PaginaInicio() {
       <Header />
       <main>
 
-        <section id="inicio" className="relative min-h-[calc(100svh-57px)] flex flex-col bg-black overflow-hidden scroll-mt-40 sm:scroll-mt-48" style={{ isolation: 'isolate' }}>
+        <section id="inicio" className="relative min-h-[calc(100svh-57px)] flex flex-col bg-black overflow-hidden" style={{ isolation: 'isolate' }}>
           <HeroFondoAnimado />
           <HeroCliente totalHoteles={hoteles.length} totalCiudades={departamentos.length || ciudades.length} ciudadesDisponibles={ciudades} />
         </section>
 
-        <section id="hoteles" className="section-padding bg-white scroll-mt-40 sm:scroll-mt-48">
+        <section id="hoteles" className="section-padding bg-white">
           <div className="container-site">
             <AnimarAlEntrar className="text-center mb-10">
               <p className="label-eyebrow mb-3">Selección Exclusiva</p>
@@ -124,7 +124,7 @@ export default async function PaginaInicio() {
           whatsappNumero={configuracion.whatsapp_numero}
         />
 
-        <section id="servicios" className="section-padding bg-(--bg-base) scroll-mt-40 sm:scroll-mt-48">
+        <section id="servicios" className="section-padding bg-(--bg-base)">
           <div className="container-site">
             <AnimarAlEntrar className="text-center mb-14">
               <p className="label-eyebrow mb-3">Nuestros Servicios</p>
@@ -316,7 +316,7 @@ export default async function PaginaInicio() {
           </div>
         </section>
 
-        <section id="preguntas-frecuentes" className="section-padding bg-(--bg-subtle) scroll-mt-40 sm:scroll-mt-48">
+        <section id="preguntas-frecuentes" className="section-padding bg-(--bg-subtle)">
           <div className="container-site max-w-4xl">
             <AnimarAlEntrar className="text-center mb-14">
               <p className="label-eyebrow mb-3">Resolvemos tus dudas</p>

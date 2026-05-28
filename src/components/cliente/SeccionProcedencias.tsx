@@ -199,7 +199,7 @@ export function SeccionProcedencias({
   if (!destinos.length) return null;
 
   return (
-    <section id="destinos" className="section-padding bg-(--bg-base) scroll-mt-40 sm:scroll-mt-48">
+    <section id="destinos" className="section-padding bg-(--bg-base)">
       <div className="container-site">
 
         {/* Encabezado */}

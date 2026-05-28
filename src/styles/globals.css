@@ -90,7 +90,7 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 6rem;
+  scroll-padding-top: 57px;
   background: var(--brand-navy);
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -103,21 +103,7 @@ html {
 #contacto,
 #servicios,
 #preguntas-frecuentes {
-  scroll-margin-top: 6rem;
-}
-
-@media (min-width: 768px) {
-  html {
-    scroll-padding-top: 12rem;
-  }
-  #inicio,
-  #hoteles,
-  #destinos,
-  #contacto,
-  #servicios,
-  #preguntas-frecuentes {
-    scroll-margin-top: 12rem;
-  }
+  scroll-margin-top: 57px;
 }
 
 ::selection {

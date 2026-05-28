@@ -10,9 +10,10 @@ interface FormDrawerProps {
   subtitle?: string;
   icon?: React.ReactNode;
   children: React.ReactNode;
+  footer?: React.ReactNode;
 }
 
-export function FormDrawer({ open, onClose, title, subtitle, icon, children }: FormDrawerProps) {
+export function FormDrawer({ open, onClose, title, subtitle, icon, children, footer }: FormDrawerProps) {
   const drawerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -66,6 +67,13 @@ export function FormDrawer({ open, onClose, title, subtitle, icon, children }: F
         <div className="flex-1 overflow-y-auto px-6 py-5">
           {children}
         </div>
+
+        {/* Footer */}
+        {footer && (
+          <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex-shrink-0">
+            {footer}
+          </div>
+        )}
       </div>
     </>
   );

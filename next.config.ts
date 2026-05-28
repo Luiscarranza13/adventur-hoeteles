@@ -30,12 +30,11 @@ const scriptSrc = isDev
 const ContentSecurityPolicy = `
   default-src 'self';
   script-src ${scriptSrc};
-  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://translate.googleapis.com https://translate-pa.googleapis.com;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src 'self' https://fonts.gstatic.com;
   img-src 'self' data: blob: https://${SUPABASE_HOST} ${cspHotelImgSrc};
-  connect-src 'self' https://${SUPABASE_HOST} wss://${SUPABASE_HOST} https://translate.googleapis.com https://translate-pa.googleapis.com;
+  connect-src 'self' https://${SUPABASE_HOST} wss://${SUPABASE_HOST};
   media-src 'self' blob:;
-  frame-src https://translate.google.com;
   frame-ancestors 'none';
   base-uri 'self';
   form-action 'self';

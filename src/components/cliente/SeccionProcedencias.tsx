@@ -2,9 +2,8 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, BedDouble, MessageCircle, ArrowRight, MapPin } from 'lucide-react';
+import { ChevronLeft, ChevronRight, BedDouble, ArrowRight } from 'lucide-react';
 import { AnimarAlEntrar } from '@/components/ui/AnimarAlEntrar';
-import { crearUrlWhatsApp } from '@/lib/configuracion';
 import type { DestinoProcedencia } from '@/lib/destinos';
 
 interface SeccionProcedenciasProps {
@@ -14,21 +13,6 @@ interface SeccionProcedenciasProps {
 }
 
 const GAP_PX = 24;
-
-function hrefProcedencia(destino: DestinoProcedencia, whatsappNumero: string) {
-  if (destino.hayOfertaDirecta) {
-    return `/hoteles?ciudad=${encodeURIComponent(destino.nombre)}`;
-  }
-  return crearUrlWhatsApp(
-    whatsappNumero,
-    `Hola, quiero consultar alojamientos en ${destino.nombre}. ¿Tienen disponibilidad?`,
-  );
-}
-
-function atributosLink(destino: DestinoProcedencia) {
-  if (destino.hayOfertaDirecta) return {};
-  return { target: '_blank', rel: 'noopener noreferrer' };
-}
 
 function gradienteRegion(departamento: string): string {
   const mapa: Record<string, string> = {
@@ -55,15 +39,19 @@ function TarjetaProcedencia({
   destino: DestinoProcedencia;
   whatsappNumero: string;
 }) {
+  // Siempre va a la página de hoteles filtrada por ciudad/destino
+  const urlHoteles = `/hoteles?ciudad=${encodeURIComponent(destino.nombre)}`;
   const tieneImagen = !!destino.imagen_url;
   const imagenExterna = /^https?:\/\//.test(destino.imagen_url ?? '');
 
+  // Silenciar warning de whatsappNumero no usado directamente aquí
+  void whatsappNumero;
+
   return (
     <a
-      href={hrefProcedencia(destino, whatsappNumero)}
-      {...atributosLink(destino)}
+      href={urlHoteles}
       className="block h-full"
-      aria-label={`${destino.nombre} — ${destino.hayOfertaDirecta ? 'Ver hoteles disponibles' : 'Consultar por WhatsApp'}`}
+      aria-label={`Ver hoteles en ${destino.nombre}`}
     >
       <article className="group relative h-72 overflow-hidden rounded-3xl border border-gray-200 bg-(--brand-navy) shadow-sm transition-all duration-500 hover:-translate-y-1 hover:border-(--brand-yellow)/60 sm:h-80">
         {tieneImagen ? (
@@ -79,25 +67,20 @@ function TarjetaProcedencia({
           <div className={`absolute inset-0 bg-linear-to-br ${gradienteRegion(destino.departamento)}`} />
         )}
 
-        <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/10 to-transparent transition-all duration-500 group-hover:from-black/62" />
+        {/* Overlay gradiente */}
+        <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/15 to-transparent transition-all duration-500 group-hover:from-black/65" />
 
-        {/* Badge disponible */}
+        {/* Badge "Disponible" solo si tiene hoteles cargados */}
         {destino.hayOfertaDirecta && (
-          <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full bg-(--brand-yellow) px-3 py-2 text-[9px] font-black uppercase tracking-widest text-(--brand-navy)">
+          <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full bg-(--brand-yellow) px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-(--brand-navy) shadow-md">
             <span className="w-1.5 h-1.5 rounded-full bg-(--brand-navy) animate-pulse" />
             Disponible
           </div>
         )}
 
-        {/* Ícono de pin para los que solo tienen WhatsApp */}
-        {!destino.hayOfertaDirecta && (
-          <div className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full border border-white/35 bg-black/20 text-white backdrop-blur-md">
-            <MapPin size={16} aria-hidden="true" />
-          </div>
-        )}
-
+        {/* Contenido inferior */}
         <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
-          <div className="max-w-[92%]">
+          <div className="max-w-[92%] mb-4">
             <p className="mb-1.5 text-[10px] font-black uppercase leading-none tracking-[0.26em] text-(--brand-yellow) drop-shadow">
               {destino.departamento}
             </p>
@@ -105,15 +88,11 @@ function TarjetaProcedencia({
               {destino.nombre}
             </h3>
           </div>
-          <div className={`mt-4 inline-flex max-w-full items-center gap-2 rounded-full border px-3.5 py-2 text-[10px] font-black uppercase tracking-[0.12em] backdrop-blur-md transition-all duration-300 group-hover:gap-3 ${
-            destino.hayOfertaDirecta
-              ? 'border-(--brand-yellow)/45 bg-(--brand-yellow) text-(--brand-navy)'
-              : 'border-white/25 bg-black/30 text-white'
-          }`}>
-            {destino.hayOfertaDirecta ? <BedDouble size={13} aria-hidden="true" /> : <MessageCircle size={13} aria-hidden="true" />}
-            <span className="truncate">
-              {destino.hayOfertaDirecta ? 'Ver hoteles' : 'Consultar'}
-            </span>
+
+          {/* Botón siempre igual para todos — va a /hoteles?ciudad=... */}
+          <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-(--brand-yellow)/50 bg-(--brand-yellow) px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.12em] text-(--brand-navy) shadow-lg transition-all duration-300 group-hover:gap-3 group-hover:shadow-[0_4px_16px_rgba(255,214,0,0.4)]">
+            <BedDouble size={13} aria-hidden="true" />
+            <span className="truncate">Ver hoteles</span>
             <ArrowRight size={12} className="shrink-0 transition-transform duration-300 group-hover:translate-x-0.5" aria-hidden="true" />
           </div>
         </div>
@@ -128,177 +107,205 @@ export function SeccionProcedencias({
   whatsappNumero,
 }: SeccionProcedenciasProps) {
   const trackRef = useRef<HTMLDivElement>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
   const [cardWidth, setCardWidth] = useState(320);
   const [cardsVisible, setCardsVisible] = useState(3);
   const [isPaused, setIsPaused] = useState(false);
-  const destinos = useMemo(() => [...principales, ...restantes], [principales, restantes]);
+  const [displayIndex, setDisplayIndex] = useState(0); // solo para la barra de progreso
+  const isJumping = useRef(false);
 
-  const conHoteles = destinos.filter(d => d.hayOfertaDirecta).length;
+  const destinos = useMemo(() => [...principales, ...restantes], [principales, restantes]);
   const total = destinos.length;
+
+  // Triplicamos los items: [copia | original | copia]
+  // Empezamos en el bloque del medio para poder ir en ambas direcciones
+  const tripled = useMemo(() => [...destinos, ...destinos, ...destinos], [destinos]);
 
   useEffect(() => {
     const measure = () => {
       const container = trackRef.current?.parentElement;
       if (!container) return;
       const width = container.clientWidth;
-
       if (width < 640) {
         setCardsVisible(1);
         setCardWidth(Math.max(280, width - 32));
-        return;
-      }
-      if (width < 1024) {
+      } else if (width < 1024) {
         setCardsVisible(2);
         setCardWidth((width - GAP_PX) / 2);
-        return;
+      } else {
+        setCardsVisible(3);
+        setCardWidth((width - GAP_PX * 2) / 3);
       }
-      setCardsVisible(3);
-      setCardWidth((width - GAP_PX * 2) / 3);
     };
-
     measure();
-    const timer = window.setTimeout(measure, 80);
+    const t = window.setTimeout(measure, 80);
     window.addEventListener('resize', measure);
-    return () => {
-      window.clearTimeout(timer);
-      window.removeEventListener('resize', measure);
-    };
+    return () => { window.clearTimeout(t); window.removeEventListener('resize', measure); };
   }, []);
 
   const step = cardWidth + GAP_PX;
-  const maxIndex = Math.max(0, total - cardsVisible);
-  const progreso = maxIndex > 0 ? (activeIndex / maxIndex) * 100 : 100;
 
-  const scrollTo = useCallback((index: number) => {
-    const clamped = Math.max(0, Math.min(index, maxIndex));
-    setActiveIndex(clamped);
-    trackRef.current?.scrollTo({ left: clamped * step, behavior: 'smooth' });
-  }, [maxIndex, step]);
+  // Al montar, posicionar en el bloque del medio (índice `total`)
+  useEffect(() => {
+    if (!trackRef.current || step === 0 || total === 0) return;
+    const t = window.setTimeout(() => {
+      if (trackRef.current) {
+        trackRef.current.scrollLeft = total * step;
+      }
+    }, 50);
+    return () => window.clearTimeout(t);
+  }, [step, total]);
 
+  // Scroll a un índice dentro del triplicado
+  const scrollToTripled = useCallback((idx: number, smooth = true) => {
+    if (!trackRef.current) return;
+    trackRef.current.scrollTo({ left: idx * step, behavior: smooth ? 'smooth' : 'instant' });
+  }, [step]);
+
+  // Detectar cuando llegamos al borde y hacer el jump invisible
+  const onScroll = useCallback(() => {
+    const track = trackRef.current;
+    if (!track || isJumping.current || step === 0 || total === 0) return;
+
+    const scrollLeft = track.scrollLeft;
+    const maxScroll = track.scrollWidth - track.clientWidth;
+
+    // Actualizar índice visual (relativo al bloque original)
+    const rawIndex = Math.round(scrollLeft / step);
+    const normalIndex = ((rawIndex % total) + total) % total;
+    setDisplayIndex(normalIndex);
+
+    // Si llegamos al último bloque (tercera copia), saltar al bloque del medio
+    if (scrollLeft >= (total * 2) * step) {
+      isJumping.current = true;
+      track.scrollLeft = scrollLeft - total * step;
+      window.requestAnimationFrame(() => { isJumping.current = false; });
+      return;
+    }
+
+    // Si llegamos al primer bloque (primera copia), saltar al bloque del medio
+    if (scrollLeft <= 0) {
+      isJumping.current = true;
+      track.scrollLeft = scrollLeft + total * step;
+      window.requestAnimationFrame(() => { isJumping.current = false; });
+      return;
+    }
+
+    // Silenciar warning de maxScroll no usado
+    void maxScroll;
+  }, [step, total]);
+
+  const irAnterior = useCallback(() => {
+    if (!trackRef.current || step === 0) return;
+    const current = Math.round(trackRef.current.scrollLeft / step);
+    scrollToTripled(current - 1);
+  }, [step, scrollToTripled]);
+
+  const irSiguiente = useCallback(() => {
+    if (!trackRef.current || step === 0) return;
+    const current = Math.round(trackRef.current.scrollLeft / step);
+    scrollToTripled(current + 1);
+  }, [step, scrollToTripled]);
+
+  // Auto-avance
   useEffect(() => {
     if (isPaused || total <= cardsVisible) return;
-
-    const timer = window.setInterval(() => {
-      setActiveIndex((current) => {
-        const next = current >= maxIndex ? 0 : current + 1;
-        trackRef.current?.scrollTo({ left: next * step, behavior: 'smooth' });
-        return next;
-      });
-    }, 1800);
-
+    const timer = window.setInterval(irSiguiente, 2200);
     return () => window.clearInterval(timer);
-  }, [cardsVisible, isPaused, maxIndex, step, total]);
+  }, [isPaused, total, cardsVisible, irSiguiente]);
 
-  const onScroll = () => {
-    if (!trackRef.current) return;
-    const next = Math.round(trackRef.current.scrollLeft / step);
-    setActiveIndex(Math.max(0, Math.min(next, maxIndex)));
-  };
+  const progreso = total > 0 ? ((displayIndex + cardsVisible) / total) * 100 : 100;
 
   if (!destinos.length) return null;
 
   return (
-    <section id="destinos" className="section-padding bg-(--bg-base)">
+    <section id="destinos" className="section-padding bg-(--bg-base) scroll-mt-20 md:scroll-mt-24">
       <div className="container-site">
 
         {/* Encabezado */}
         <AnimarAlEntrar className="text-center mb-10 sm:mb-12">
           <p className="label-eyebrow mb-3">Dónde hospedarte</p>
-          <h2 className="heading-section mb-3">
-            Alojamiento en todo el Perú
-          </h2>
+          <h2 className="heading-section mb-3">Alojamiento en todo el Perú</h2>
           <div className="section-divider" />
           <p className="body-text max-w-2xl mx-auto mt-4">
             Selecciona tu destino y encuentra hotel al instante. Si ya tenemos habitaciones disponibles, te mostramos opciones directas; si no, te asesoramos por WhatsApp en minutos.
           </p>
-
-          {/* Estadísticas rápidas */}
-          <div className="flex items-center justify-center gap-3 mt-6 flex-wrap">
-            <div className="flex items-center gap-2 bg-(--brand-yellow) text-(--brand-navy) px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm">
-              <BedDouble size={13} aria-hidden="true" />
-              {conHoteles} destinos con hoteles disponibles
-            </div>
-            <div className="flex items-center gap-2 bg-(--brand-navy) text-white px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm">
-              <MapPin size={13} aria-hidden="true" />
-              {total}+ destinos cubiertos
-            </div>
-          </div>
         </AnimarAlEntrar>
 
         {/* Carrusel */}
         <AnimarAlEntrar>
           <div
             className="relative"
-            onPointerDown={() => setIsPaused(true)}
-            onPointerUp={() => setIsPaused(false)}
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+            onTouchStart={() => setIsPaused(true)}
+            onTouchEnd={() => setIsPaused(false)}
           >
-            <div
-              ref={trackRef}
-              onScroll={onScroll}
-              className="flex snap-x snap-mandatory gap-6 overflow-x-auto py-3 scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-            >
-              {destinos.map((destino) => (
-                <div
-                  key={destino.slug}
-                  className="snap-start shrink-0 w-(--card-w)"
-                  style={{ '--card-w': `${cardWidth}px` } as React.CSSProperties}
-                >
-                  <TarjetaProcedencia
-                    destino={destino}
-                    whatsappNumero={whatsappNumero}
-                  />
-                </div>
-              ))}
+            {/* Track — overflow hidden para que no se vean los clones */}
+            <div className="overflow-hidden">
+              <div
+                ref={trackRef}
+                onScroll={onScroll}
+                className="flex gap-6 overflow-x-auto py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                style={{ scrollBehavior: 'auto' }}
+              >
+                {tripled.map((destino, i) => (
+                  <div
+                    key={`${destino.slug}-${i}`}
+                    className="shrink-0"
+                    style={{ width: `${cardWidth}px` }}
+                    aria-hidden={i < total || i >= total * 2}
+                  >
+                    <TarjetaProcedencia destino={destino} whatsappNumero={whatsappNumero} />
+                  </div>
+                ))}
+              </div>
             </div>
 
+            {/* Flechas desktop */}
             <button
               type="button"
-              onClick={() => scrollTo(activeIndex - 1)}
-              disabled={activeIndex === 0}
+              onClick={irAnterior}
               aria-label="Destinos anteriores"
-              className="absolute -left-4 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-(--brand-navy) transition-all hover:border-(--brand-navy) hover:bg-(--brand-navy) hover:text-white disabled:pointer-events-none disabled:opacity-0 md:flex"
+              className="absolute -left-5 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-(--brand-navy) shadow-md transition-all hover:border-(--brand-navy) hover:bg-(--brand-navy) hover:text-white md:flex"
             >
               <ChevronLeft size={20} aria-hidden="true" />
             </button>
             <button
               type="button"
-              onClick={() => scrollTo(activeIndex + 1)}
-              disabled={activeIndex >= maxIndex}
+              onClick={irSiguiente}
               aria-label="Destinos siguientes"
-              className="absolute -right-4 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-(--brand-navy) transition-all hover:border-(--brand-navy) hover:bg-(--brand-navy) hover:text-white disabled:pointer-events-none disabled:opacity-0 md:flex"
+              className="absolute -right-5 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-(--brand-navy) shadow-md transition-all hover:border-(--brand-navy) hover:bg-(--brand-navy) hover:text-white md:flex"
             >
               <ChevronRight size={20} aria-hidden="true" />
             </button>
 
-            <div className="mt-4 flex items-center justify-between gap-4">
+            {/* Barra de progreso + flechas mobile */}
+            <div className="mt-5 flex items-center justify-between gap-4">
               <div className="flex min-w-0 flex-1 items-center gap-3">
                 <div className="h-1.5 w-full max-w-md overflow-hidden rounded-full bg-gray-200">
                   <div
-                    className="h-full rounded-full bg-(--brand-navy) transition-all duration-300 w-(--progress)"
-                    style={{ '--progress': `${progreso}%` } as React.CSSProperties}
+                    className="h-full rounded-full bg-(--brand-navy) transition-all duration-500"
+                    style={{ width: `${Math.min(progreso, 100)}%` }}
                   />
                 </div>
                 <span className="hidden min-w-max text-[10px] font-black uppercase tracking-widest text-(--text-muted) sm:inline">
-                  {Math.min(activeIndex + cardsVisible, total)} / {total}
+                  {displayIndex + 1} / {total}
                 </span>
               </div>
               <div className="flex shrink-0 items-center gap-2 md:hidden">
                 <button
                   type="button"
-                  onClick={() => scrollTo(activeIndex - 1)}
-                  disabled={activeIndex === 0}
+                  onClick={irAnterior}
                   aria-label="Destinos anteriores"
-                  className="flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-(--brand-navy) shadow-sm transition-all hover:border-(--brand-navy) hover:bg-(--brand-navy) hover:text-white disabled:cursor-not-allowed disabled:opacity-35"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-(--brand-navy) shadow-sm transition-all hover:bg-(--brand-navy) hover:text-white"
                 >
                   <ChevronLeft size={17} aria-hidden="true" />
                 </button>
                 <button
                   type="button"
-                  onClick={() => scrollTo(activeIndex + 1)}
-                  disabled={activeIndex >= maxIndex}
+                  onClick={irSiguiente}
                   aria-label="Destinos siguientes"
-                  className="flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-(--brand-navy) shadow-sm transition-all hover:border-(--brand-navy) hover:bg-(--brand-navy) hover:text-white disabled:cursor-not-allowed disabled:opacity-35"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-(--brand-navy) shadow-sm transition-all hover:bg-(--brand-navy) hover:text-white"
                 >
                   <ChevronRight size={17} aria-hidden="true" />
                 </button>

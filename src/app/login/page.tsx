@@ -33,7 +33,6 @@ export default function LoginPage() {
           title: 'Acceso denegado',
           text: data.error || 'Credenciales inválidas.',
           confirmButtonColor: '#001f3f',
-          fontFamily: 'Poppins, sans-serif',
         });
         return;
       }

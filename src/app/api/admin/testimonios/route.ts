@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) throw new Error(error.message);
-    revalidateTag('testimonios');
+    revalidateTag('testimonios', { expire: 0 });
     return NextResponse.json(data, { status: 201 });
   } catch (e) {
     if (e instanceof z.ZodError) return NextResponse.json(respuestaErrorValidacion(e), { status: 400 });
@@ -82,7 +82,7 @@ export async function PUT(request: NextRequest) {
       .single();
 
     if (error) throw new Error(error.message);
-    revalidateTag('testimonios');
+    revalidateTag('testimonios', { expire: 0 });
     return NextResponse.json(data);
   } catch (e) {
     if (e instanceof z.ZodError) return NextResponse.json(respuestaErrorValidacion(e), { status: 400 });
@@ -101,7 +101,7 @@ export async function DELETE(request: NextRequest) {
 
     const { error } = await auth.supabase.from('testimonios_home').delete().eq('id', id);
     if (error) throw new Error(error.message);
-    revalidateTag('testimonios');
+    revalidateTag('testimonios', { expire: 0 });
     return NextResponse.json({ message: 'Testimonio eliminado' });
   } catch (e) {
     console.error(e);

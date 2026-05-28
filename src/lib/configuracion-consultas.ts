@@ -1,4 +1,4 @@
-import { createAdminClient } from '@/lib/supabase/admin';
+import { createReadonlyClient } from '@/lib/supabase/readonly';
 import { unstable_cache } from 'next/cache';
 import {
   CONFIGURACION_DEFAULT,
@@ -14,7 +14,7 @@ export const obtenerConfiguracionPublica = unstable_cache(
     }
 
     try {
-      const supabase = createAdminClient();
+      const supabase = createReadonlyClient();
       const { data, error } = await supabase
         .from('configuracion')
         .select('*')

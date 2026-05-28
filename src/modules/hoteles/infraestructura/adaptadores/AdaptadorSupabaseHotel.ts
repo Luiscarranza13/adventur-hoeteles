@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin';
+import { createReadonlyClient } from '@/lib/supabase/readonly';
 import { createClient as createBrowserClient } from '@/lib/supabase/client';
 import { RepositorioHotel } from '../../dominio/puertos/RepositorioHotel';
 import { Hotel, DatosNuevoHotel, DatosActualizarHotel, TipoAlojamiento } from '../../dominio/entidades/Hotel';
@@ -44,10 +45,12 @@ function mapDbToDomain(row: HotelDb): Hotel {
 }
 
 function getCliente() {
-  if (typeof window === 'undefined') {
-    return createAdminClient();
-  }
+  if (typeof window === 'undefined') return createReadonlyClient();
   return createBrowserClient();
+}
+
+function getAdminCliente() {
+  return createAdminClient();
 }
 
 export class AdaptadorSupabaseHotel implements RepositorioHotel {
@@ -111,7 +114,7 @@ export class AdaptadorSupabaseHotel implements RepositorioHotel {
   }
 
   async crear(datos: DatosNuevoHotel): Promise<Hotel> {
-    const cliente = getCliente();
+    const cliente = getAdminCliente();
     const { data, error } = await cliente
       .from('hoteles')
       .insert({
@@ -137,7 +140,7 @@ export class AdaptadorSupabaseHotel implements RepositorioHotel {
   }
 
   async actualizar(id: string, datos: DatosActualizarHotel): Promise<Hotel> {
-    const cliente = getCliente();
+    const cliente = getAdminCliente();
     const updateData: Record<string, unknown> = {};
     if (datos.nombre !== undefined) updateData.nombre = datos.nombre;
     if (datos.descripcion !== undefined) updateData.descripcion = datos.descripcion;
@@ -166,7 +169,7 @@ export class AdaptadorSupabaseHotel implements RepositorioHotel {
   }
 
   async eliminar(id: string): Promise<void> {
-    const cliente = getCliente();
+    const cliente = getAdminCliente();
     const { error } = await cliente.from('hoteles').delete().eq('id', id);
     if (error) throw new Error(error.message);
   }

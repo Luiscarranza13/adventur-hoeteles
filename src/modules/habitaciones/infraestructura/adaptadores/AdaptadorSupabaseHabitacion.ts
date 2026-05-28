@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin';
+import { createReadonlyClient } from '@/lib/supabase/readonly';
 import { createClient as createBrowserClient } from '@/lib/supabase/client';
 import { RepositorioHabitacion } from '../../dominio/puertos/RepositorioHabitacion';
 import { Habitacion, DatosNuevaHabitacion, DatosActualizarHabitacion, TipoHabitacion, TipoCama, RegimeAlimentacion, EstadoMantenimiento, Moneda } from '../../dominio/entidades/Habitacion';
@@ -46,8 +47,12 @@ function mapDbToDomain(row: HabitacionDb): Habitacion {
 }
 
 function getCliente() {
-  if (typeof window === 'undefined') return createAdminClient();
+  if (typeof window === 'undefined') return createReadonlyClient();
   return createBrowserClient();
+}
+
+function getAdminCliente() {
+  return createAdminClient();
 }
 
 export class AdaptadorSupabaseHabitacion implements RepositorioHabitacion {
@@ -100,7 +105,7 @@ export class AdaptadorSupabaseHabitacion implements RepositorioHabitacion {
   }
 
   async crear(datos: DatosNuevaHabitacion): Promise<Habitacion> {
-    const cliente = getCliente();
+    const cliente = getAdminCliente();
     const { data, error } = await cliente
       .from('habitaciones')
       .insert({
@@ -128,7 +133,7 @@ export class AdaptadorSupabaseHabitacion implements RepositorioHabitacion {
   }
 
   async actualizar(id: string, datos: DatosActualizarHabitacion): Promise<Habitacion> {
-    const cliente = getCliente();
+    const cliente = getAdminCliente();
     const updateData: Record<string, unknown> = {};
     if (datos.nombre !== undefined) updateData.nombre = datos.nombre;
     if (datos.descripcion !== undefined) updateData.descripcion = datos.descripcion;
@@ -157,7 +162,7 @@ export class AdaptadorSupabaseHabitacion implements RepositorioHabitacion {
   }
 
   async eliminar(id: string): Promise<void> {
-    const cliente = getCliente();
+    const cliente = getAdminCliente();
     const { error } = await cliente.from('habitaciones').delete().eq('id', id);
     if (error) throw new Error(error.message);
   }

@@ -5,6 +5,7 @@ const SUPABASE_HOST = 'zbfrqolopbktzxfchqjy.supabase.co';
 // Domains that may still host hotel images referenced in Supabase data
 const HOTEL_IMAGE_HOSTS = [
   'costadelsolperu.com',
+  'dynamic-media-cdn.tripadvisor.com',
   'hotelcontinental.com.pe',
   'hotelmonthanas.com',
   'hotelpilanconescajamarca.com',
@@ -13,6 +14,7 @@ const HOTEL_IMAGE_HOSTS = [
   'portaldelmarques.com',
   'posadapuruay.com.pe',
   'static.wixstatic.com',
+  'upload.wikimedia.org',
 ];
 
 const cspHotelImgSrc = HOTEL_IMAGE_HOSTS.map(h => `https://${h}`).join(' ');

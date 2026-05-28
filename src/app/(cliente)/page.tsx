@@ -213,13 +213,13 @@ export default async function PaginaInicio() {
 
                   <div className="grid grid-cols-3 gap-3 p-4 sm:p-5">
                     {[
-                      { n: hoteles.length, sufijo: '+', label: 'Hoteles' },
-                      { n: departamentos.length || ciudades.length, sufijo: '', label: 'Cobertura' },
+                      { n: hoteles.length || 10, sufijo: '+', label: 'Hoteles' },
+                      { n: departamentos.length || ciudades.length || 10, sufijo: '', label: 'Cobertura' },
                       { n: 0, sufijo: '%', label: 'Comisión' },
                     ].map(({ n, sufijo, label }) => (
                       <div key={label} className="rounded-2xl bg-slate-50 p-3 text-center">
                         <p className="text-(--brand-navy) font-black text-xl sm:text-2xl leading-none mb-1">
-                          <ContadorAnimado valor={n || 10} sufijo={sufijo} />
+                          <ContadorAnimado valor={n} sufijo={sufijo} />
                         </p>
                         <p className="text-(--brand-yellow) text-[8px] sm:text-[10px] font-black uppercase tracking-[0.14em]">{label}</p>
                       </div>

@@ -50,7 +50,7 @@ export function SidebarAdmin({ email, rol }: SidebarAdminProps) {
           showConfirmButton: false,
           timerProgressBar: true,
         });
-        router.push('/login');
+        window.location.href = '/login';
       }
     } catch {
       Swal.fire({
